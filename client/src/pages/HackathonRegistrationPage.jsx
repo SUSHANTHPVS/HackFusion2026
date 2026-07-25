@@ -24,14 +24,44 @@ const PARTICIPATION_OPTIONS = {
     subtitle: "Leader + 1 to 3 teammates"
   }
 };
+const PAYMENT_MODE_OPTIONS = {
+  upi_only: {
+    label: "UPI Only",
+    subtitle: "Pay via UPI"
+  },
+  all_methods: {
+    label: "All Methods",
+    subtitle: "UPI, Card, NetBanking, Wallet"
+  }
+};
+
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 function createTeamAndOrder(payload) {
   return api.post("/registration/team", payload).then((res) => res.data);
 }
 
+function verifyPayment(paymentData) {
+  return api.post("/payments/verify", paymentData).then((res) => res.data);
+}
+
 export function HackathonRegistrationPage() {
   const { isAuthenticated, user } = useAuth();
   const [participationType, setParticipationType] = useState("individual");
+  const [paymentMode, setPaymentMode] = useState("all_methods");
   const [teamName, setTeamName] = useState("");
   const [teamLeaderName, setTeamLeaderName] = useState(user?.name || "");
   const [rollNo, setRollNo] = useState("");
@@ -63,6 +93,17 @@ export function HackathonRegistrationPage() {
     return message.includes("unauthorized") || message.includes("invalid token");
   };
 
+  const verifyMutation = useMutation({
+    mutationFn: verifyPayment,
+    onSuccess: (data) => {
+      setPaymentMessage("Payment verified! Registration successful.");
+      setOrderData(null);
+    },
+    onError: (error) => {
+      setPaymentMessage(error?.response?.data?.message || "Payment verification failed.");
+    }
+  });
+
   const createOrderMutation = useMutation({
     mutationFn: createTeamAndOrder,
     onSuccess: (data) => {
@@ -72,7 +113,7 @@ export function HackathonRegistrationPage() {
       if (data.paymentStatus === "success") {
         setPaymentMessage("Registration already completed for your account.");
       } else {
-        setPaymentMessage("Team registered. Proceed to PhonePe payment.");
+        setPaymentMessage("Team registered. Proceed to Razorpay payment.");
       }
     },
     onError: (error) => {
@@ -89,7 +130,7 @@ export function HackathonRegistrationPage() {
   });
 
   const canPay = useMemo(
-    () => Boolean(orderData?.paymentRedirectUrl && orderData?.paymentStatus === "created"),
+    () => Boolean(orderData?.order && orderData?.keyId && orderData?.paymentStatus === "created"),
     [orderData]
   );
   const selectedFee = PARTICIPATION_OPTIONS[participationType].fee;
@@ -222,10 +263,35 @@ export function HackathonRegistrationPage() {
     });
   };
 
-  const onPayNow = () => {
-    if (!orderData?.paymentRedirectUrl) return;
-    // Redirect the browser to PhonePe's hosted payment page.
-    window.location.href = orderData.paymentRedirectUrl;
+  const onPayNow = async () => {
+    if (!orderData?.order || !orderData?.keyId) return;
+
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      setPaymentMessage("Failed to load Razorpay. Please try again.");
+      return;
+    }
+
+    const options = {
+      key: orderData.keyId,
+      order_id: orderData.order.id,
+      amount: orderData.order.amount,
+      currency: orderData.order.currency,
+      method: paymentMode === "upi_only" ? { upi: true, netbanking: false, card: false, wallet: false } : undefined,
+      handler: (response) => {
+        verifyMutation.mutate(response);
+      },
+      prefill: {
+        name: user?.name || "",
+        email: user?.email || ""
+      },
+      theme: {
+        color: "#06b6d4"
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
   if (!isAuthenticated) {
@@ -259,7 +325,7 @@ export function HackathonRegistrationPage() {
   return (
     <section className="glass-card mx-auto max-w-2xl rounded-2xl p-6">
       <h1 className="text-3xl font-bold">Hackathon Registration & Payment</h1>
-      <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete PhonePe payment.</p>
+      <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete Razorpay payment.</p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {Object.entries(PARTICIPATION_OPTIONS).map(([type, option]) => {
@@ -386,6 +452,29 @@ export function HackathonRegistrationPage() {
           ))}
         </select>
 
+        <div className="rounded-lg border border-slate-200 p-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Payment Method</h2>
+          <p className="mt-1 text-xs text-slate-500">UPI is enabled. You can keep UPI-only or allow all methods.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {Object.entries(PAYMENT_MODE_OPTIONS).map(([mode, option]) => {
+              const selected = paymentMode === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setPaymentMode(mode)}
+                  className={`rounded-lg border p-3 text-left transition ${
+                    selected ? "border-cyan-600 bg-cyan-50" : "border-slate-200 bg-white"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-slate-800">{option.label}</p>
+                  <p className="mt-1 text-xs text-slate-500">{option.subtitle}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {participationType === "team" && (
           <div className="rounded-lg border border-slate-200 p-4">
             <div className="mb-3 flex items-center justify-between">
@@ -500,7 +589,7 @@ export function HackathonRegistrationPage() {
           onClick={onPayNow}
           className="mt-4 rounded-lg bg-cyan-600 px-4 py-2 font-semibold text-white"
         >
-          Pay Now via PhonePe (INR {selectedFee})
+          Pay Now via Razorpay (INR {selectedFee})
         </button>
       )}
 

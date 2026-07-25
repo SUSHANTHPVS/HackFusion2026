@@ -4,7 +4,7 @@ import { User } from "../models/User.js";
 import { sendRegistrationEmail } from "../services/emailService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { generateQrDataUrl } from "../services/qrService.js";
-import { checkPaymentStatus, verifyPhonePeCallback } from "../services/phonePeService.js";
+import { verifyPaymentSignature } from "../services/razorpayService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -107,148 +107,34 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
 }
 
 /**
- * GET /payments/status/:transactionId
- * Called by the client after PhonePe redirects back. Checks payment status from
- * PhonePe and updates the local record if it has succeeded.
+ * POST /payments/verify
+ * Client sends Razorpay payment details for backend verification.
+ * Razorpay popup returns: razorpay_order_id, razorpay_payment_id, razorpay_signature
  */
-export const getPaymentStatus = asyncHandler(async (req, res) => {
-  const { transactionId } = req.params;
+export const verifyPayment = asyncHandler(async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-  const payment = await Payment.findOne({ orderId: transactionId });
-  if (!payment) throw new AppError("Payment record not found", 404);
-
-  if (String(payment.userId) !== String(req.user._id)) {
-    throw new AppError("You are not allowed to check this payment.", 403);
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    throw new AppError("Missing payment details", 400);
   }
 
-  // Return cached status if already finalised.
-  if (payment.status === "success" || payment.status === "failed") {
-    return res.json({ paymentStatus: payment.status, message: `Payment ${payment.status}.` });
-  }
-
-  await logPaymentAudit({
-    paymentRef: payment._id,
-    orderId: transactionId,
-    userId: payment.userId,
-    teamId: payment.teamId,
-    eventType: "VERIFY_ATTEMPT",
-    source: "client",
-    status: "info",
-    message: "Client polling PhonePe status",
-    payload: {}
+  // Verify signature with Razorpay secret
+  verifyPaymentSignature({
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature
   });
 
-  const phonePeResponse = await checkPaymentStatus(transactionId);
-  const code = phonePeResponse?.code;
-
-  if (phonePeResponse?.success && code === "PAYMENT_SUCCESS") {
-    const phonePePaymentId =
-      phonePeResponse?.data?.paymentInstrument?.pgTransactionId || transactionId;
-    const result = await markPaymentSuccess({
-      orderId: transactionId,
-      paymentId: phonePePaymentId,
-      signature: code,
-      source: "client"
-    });
-    if (result.statusCode >= 400) throw new AppError(result.payload.message, result.statusCode);
-    return res.json(result.payload);
-  }
-
-  if (code === "PAYMENT_ERROR" || code === "PAYMENT_DECLINED" || code === "TIMED_OUT") {
-    payment.status = "failed";
-    await payment.save();
-
-    await logPaymentAudit({
-      paymentRef: payment._id,
-      orderId: transactionId,
-      userId: payment.userId,
-      teamId: payment.teamId,
-      eventType: "VERIFY_FAILED",
-      source: "client",
-      status: "failed",
-      message: `PhonePe status: ${code}`,
-      payload: { code }
-    });
-
-    return res.json({ paymentStatus: "failed", message: "Payment failed or was declined." });
-  }
-
-  // PAYMENT_PENDING or other intermediate states
-  res.json({ paymentStatus: "pending", message: "Payment is still being processed." });
-});
-
-/**
- * POST /payments/callback
- * Server-to-server callback from PhonePe after payment is completed.
- */
-export const handlePhonePeCallback = asyncHandler(async (req, res) => {
-  const xVerifyHeader = req.headers["x-verify"];
-  const body = req.body;
-
-  const responseBase64 = body?.response;
-  if (!responseBase64) {
-    throw new AppError("Invalid callback payload", 400);
-  }
-
-  const isValid = verifyPhonePeCallback(responseBase64, xVerifyHeader);
-  if (!isValid) {
-    throw new AppError("Invalid callback signature", 400);
-  }
-
-  let event;
-  try {
-    event = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf8"));
-  } catch {
-    throw new AppError("Malformed callback payload", 400);
-  }
-
-  const code = event?.code;
-  const transactionId = event?.data?.merchantTransactionId;
-  const phonePePaymentId =
-    event?.data?.transactionId || event?.data?.paymentInstrument?.pgTransactionId;
-
-  await logPaymentAudit({
-    orderId: transactionId || "unknown",
-    eventType: "WEBHOOK_RECEIVED",
-    source: "webhook",
-    status: "info",
-    message: `PhonePe callback received: ${code}`,
-    payload: { code, transactionId }
+  const result = await markPaymentSuccess({
+    orderId: razorpay_order_id,
+    paymentId: razorpay_payment_id,
+    signature: razorpay_signature,
+    source: "client"
   });
 
-  if (code === "PAYMENT_SUCCESS" && transactionId) {
-    await markPaymentSuccess({
-      orderId: transactionId,
-      paymentId: phonePePaymentId || transactionId,
-      signature: code,
-      source: "webhook"
-    });
-
-    await logPaymentAudit({
-      orderId: transactionId,
-      eventType: "WEBHOOK_CAPTURED",
-      source: "webhook",
-      status: "success",
-      message: "PhonePe payment reconciled by callback",
-      payload: { phonePePaymentId }
-    });
+  if (result.statusCode >= 400) {
+    throw new AppError(result.payload.message, result.statusCode);
   }
 
-  if ((code === "PAYMENT_ERROR" || code === "PAYMENT_DECLINED") && transactionId) {
-    await Payment.findOneAndUpdate(
-      { orderId: transactionId, status: { $ne: "success" } },
-      { status: "failed", paymentId: phonePePaymentId || undefined }
-    );
-
-    await logPaymentAudit({
-      orderId: transactionId,
-      eventType: "WEBHOOK_FAILED",
-      source: "webhook",
-      status: "info",
-      message: `PhonePe payment failed via callback: ${code}`,
-      payload: { phonePePaymentId }
-    });
-  }
-
-  res.status(200).json({ received: true });
+  res.json(result.payload);
 });

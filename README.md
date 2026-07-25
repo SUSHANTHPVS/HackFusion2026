@@ -4,7 +4,7 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 
 ## Stack
 - Frontend: React 19, Vite, Tailwind CSS, Framer Motion, React Router, TanStack Query, React Hook Form, Zod, Axios
-- Backend: Node.js, Express.js, MongoDB Atlas, JWT, PhonePe Payment Gateway, Nodemailer, Multer
+- Backend: Node.js, Express.js, MongoDB Atlas, JWT, Razorpay Payment Gateway, Nodemailer, Multer
 - Deployment: Vercel (client), Render (server), MongoDB Atlas (database)
 
 ## Structure
@@ -13,7 +13,7 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 
 ## Quick Start
 1. Copy `server/.env.example` to `server/.env` and fill values.
-2. In PhonePe Dashboard, configure server callback URL as `/api/payments/callback` and set `PHONEPE_MERCHANT_ID`, `PHONEPE_SALT_KEY`, `PHONEPE_SALT_INDEX`, and `SERVER_URL` in `.env`.
+2. Get Razorpay credentials from [Razorpay Dashboard](https://dashboard.razorpay.com) and set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `.env`.
 3. Install dependencies:
    - `cd client && npm install`
    - `cd ../server && npm install`

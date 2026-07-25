@@ -1,6 +1,6 @@
 import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
-import { initiatePayment } from "../services/phonePeService.js";
+import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { buildRegistrationSyncPayload, syncRegistrationToGoogle } from "../services/registrationSyncService.js";
 import { AppError } from "../utils/AppError.js";
@@ -162,29 +162,27 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     await existingTeam.save();
 
     if (existingPayment?.status === "created") {
-      // For PhonePe we cannot reuse the same merchantTransactionId — always
-      // invalidate the old pending record and create a fresh transaction.
-      existingPayment.status = "failed";
-      await existingPayment.save();
+      // Payment order may be reused for Razorpay. Leave it as is or invalidate if needed.
+      // For now, we'll create a new payment record to ensure uniqueness.
     }
   }
 
-  const merchantTransactionId = `IEEE_${Date.now()}_${req.user._id}`;
-  const clientRedirectUrl = `${env.CLIENT_ORIGIN}/payment-status?transactionId=${merchantTransactionId}`;
-  const serverCallbackUrl = `${env.SERVER_URL}/api/payments/callback`;
+  const receipt = `IEEE_${Date.now()}_${req.user._id}`;
 
-  let phonePeResult;
+  let razorpayOrder;
   try {
-    phonePeResult = await initiatePayment({
-      merchantTransactionId,
+    razorpayOrder = await createOrder({
       amount: paymentAmount,
-      userId: req.user._id,
-      redirectUrl: clientRedirectUrl,
-      callbackUrl: serverCallbackUrl
+      receipt,
+      notes: {
+        userId: String(req.user._id),
+        participationType,
+        teamName: participantDetails.teamName
+      }
     });
   } catch (_error) {
     throw new AppError(
-      "Unable to initiate payment order. Please verify PhonePe credentials or contact organizer.",
+      "Unable to create payment order. Please verify Razorpay credentials or contact organizer.",
       502
     );
   }
@@ -264,7 +262,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
           {
             userId: req.user._id,
             teamId: team._id,
-            orderId: phonePeResult.merchantTransactionId,
+            orderId: razorpayOrder.id,
             amount: paymentAmount,
             participationType,
             status: "created"
@@ -276,8 +274,8 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
       responsePayload = {
         message: "Team created. Proceed to payment.",
         team,
-        transactionId: phonePeResult.merchantTransactionId,
-        paymentRedirectUrl: phonePeResult.redirectUrl,
+        keyId: env.RAZORPAY_KEY_ID,
+        order: razorpayOrder,
         paymentStatus: "created",
         feeInr: paymentAmount
       };

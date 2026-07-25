@@ -4,7 +4,8 @@ import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
-import { initiatePayment } from "../services/phonePeService.js";
+import { createOrder } from "../services/razorpayService.js";
+import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const dashboardStats = asyncHandler(async (_req, res) => {
@@ -101,18 +102,21 @@ export const createRecoveryOrder = asyncHandler(async (req, res) => {
     participationType = team?.participationType || ((team?.teammates?.length || 0) > 0 ? "team" : "individual");
   }
 
-  const merchantTransactionId = `IEEE_RECOVERY_${Date.now()}_${payment.userId}`;
-  const phonePeResult = await initiatePayment({
-    merchantTransactionId,
+  const receipt = `IEEE_RECOVERY_${Date.now()}_${payment.userId}`;
+  const razorpayOrder = await createOrder({
     amount: payment.amount,
-    userId: payment.userId,
-    redirectUrl: "",  // Admin recovery — no client redirect needed
-    callbackUrl: ""   // Admin recovery — rely on manual status check
+    receipt,
+    notes: {
+      recoveryOrderFor: String(payment._id),
+      userId: String(payment.userId),
+      participationType
+    }
   });
+
   const newPayment = await Payment.create({
     userId: payment.userId,
     teamId: payment.teamId,
-    orderId: phonePeResult.merchantTransactionId,
+    orderId: razorpayOrder.id,
     amount: payment.amount,
     participationType,
     currency: payment.currency || "INR",
@@ -135,7 +139,8 @@ export const createRecoveryOrder = asyncHandler(async (req, res) => {
     message: "Recovery order created",
     previousOrderId: payment.orderId,
     payment: newPayment,
-    paymentRedirectUrl: phonePeResult.redirectUrl
+    keyId: env.RAZORPAY_KEY_ID,
+    order: razorpayOrder
   });
 });
 
