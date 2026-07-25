@@ -386,29 +386,6 @@ export function HackathonRegistrationPage() {
           ))}
         </select>
 
-        <div className="rounded-lg border border-slate-200 p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Payment Method</h2>
-          <p className="mt-1 text-xs text-slate-500">UPI is enabled. You can keep UPI-only or allow all methods.</p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {Object.entries(PAYMENT_MODE_OPTIONS).map(([mode, option]) => {
-              const selected = paymentMode === mode;
-              return (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setPaymentMode(mode)}
-                  className={`rounded-lg border p-3 text-left transition ${
-                    selected ? "border-cyan-600 bg-cyan-50" : "border-slate-200 bg-white"
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-slate-800">{option.label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{option.subtitle}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {participationType === "team" && (
           <div className="rounded-lg border border-slate-200 p-4">
             <div className="mb-3 flex items-center justify-between">
