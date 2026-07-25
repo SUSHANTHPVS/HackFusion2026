@@ -5,6 +5,7 @@ import { DashboardLayout } from "./layouts/DashboardLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminPanel } from "./pages/AdminPanel";
 import { ContactPage } from "./pages/ContactPage";
+import { CopyrightRightsPage } from "./pages/CopyrightRightsPage";
 import { ExploreTeamsPage } from "./pages/ExploreTeamsPage";
 import { FaqPage } from "./pages/FaqPage";
 import { HackathonRegistrationPage } from "./pages/HackathonRegistrationPage";
@@ -16,10 +17,12 @@ import { PaymentStatusPage } from "./pages/PaymentStatusPage";
 import { ParticipantPanel } from "./pages/ParticipantPanel";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { RefundPolicyPage } from "./pages/RefundPolicyPage";
 import { RoleSectionPage } from "./pages/RoleSectionPage";
 import { RulesPage } from "./pages/RulesPage";
 import { SchedulePage } from "./pages/SchedulePage";
 import { SimpleInfoPage } from "./pages/SimpleInfoPage";
+import { TermsAndConditionsPage } from "./pages/TermsAndConditionsPage";
 import { ThemePage } from "./pages/ThemePage";
 
 const participantNav = [
@@ -62,6 +65,9 @@ function App() {
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+        <Route path="/refund-policy" element={<RefundPolicyPage />} />
+        <Route path="/copyright-rights" element={<CopyrightRightsPage />} />
         <Route path="/sponsors" element={info("Sponsors", "Our sponsors and partnership opportunities.")} />
         <Route path="/hackathon-register" element={<HackathonRegistrationPage />} />
         <Route path="/register" element={<RegisterPage />} />
