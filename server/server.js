@@ -18,9 +18,7 @@ import registrationRoutes from "./routes/registrationRoutes.js";
 
 const app = express();
 
-if (env.NODE_ENV === "production") {
-  app.set("trust proxy", env.TRUST_PROXY);
-}
+app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(
   helmet({
