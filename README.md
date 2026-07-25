@@ -4,7 +4,7 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 
 ## Stack
 - Frontend: React 19, Vite, Tailwind CSS, Framer Motion, React Router, TanStack Query, React Hook Form, Zod, Axios
-- Backend: Node.js, Express.js, MongoDB Atlas, JWT, Razorpay, Nodemailer, Multer
+- Backend: Node.js, Express.js, MongoDB Atlas, JWT, PhonePe Payment Gateway, Nodemailer, Multer
 - Deployment: Vercel (client), Render (server), MongoDB Atlas (database)
 
 ## Structure
@@ -13,7 +13,7 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 
 ## Quick Start
 1. Copy `server/.env.example` to `server/.env` and fill values.
-2. In Razorpay Dashboard, configure webhook URL as `/api/payments/webhook` and set the same secret value in `RAZORPAY_WEBHOOK_SECRET`.
+2. In PhonePe Dashboard, configure server callback URL as `/api/payments/callback` and set `PHONEPE_MERCHANT_ID`, `PHONEPE_SALT_KEY`, `PHONEPE_SALT_INDEX`, and `SERVER_URL` in `.env`.
 3. Install dependencies:
    - `cd client && npm install`
    - `cd ../server && npm install`
@@ -25,8 +25,8 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/registration/team`
-- `POST /api/payments/webhook`
-- `POST /api/payments/verify`
+- `POST /api/payments/callback`
+- `GET /api/payments/status/:transactionId`
 - `GET /api/participant/dashboard`
 - `POST /api/participant/submission`
 - `GET /api/admin/stats`
@@ -46,8 +46,8 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 - JWT auth + role guards
 - Input validation via Zod
 - bcrypt password hashing
-- Razorpay signature verification
-- Razorpay webhook reconciliation for delayed/failed client callbacks
+- PhonePe callback signature verification (X-VERIFY HMAC-SHA256)
+- PhonePe status polling and redirect-based payment flow
 - Idempotent payment verification and duplicate transaction protection
 - Payment audit trail for verify/webhook/recovery events
 - MongoDB indexes on critical fields

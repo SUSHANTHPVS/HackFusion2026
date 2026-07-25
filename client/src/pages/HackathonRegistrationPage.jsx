@@ -25,54 +25,9 @@ const PARTICIPATION_OPTIONS = {
   }
 };
 
-const PAYMENT_MODE_OPTIONS = {
-  upi: {
-    label: "UPI Priority",
-    subtitle: "UPI first, fallback methods enabled",
-    methods: {
-      upi: true,
-      card: true,
-      netbanking: true,
-      wallet: true,
-      emi: true,
-      paylater: true
-    }
-  },
-  all: {
-    label: "All Payment Methods",
-    subtitle: "UPI, Card, Netbanking, Wallet",
-    methods: {
-      upi: true,
-      card: true,
-      netbanking: true,
-      wallet: true,
-      emi: true,
-      paylater: true
-    }
-  }
-};
-
-function loadRazorpayScript() {
-  if (window.Razorpay) {
-    return Promise.resolve(true);
-  }
-
-  return new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
-
 function createTeamAndOrder(payload) {
   return api.post("/registration/team", payload).then((res) => res.data);
 }
-
-function verifyPayment(payload) {
-  return api.post("/payments/verify", payload).then((res) => res.data);
 }
 
 export function HackathonRegistrationPage() {
@@ -96,7 +51,6 @@ export function HackathonRegistrationPage() {
       section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
     }
   ]);
-  const [paymentMode, setPaymentMode] = useState("upi");
   const [orderData, setOrderData] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [requiresLogin, setRequiresLogin] = useState(false);
@@ -119,7 +73,7 @@ export function HackathonRegistrationPage() {
       if (data.paymentStatus === "success") {
         setPaymentMessage("Registration already completed for your account.");
       } else {
-        setPaymentMessage("Team registered. Continue to payment.");
+        setPaymentMessage("Team registered. Proceed to PhonePe payment.");
       }
     },
     onError: (error) => {
@@ -135,33 +89,12 @@ export function HackathonRegistrationPage() {
     }
   });
 
-  const verifyMutation = useMutation({
-    mutationFn: verifyPayment,
-    onSuccess: (data) => {
-      setRequiresLogin(false);
-      setPaymentMessage(data.message || "Payment verified successfully.");
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        setRequiresLogin(true);
-        setPaymentMessage("Authorization failed for payment verification. Please login again and retry.");
-        return;
-      }
-
-      setRequiresLogin(false);
-      setPaymentMessage(error?.response?.data?.message || "Payment verification failed.");
-    }
-  });
-
-  const canPay = useMemo(() => orderData?.order?.id && orderData?.keyId, [orderData]);
+  const canPay = useMemo(
+    () => Boolean(orderData?.paymentRedirectUrl && orderData?.paymentStatus === "created"),
+    [orderData]
+  );
   const selectedFee = PARTICIPATION_OPTIONS[participationType].fee;
-  const selectedPaymentMode = PAYMENT_MODE_OPTIONS[paymentMode];
   const totalMembers = 1 + (participationType === "team" ? teammates.length : 0);
-  const paymentKeyType = orderData?.keyId?.startsWith("rzp_live_")
-    ? "Live"
-    : orderData?.keyId?.startsWith("rzp_test_")
-      ? "Test"
-      : "Unknown";
   const checkoutDescription =
     participationType === "team"
       ? `Team Participation (${totalMembers} members) - INR ${selectedFee}`
@@ -290,72 +223,10 @@ export function HackathonRegistrationPage() {
     });
   };
 
-  const onPayNow = async () => {
-    setPaymentMessage("");
-
-    const loaded = await loadRazorpayScript();
-    if (!loaded) {
-      setPaymentMessage("Could not load Razorpay Checkout. Please check your network and try again.");
-      return;
-    }
-
-    const options = {
-      key: orderData.keyId,
-      amount: orderData.order.amount,
-      currency: orderData.order.currency || "INR",
-      name: "IEEE RAS x IEEE CS Hackathon",
-      description: checkoutDescription,
-      method: selectedPaymentMode.methods,
-      config:
-        paymentMode === "upi"
-          ? {
-              display: {
-                sequence: ["block.upi", "block.other"],
-                blocks: {
-                  upi: {
-                    name: "Pay via UPI",
-                    instruments: [{ method: "upi" }]
-                  },
-                  other: {
-                    name: "Other Methods",
-                    instruments: [
-                      { method: "card" },
-                      { method: "netbanking" },
-                      { method: "wallet" }
-                    ]
-                  }
-                }
-              }
-            }
-          : undefined,
-      order_id: orderData.order.id,
-      prefill: {
-        name: user?.name,
-        email: user?.email
-      },
-      theme: {
-        color: "#00629B"
-      },
-      handler: (response) => {
-        verifyMutation.mutate({
-          orderId: response.razorpay_order_id,
-          paymentId: response.razorpay_payment_id,
-          signature: response.razorpay_signature
-        });
-      },
-      modal: {
-        ondismiss: () => {
-          setPaymentMessage("Payment popup closed. You can retry payment anytime.");
-        }
-      },
-      retry: {
-        enabled: true,
-        max_count: 2
-      }
-    };
-
-    const checkout = new window.Razorpay(options);
-    checkout.open();
+  const onPayNow = () => {
+    if (!orderData?.paymentRedirectUrl) return;
+    // Redirect the browser to PhonePe's hosted payment page.
+    window.location.href = orderData.paymentRedirectUrl;
   };
 
   if (!isAuthenticated) {
@@ -389,7 +260,7 @@ export function HackathonRegistrationPage() {
   return (
     <section className="glass-card mx-auto max-w-2xl rounded-2xl p-6">
       <h1 className="text-3xl font-bold">Hackathon Registration & Payment</h1>
-      <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete Razorpay payment.</p>
+      <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete PhonePe payment.</p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {Object.entries(PARTICIPATION_OPTIONS).map(([type, option]) => {
@@ -651,10 +522,9 @@ export function HackathonRegistrationPage() {
         <button
           type="button"
           onClick={onPayNow}
-          disabled={verifyMutation.isPending}
           className="mt-4 rounded-lg bg-cyan-600 px-4 py-2 font-semibold text-white"
         >
-          {verifyMutation.isPending ? "Verifying..." : `Pay Now (${selectedPaymentMode.label})`}
+          Pay Now via PhonePe (INR {selectedFee})
         </button>
       )}
 
@@ -673,18 +543,16 @@ export function HackathonRegistrationPage() {
 
       {!requiresLogin && paymentMessage.includes("Unable to initiate payment order") && (
         <p className="mt-2 text-xs text-slate-500">
-          Organizer note: set valid Razorpay keys in server environment (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`) and restart backend.
+          Organizer note: set valid PhonePe credentials in server environment (`PHONEPE_MERCHANT_ID`, `PHONEPE_SALT_KEY`) and restart backend.
         </p>
       )}
 
-      {orderData?.order?.id && (
+      {orderData?.transactionId && (
         <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Payment Diagnostics</p>
           <div className="mt-2 grid gap-1 text-xs text-slate-700">
-            <p>Mode: {selectedPaymentMode.label}</p>
-            <p>Order ID: {orderData.order.id}</p>
-            <p>Amount: INR {((orderData.order.amount || 0) / 100).toFixed(2)}</p>
-            <p>Razorpay Key: {paymentKeyType}</p>
+            <p>Transaction ID: {orderData.transactionId}</p>
+            <p>Amount: INR {orderData.feeInr}</p>
           </div>
         </div>
       )}

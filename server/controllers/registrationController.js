@@ -1,6 +1,6 @@
 import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
-import { createOrder } from "../services/razorpayService.js";
+import { initiatePayment } from "../services/phonePeService.js";
 import { env } from "../config/env.js";
 import { buildRegistrationSyncPayload, syncRegistrationToGoogle } from "../services/registrationSyncService.js";
 import { AppError } from "../utils/AppError.js";
@@ -162,35 +162,29 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     await existingTeam.save();
 
     if (existingPayment?.status === "created") {
-      if (
-        existingPayment.amount === paymentAmount &&
-        existingPayment.participationType === participationType
-      ) {
-        triggerRegistrationSync(existingTeam, "created");
-        return res.status(200).json({
-          message: "Pending payment order already exists.",
-          team: existingTeam,
-          order: {
-            id: existingPayment.orderId,
-            amount: existingPayment.amount * 100,
-            currency: existingPayment.currency
-          },
-          keyId: env.RAZORPAY_KEY_ID,
-          paymentStatus: "created"
-        });
-      }
-
+      // For PhonePe we cannot reuse the same merchantTransactionId — always
+      // invalidate the old pending record and create a fresh transaction.
       existingPayment.status = "failed";
       await existingPayment.save();
     }
   }
 
-  let order;
+  const merchantTransactionId = `IEEE_${Date.now()}_${req.user._id}`;
+  const clientRedirectUrl = `${env.CLIENT_ORIGIN}/payment-status?transactionId=${merchantTransactionId}`;
+  const serverCallbackUrl = `${env.SERVER_URL}/api/payments/callback`;
+
+  let phonePeResult;
   try {
-    order = await createOrder(paymentAmount);
+    phonePeResult = await initiatePayment({
+      merchantTransactionId,
+      amount: paymentAmount,
+      userId: req.user._id,
+      redirectUrl: clientRedirectUrl,
+      callbackUrl: serverCallbackUrl
+    });
   } catch (_error) {
     throw new AppError(
-      "Unable to initiate payment order. Please verify Razorpay keys or contact organizer.",
+      "Unable to initiate payment order. Please verify PhonePe credentials or contact organizer.",
       502
     );
   }
@@ -245,22 +239,6 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
       }).session(session);
 
       if (pendingPayment) {
-        if (pendingPayment.amount === paymentAmount && pendingPayment.participationType === participationType) {
-          responseStatus = 200;
-          responsePayload = {
-            message: "Pending payment order already exists.",
-            team,
-            order: {
-              id: pendingPayment.orderId,
-              amount: pendingPayment.amount * 100,
-              currency: pendingPayment.currency
-            },
-            keyId: env.RAZORPAY_KEY_ID,
-            paymentStatus: "created"
-          };
-          return;
-        }
-
         pendingPayment.status = "failed";
         await pendingPayment.save({ session });
       }
@@ -286,7 +264,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
           {
             userId: req.user._id,
             teamId: team._id,
-            orderId: order.id,
+            orderId: phonePeResult.merchantTransactionId,
             amount: paymentAmount,
             participationType,
             status: "created"
@@ -298,8 +276,8 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
       responsePayload = {
         message: "Team created. Proceed to payment.",
         team,
-        order,
-        keyId: env.RAZORPAY_KEY_ID,
+        transactionId: phonePeResult.merchantTransactionId,
+        paymentRedirectUrl: phonePeResult.redirectUrl,
         paymentStatus: "created",
         feeInr: paymentAmount
       };

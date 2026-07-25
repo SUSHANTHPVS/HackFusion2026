@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BadgeIndianRupee, CheckCircle2, Clock3, Loader2, XCircle } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Something went wrong") {
@@ -27,10 +28,43 @@ function StatusIcon({ status }) {
 }
 
 export function PaymentStatusPage() {
+  const [searchParams] = useSearchParams();
+  const inboundTransactionId = searchParams.get("transactionId");
+
+  const [isVerifying, setIsVerifying] = useState(Boolean(inboundTransactionId));
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifyError, setVerifyError] = useState("");
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [payment, setPayment] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
+
+  // If returning from PhonePe redirect, call the status check endpoint first.
+  useEffect(() => {
+    if (!inboundTransactionId) return;
+
+    let isMounted = true;
+
+    async function verifyInbound() {
+      setIsVerifying(true);
+      setVerifyError("");
+      try {
+        const response = await api.get(`/payments/status/${inboundTransactionId}`);
+        if (isMounted) setVerifyResult(response.data);
+      } catch (err) {
+        if (isMounted)
+          setVerifyError(
+            err?.response?.data?.message || "Could not verify payment. Please check your payment status below."
+          );
+      } finally {
+        if (isMounted) setIsVerifying(false);
+      }
+    }
+
+    verifyInbound();
+    return () => { isMounted = false; };
+  }, [inboundTransactionId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -74,10 +108,11 @@ export function PaymentStatusPage() {
     return `₹${(payment.amount / 100).toFixed(2)}`;
   }, [payment?.amount]);
 
-  if (isLoading) {
+  if (isLoading || isVerifying) {
     return (
       <div className="glass-card flex min-h-56 items-center justify-center rounded-2xl p-6 text-slate-700">
-        <Loader2 className="mr-2 animate-spin" size={18} /> Loading payment status...
+        <Loader2 className="mr-2 animate-spin" size={18} />
+        {isVerifying ? "Verifying your PhonePe payment..." : "Loading payment status..."}
       </div>
     );
   }
@@ -93,6 +128,21 @@ export function PaymentStatusPage() {
         <h1 className="mt-3 text-3xl font-extrabold text-slate-900 md:text-4xl">Payment Status</h1>
         <p className="mt-3 text-slate-700">Live payment details synced from your real registration orders.</p>
       </div>
+
+      {/* PhonePe redirect result banner */}
+      {inboundTransactionId && (verifyResult || verifyError) && (
+        <div
+          className={`glass-card rounded-2xl p-5 text-sm font-medium ${
+            verifyResult?.paymentStatus === "success"
+              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+              : verifyResult?.paymentStatus === "failed"
+                ? "border-rose-300 bg-rose-50 text-rose-800"
+                : "border-amber-300 bg-amber-50 text-amber-800"
+          }`}
+        >
+          {verifyError || verifyResult?.message}
+        </div>
+      )}
 
       <div className="glass-card rounded-2xl p-6">
         <h2 className="text-xl font-bold text-slate-900">Latest Payment</h2>

@@ -4,7 +4,7 @@ import { User } from "../models/User.js";
 import { sendRegistrationEmail } from "../services/emailService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { generateQrDataUrl } from "../services/qrService.js";
-import { verifyRazorpaySignature, verifyRazorpayWebhookSignature } from "../services/razorpayService.js";
+import { checkPaymentStatus, verifyPhonePeCallback } from "../services/phonePeService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -106,135 +106,148 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
   };
 }
 
-export const verifyPayment = asyncHandler(async (req, res) => {
-  const { orderId, paymentId, signature } = req.body;
-  const payment = await Payment.findOne({ orderId });
+/**
+ * GET /payments/status/:transactionId
+ * Called by the client after PhonePe redirects back. Checks payment status from
+ * PhonePe and updates the local record if it has succeeded.
+ */
+export const getPaymentStatus = asyncHandler(async (req, res) => {
+  const { transactionId } = req.params;
+
+  const payment = await Payment.findOne({ orderId: transactionId });
   if (!payment) throw new AppError("Payment record not found", 404);
+
+  if (String(payment.userId) !== String(req.user._id)) {
+    throw new AppError("You are not allowed to check this payment.", 403);
+  }
+
+  // Return cached status if already finalised.
+  if (payment.status === "success" || payment.status === "failed") {
+    return res.json({ paymentStatus: payment.status, message: `Payment ${payment.status}.` });
+  }
 
   await logPaymentAudit({
     paymentRef: payment._id,
-    orderId,
+    orderId: transactionId,
     userId: payment.userId,
     teamId: payment.teamId,
     eventType: "VERIFY_ATTEMPT",
     source: "client",
     status: "info",
-    message: "Participant verification attempted",
-    payload: { paymentId }
+    message: "Client polling PhonePe status",
+    payload: {}
   });
 
-  if (String(payment.userId) !== String(req.user._id)) {
+  const phonePeResponse = await checkPaymentStatus(transactionId);
+  const code = phonePeResponse?.code;
+
+  if (phonePeResponse?.success && code === "PAYMENT_SUCCESS") {
+    const phonePePaymentId =
+      phonePeResponse?.data?.paymentInstrument?.pgTransactionId || transactionId;
+    const result = await markPaymentSuccess({
+      orderId: transactionId,
+      paymentId: phonePePaymentId,
+      signature: code,
+      source: "client"
+    });
+    if (result.statusCode >= 400) throw new AppError(result.payload.message, result.statusCode);
+    return res.json(result.payload);
+  }
+
+  if (code === "PAYMENT_ERROR" || code === "PAYMENT_DECLINED" || code === "TIMED_OUT") {
+    payment.status = "failed";
+    await payment.save();
+
     await logPaymentAudit({
       paymentRef: payment._id,
-      orderId,
+      orderId: transactionId,
       userId: payment.userId,
       teamId: payment.teamId,
       eventType: "VERIFY_FAILED",
       source: "client",
       status: "failed",
-      message: "Payment ownership mismatch",
-      payload: { actorUserId: req.user._id }
+      message: `PhonePe status: ${code}`,
+      payload: { code }
     });
-    throw new AppError("You are not allowed to verify this payment.", 403);
+
+    return res.json({ paymentStatus: "failed", message: "Payment failed or was declined." });
   }
 
-  if (payment.status === "success") {
-    return res.json({ message: "Payment already verified", paymentStatus: payment.status });
-  }
-
-  const isValid = verifyRazorpaySignature({ orderId, paymentId, signature });
-  if (!isValid) {
-    await logPaymentAudit({
-      paymentRef: payment._id,
-      orderId,
-      userId: payment.userId,
-      teamId: payment.teamId,
-      eventType: "VERIFY_FAILED",
-      source: "client",
-      status: "failed",
-      message: "Invalid Razorpay signature",
-      payload: { paymentId }
-    });
-    throw new AppError("Invalid payment signature", 400);
-  }
-
-  const result = await markPaymentSuccess({ orderId, paymentId, signature, source: "client" });
-  if (result.statusCode >= 400) {
-    throw new AppError(result.payload.message, result.statusCode);
-  }
-
-  res.json(result.payload);
+  // PAYMENT_PENDING or other intermediate states
+  res.json({ paymentStatus: "pending", message: "Payment is still being processed." });
 });
 
-export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
-  const signatureHeader = req.headers["x-razorpay-signature"];
-  const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
-  const rawBody = req.body;
+/**
+ * POST /payments/callback
+ * Server-to-server callback from PhonePe after payment is completed.
+ */
+export const handlePhonePeCallback = asyncHandler(async (req, res) => {
+  const xVerifyHeader = req.headers["x-verify"];
+  const body = req.body;
 
-  if (!Buffer.isBuffer(rawBody)) {
-    throw new AppError("Invalid webhook payload", 400);
+  const responseBase64 = body?.response;
+  if (!responseBase64) {
+    throw new AppError("Invalid callback payload", 400);
   }
 
-  const isValidWebhook = verifyRazorpayWebhookSignature(rawBody, signature);
-  if (!isValidWebhook) {
-    throw new AppError("Invalid webhook signature", 400);
+  const isValid = verifyPhonePeCallback(responseBase64, xVerifyHeader);
+  if (!isValid) {
+    throw new AppError("Invalid callback signature", 400);
   }
 
-  const event = JSON.parse(rawBody.toString("utf8"));
-  const eventType = event.event;
-  const entity = event.payload?.payment?.entity;
-  const orderId = entity?.order_id;
+  let event;
+  try {
+    event = JSON.parse(Buffer.from(responseBase64, "base64").toString("utf8"));
+  } catch {
+    throw new AppError("Malformed callback payload", 400);
+  }
+
+  const code = event?.code;
+  const transactionId = event?.data?.merchantTransactionId;
+  const phonePePaymentId =
+    event?.data?.transactionId || event?.data?.paymentInstrument?.pgTransactionId;
 
   await logPaymentAudit({
-    orderId: orderId || "unknown",
+    orderId: transactionId || "unknown",
     eventType: "WEBHOOK_RECEIVED",
     source: "webhook",
     status: "info",
-    message: `Webhook received: ${eventType}`,
-    payload: { eventId: event?.id }
+    message: `PhonePe callback received: ${code}`,
+    payload: { code, transactionId }
   });
 
-  if (eventType === "payment.captured") {
-    const paymentId = entity?.id;
+  if (code === "PAYMENT_SUCCESS" && transactionId) {
+    await markPaymentSuccess({
+      orderId: transactionId,
+      paymentId: phonePePaymentId || transactionId,
+      signature: code,
+      source: "webhook"
+    });
 
-    if (orderId && paymentId) {
-      await markPaymentSuccess({
-        orderId,
-        paymentId,
-        signature: String(signature || ""),
-        source: "webhook"
-      });
-
-      await logPaymentAudit({
-        orderId,
-        eventType: "WEBHOOK_CAPTURED",
-        source: "webhook",
-        status: "success",
-        message: "Captured payment reconciled by webhook",
-        payload: { paymentId }
-      });
-    }
+    await logPaymentAudit({
+      orderId: transactionId,
+      eventType: "WEBHOOK_CAPTURED",
+      source: "webhook",
+      status: "success",
+      message: "PhonePe payment reconciled by callback",
+      payload: { phonePePaymentId }
+    });
   }
 
-  if (eventType === "payment.failed") {
-    if (orderId) {
-      await Payment.findOneAndUpdate(
-        { orderId, status: { $ne: "success" } },
-        {
-          status: "failed",
-          paymentId: entity?.id || undefined
-        }
-      );
+  if ((code === "PAYMENT_ERROR" || code === "PAYMENT_DECLINED") && transactionId) {
+    await Payment.findOneAndUpdate(
+      { orderId: transactionId, status: { $ne: "success" } },
+      { status: "failed", paymentId: phonePePaymentId || undefined }
+    );
 
-      await logPaymentAudit({
-        orderId,
-        eventType: "WEBHOOK_FAILED",
-        source: "webhook",
-        status: "info",
-        message: "Failed payment status updated by webhook",
-        payload: { paymentId: entity?.id }
-      });
-    }
+    await logPaymentAudit({
+      orderId: transactionId,
+      eventType: "WEBHOOK_FAILED",
+      source: "webhook",
+      status: "info",
+      message: `PhonePe payment failed via callback: ${code}`,
+      payload: { phonePePaymentId }
+    });
   }
 
   res.status(200).json({ received: true });

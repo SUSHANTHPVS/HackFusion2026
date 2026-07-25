@@ -1,18 +1,13 @@
 import { Router } from "express";
-import { z } from "zod";
-import { handleRazorpayWebhook, verifyPayment } from "../controllers/paymentController.js";
+import { handlePhonePeCallback, getPaymentStatus } from "../controllers/paymentController.js";
 import { protect, authorize } from "../middleware/auth.js";
-import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
-const schema = z.object({
-  orderId: z.string().min(1),
-  paymentId: z.string().min(1),
-  signature: z.string().min(1)
-});
+// Server-to-server callback from PhonePe (no auth — verified by X-VERIFY signature)
+router.post("/callback", handlePhonePeCallback);
 
-router.post("/webhook", handleRazorpayWebhook);
-router.post("/verify", protect, authorize("participant"), validate(schema), verifyPayment);
+// Client polls this after PhonePe redirect to check / confirm payment status
+router.get("/status/:transactionId", protect, authorize("participant"), getPaymentStatus);
 
 export default router;
