@@ -3,10 +3,41 @@ import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
 import { sendRegistrationEmail } from "../services/emailService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
+import { createOrder } from "../services/razorpayService.js";
 import { generateQrDataUrl } from "../services/qrService.js";
 import { verifyPaymentSignature } from "../services/razorpayService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+
+export const createCheckoutOrder = asyncHandler(async (req, res) => {
+  const amount = Number(req.body.amount);
+  const currency = String(req.body.currency || "INR").trim().toUpperCase();
+  const receipt = String(req.body.receipt || "").trim();
+
+  if (!Number.isInteger(amount) || amount < 100) {
+    throw new AppError("Amount must be at least 100 paise", 400);
+  }
+
+  if (!receipt) {
+    throw new AppError("Receipt is required", 400);
+  }
+
+  const order = await createOrder({
+    amount,
+    currency,
+    receipt,
+    notes: {
+      userId: req.user?._id ? String(req.user._id) : undefined,
+      source: "checkout"
+    }
+  });
+
+  res.status(201).json({
+    order_id: order.id,
+    amount: order.amount,
+    currency: order.currency || currency || "INR"
+  });
+});
 
 async function markPaymentSuccess({ orderId, paymentId, signature, source = "system" }) {
   const payment = await Payment.findOne({ orderId });

@@ -93,6 +93,7 @@ app.use(
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRoutes);
+app.use("/api", paymentRoutes);
 app.use("/api/registration", registrationRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/participant", participantRoutes);

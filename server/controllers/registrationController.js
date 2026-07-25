@@ -92,6 +92,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     section: req.body.section.trim().toUpperCase()
   };
   const paymentAmount = participationType === "individual" ? env.INDIVIDUAL_FEE_INR : env.TEAM_FEE_INR;
+  const paymentAmountPaise = paymentAmount * 100;
   const triggerRegistrationSync = (team, paymentStatus) => {
     if (!team) {
       return;
@@ -172,7 +173,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   let razorpayOrder;
   try {
     razorpayOrder = await createOrder({
-      amount: paymentAmount,
+      amount: paymentAmountPaise,
       receipt,
       notes: {
         userId: String(req.user._id),

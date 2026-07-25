@@ -13,7 +13,7 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 
 ## Quick Start
 1. Copy `server/.env.example` to `server/.env` and fill values.
-2. Get Razorpay credentials from [Razorpay Dashboard](https://dashboard.razorpay.com) and set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `.env`.
+2. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `server/.env`, and set `VITE_RAZORPAY_KEY_ID` in `client/.env`.
 3. Install dependencies:
    - `cd client && npm install`
    - `cd ../server && npm install`
@@ -24,6 +24,8 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 ## Core API Endpoints
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/create-order`
+- `POST /api/verify-payment`
 - `POST /api/registration/team`
 - `POST /api/payments/callback`
 - `GET /api/payments/status/:transactionId`

@@ -50,12 +50,58 @@ function loadRazorpayScript() {
   });
 }
 
+function getPaymentAlert(message) {
+  const normalized = String(message || "").toLowerCase();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.includes("authorization failed") || normalized.includes("unauthorized")) {
+    return {
+      tone: "warning",
+      title: "Login required",
+      hint: "Your session is missing or expired. Log in again and retry the registration order."
+    };
+  }
+
+  if (normalized.includes("unable to create payment order") || normalized.includes("razorpay credentials")) {
+    return {
+      tone: "danger",
+      title: "Razorpay order setup failed",
+      hint: "Check server/.env for RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET, then restart the backend."
+    };
+  }
+
+  if (normalized.includes("payment failed") || normalized.includes("verification failed")) {
+    return {
+      tone: "danger",
+      title: "Payment did not complete",
+      hint: "Try the payment again. If this keeps happening, verify the order details in the backend logs."
+    };
+  }
+
+  if (normalized.includes("payment verified")) {
+    return {
+      tone: "success",
+      title: "Payment verified",
+      hint: "The payment signature matched and the registration should now be complete."
+    };
+  }
+
+  return {
+    tone: "info",
+    title: "Registration status",
+    hint: message
+  };
+}
+
 function createTeamAndOrder(payload) {
   return api.post("/registration/team", payload).then((res) => res.data);
 }
 
 function verifyPayment(paymentData) {
-  return api.post("/payments/verify", paymentData).then((res) => res.data);
+  return api.post("/verify-payment", paymentData).then((res) => res.data);
 }
 
 export function HackathonRegistrationPage() {
@@ -129,10 +175,12 @@ export function HackathonRegistrationPage() {
     }
   });
 
+  const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || orderData?.keyId || "";
   const canPay = useMemo(
-    () => Boolean(orderData?.order && orderData?.keyId && orderData?.paymentStatus === "created"),
-    [orderData]
+    () => Boolean(orderData?.order && razorpayKeyId && orderData?.paymentStatus === "created"),
+    [orderData, razorpayKeyId]
   );
+  const paymentAlert = useMemo(() => getPaymentAlert(paymentMessage), [paymentMessage]);
   const selectedFee = PARTICIPATION_OPTIONS[participationType].fee;
   const totalMembers = 1 + (participationType === "team" ? teammates.length : 0);
   const checkoutDescription =
@@ -264,7 +312,7 @@ export function HackathonRegistrationPage() {
   };
 
   const onPayNow = async () => {
-    if (!orderData?.order || !orderData?.keyId) return;
+    if (!orderData?.order || !razorpayKeyId) return;
 
     const loaded = await loadRazorpayScript();
     if (!loaded) {
@@ -273,13 +321,18 @@ export function HackathonRegistrationPage() {
     }
 
     const options = {
-      key: orderData.keyId,
+      key: razorpayKeyId,
       order_id: orderData.order.id,
       amount: orderData.order.amount,
       currency: orderData.order.currency,
       method: paymentMode === "upi_only" ? { upi: true, netbanking: false, card: false, wallet: false } : undefined,
       handler: (response) => {
         verifyMutation.mutate(response);
+      },
+      modal: {
+        ondismiss: () => {
+          setPaymentMessage("Payment window closed. You can reopen it when ready.");
+        }
       },
       prefill: {
         name: user?.name || "",
@@ -291,6 +344,9 @@ export function HackathonRegistrationPage() {
     };
 
     const rzp = new window.Razorpay(options);
+    rzp.on("payment.failed", (response) => {
+      setPaymentMessage(response?.error?.description || "Payment failed. Please try again.");
+    });
     rzp.open();
   };
 
@@ -595,7 +651,8 @@ export function HackathonRegistrationPage() {
 
       {requiresLogin && (
         <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          <p>Login is required to continue registration and payment.</p>
+          <p className="font-semibold">Login required</p>
+          <p className="mt-1">Your session is missing or expired. Log in again and retry the registration order.</p>
           <div className="mt-2">
             <Link to="/login?redirect=/hackathon-register" className="font-semibold underline">
               Go to Login
@@ -604,7 +661,22 @@ export function HackathonRegistrationPage() {
         </div>
       )}
 
-      {paymentMessage && <p className="mt-4 text-sm text-slate-700">{paymentMessage}</p>}
+      {!requiresLogin && paymentAlert && (
+        <div
+          className={`mt-4 rounded-lg border p-4 text-sm ${
+            paymentAlert.tone === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+              : paymentAlert.tone === "warning"
+                ? "border-amber-300 bg-amber-50 text-amber-900"
+                : paymentAlert.tone === "danger"
+                  ? "border-rose-200 bg-rose-50 text-rose-900"
+                  : "border-slate-200 bg-slate-50 text-slate-800"
+          }`}
+        >
+          <p className="font-semibold">{paymentAlert.title}</p>
+          <p className="mt-1">{paymentAlert.hint}</p>
+        </div>
+      )}
 
       {!requiresLogin && paymentMessage.includes("Unable to initiate payment order") && (
         <p className="mt-2 text-xs text-slate-500">

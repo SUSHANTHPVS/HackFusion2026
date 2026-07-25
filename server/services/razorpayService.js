@@ -18,21 +18,48 @@ const getRazorpayInstance = () => {
   return razorpay;
 };
 
-export const createOrder = async ({ amount, receipt, notes = {} }) => {
+export const createOrder = async ({ amount, receipt, notes = {}, currency = "INR" }) => {
   assertCredentials();
 
   try {
     const razorpayInstance = getRazorpayInstance();
     const order = await razorpayInstance.orders.create({
-      amount: amount * 100, // Convert to paise
-      currency: "INR",
+      amount,
+      currency,
       receipt,
       notes
     });
 
     return order;
   } catch (error) {
-    throw new AppError(`Failed to create Razorpay order: ${error.message}`, 500);
+    const razorpayErrorDetails = [
+      error?.message,
+      error?.description,
+      error?.error?.description,
+      error?.error?.message,
+      error?.response?.data?.error?.description,
+      error?.response?.data?.error?.message,
+      error?.response?.data?.message
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
+    console.error("Razorpay order creation failed", {
+      statusCode: error?.statusCode || error?.response?.status,
+      code: error?.code,
+      description: error?.description,
+      response: error?.response?.data,
+      rawError: error
+    });
+
+    if (error?.statusCode === 401 || /auth|unauthoriz|credential/i.test(error?.message || "")) {
+      throw new AppError("Razorpay authentication failed", 401);
+    }
+
+    throw new AppError(
+      `Failed to create Razorpay order${razorpayErrorDetails ? `: ${razorpayErrorDetails}` : ""}`,
+      500
+    );
   }
 };
 

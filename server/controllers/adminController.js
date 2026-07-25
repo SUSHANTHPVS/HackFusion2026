@@ -104,7 +104,7 @@ export const createRecoveryOrder = asyncHandler(async (req, res) => {
 
   const receipt = `IEEE_RECOVERY_${Date.now()}_${payment.userId}`;
   const razorpayOrder = await createOrder({
-    amount: payment.amount,
+    amount: payment.amount * 100,
     receipt,
     notes: {
       recoveryOrderFor: String(payment._id),

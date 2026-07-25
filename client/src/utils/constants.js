@@ -1,6 +1,16 @@
 export const EVENT_NAME = "IEEE RAS x IEEE CS Hackathon";
 export const EVENT_DATE = "2026-08-19T10:00:00+05:30";
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+function normalizeApiBaseUrl(value) {
+  const baseUrl = String(value || "").trim().replace(/\/$/, "");
+
+  if (!baseUrl) {
+    return "http://localhost:8080/api";
+  }
+
+  return baseUrl.endsWith("/api") ? baseUrl : `${baseUrl}/api`;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 export const BRANCH_OPTIONS = ["CSE", "CSE-DS", "CSE-CS", "AIML", "IT"];
