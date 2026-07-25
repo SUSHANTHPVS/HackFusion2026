@@ -28,7 +28,6 @@ const PARTICIPATION_OPTIONS = {
 function createTeamAndOrder(payload) {
   return api.post("/registration/team", payload).then((res) => res.data);
 }
-}
 
 export function HackathonRegistrationPage() {
   const { isAuthenticated, user } = useAuth();

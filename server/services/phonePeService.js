@@ -10,6 +10,14 @@ function sha256Hex(data) {
   return crypto.createHash("sha256").update(data).digest("hex");
 }
 
+function assertCredentials() {
+  if (!env.PHONEPE_MERCHANT_ID || !env.PHONEPE_SALT_KEY) {
+    throw new Error(
+      "PhonePe credentials are not configured. Set PHONEPE_MERCHANT_ID and PHONEPE_SALT_KEY in your environment."
+    );
+  }
+}
+
 /**
  * Initiate a payment with PhonePe Pay Page.
  * @param {Object} params
@@ -21,6 +29,7 @@ function sha256Hex(data) {
  * @returns {{ merchantTransactionId: string, redirectUrl: string }}
  */
 export async function initiatePayment({ merchantTransactionId, amount, userId, redirectUrl, callbackUrl }) {
+  assertCredentials();
   const payload = {
     merchantId: env.PHONEPE_MERCHANT_ID,
     merchantTransactionId,
@@ -66,6 +75,7 @@ export async function initiatePayment({ merchantTransactionId, amount, userId, r
  * @returns {Object} PhonePe status response
  */
 export async function checkPaymentStatus(merchantTransactionId) {
+  assertCredentials();
   const endpoint = `/pg/v1/status/${env.PHONEPE_MERCHANT_ID}/${merchantTransactionId}`;
   const xVerify = sha256Hex(endpoint + env.PHONEPE_SALT_KEY) + "###" + env.PHONEPE_SALT_INDEX;
 
