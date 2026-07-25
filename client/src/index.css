@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --ieee-blue: #00629b;
+  --navy: #0a192f;
+  --accent: #00c2ff;
+  --surface: #f4f9ff;
+  --text: #12263a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 15% 20%, #d9f3ff 0%, #eef6ff 35%, #f8fbff 100%);
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Poppins", sans-serif;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(10, 25, 47, 0.08);
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle at 25% 20%, rgba(0, 98, 155, 0.14), transparent 45%),
+    radial-gradient(circle at 80% 30%, rgba(0, 194, 255, 0.18), transparent 35%),
+    linear-gradient(120deg, rgba(0, 98, 155, 0.03), rgba(10, 25, 47, 0.03));
+}
