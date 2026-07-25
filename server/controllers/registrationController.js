@@ -180,7 +180,8 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
         teamName: participantDetails.teamName
       }
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error("Razorpay order creation error:", error.message);
     throw new AppError(
       "Unable to create payment order. Please verify Razorpay credentials or contact organizer.",
       502
