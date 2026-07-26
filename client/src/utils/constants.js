@@ -13,6 +13,24 @@ function normalizeApiBaseUrl(value) {
 export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
+export const ORGANIZER_LOGOS = [
+  {
+    name: "College",
+    shortName: "CLG",
+    src: "/logos/college-logo.png"
+  },
+  {
+    name: "IEEE RAS",
+    shortName: "RAS",
+    src: "/logos/ieee-ras-logo.png"
+  },
+  {
+    name: "IEEE CS",
+    shortName: "CS",
+    src: "/logos/ieee-cs-logo.png"
+  }
+];
+
 export const BRANCH_OPTIONS = ["CSE", "CSE-DS", "CSE-CS", "AIML", "IT"];
 export const YEAR_OPTIONS = ["3rd year", "4th year"];
 export const BRANCH_SECTION_LIMITS = {

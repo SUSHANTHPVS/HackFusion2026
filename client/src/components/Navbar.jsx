@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
+import { BrandLogoGroup } from "./BrandLogoGroup";
 import { useAuth } from "../context/AuthContext";
 
 const links = [
@@ -17,8 +18,9 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/50 bg-white/80 backdrop-blur-lg">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        <Link to="/" className="text-lg font-extrabold tracking-tight text-slate-900">
-          IEEE Hackathon
+        <Link to="/" className="flex items-center gap-3">
+          <BrandLogoGroup compact className="hidden sm:flex" />
+          <span className="text-lg font-extrabold tracking-tight text-slate-900">IEEE Hackathon</span>
         </Link>
         <div className="hidden items-center gap-6 md:flex">
           {links.map((link) => (
