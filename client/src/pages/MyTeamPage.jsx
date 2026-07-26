@@ -76,9 +76,6 @@ export function MyTeamPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [team, setTeam] = useState(null);
-  const [isUpdatingPreference, setIsUpdatingPreference] = useState(false);
-  const [requests, setRequests] = useState([]);
-  const [isProcessingRequestId, setIsProcessingRequestId] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -88,15 +85,11 @@ export function MyTeamPage() {
       setError("");
 
       try {
-        const [dashboardResponse, requestsResponse] = await Promise.all([
-          api.get("/participant/dashboard"),
-          api.get("/participant/my-team/join-requests")
-        ]);
+        const dashboardResponse = await api.get("/participant/dashboard");
         if (!isMounted) {
           return;
         }
         setTeam(dashboardResponse.data?.team || null);
-        setRequests(requestsResponse.data?.requests || []);
       } catch (err) {
         if (isMounted) {
           setError(getErrorMessage(err, "Unable to load team details."));
@@ -157,42 +150,6 @@ export function MyTeamPage() {
     }))
   ];
 
-  const toggleJoinPreference = async () => {
-    setIsUpdatingPreference(true);
-    setError("");
-
-    try {
-      const next = !team.allowJoinRequests;
-      await api.put("/participant/my-team/join-request-preference", { allowJoinRequests: next });
-      setTeam((current) => (current ? { ...current, allowJoinRequests: next } : current));
-    } catch (err) {
-      setError(getErrorMessage(err, "Unable to update team join-request preference."));
-    } finally {
-      setIsUpdatingPreference(false);
-    }
-  };
-
-  const reviewRequest = async (requestId, decision) => {
-    setIsProcessingRequestId(requestId);
-    setError("");
-
-    try {
-      await api.patch(`/participant/my-team/join-requests/${requestId}`, { decision });
-      setRequests((current) =>
-        current.map((item) => (item.id === requestId ? { ...item, status: decision } : item))
-      );
-
-      if (decision === "approved") {
-        const response = await api.get("/participant/dashboard");
-        setTeam(response.data?.team || null);
-      }
-    } catch (err) {
-      setError(getErrorMessage(err, `Unable to ${decision} request.`));
-    } finally {
-      setIsProcessingRequestId("");
-    }
-  };
-
   return (
     <section className="space-y-5">
       <div className="glass-card rounded-3xl p-6 shadow-lg md:p-8">
@@ -234,24 +191,7 @@ export function MyTeamPage() {
           <p>
             <span className="font-semibold text-slate-700">Section:</span> <span className="text-slate-900">{team.section || "-"}</span>
           </p>
-          <p>
-            <span className="font-semibold text-slate-700">Join Requests:</span>{" "}
-            <span className="text-slate-900">{team.allowJoinRequests ? "Allowed" : "Not Allowed"}</span>
-          </p>
         </div>
-
-        <button
-          type="button"
-          disabled={isUpdatingPreference}
-          onClick={toggleJoinPreference}
-          className="mt-5 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700"
-        >
-          {isUpdatingPreference
-            ? "Updating..."
-            : team.allowJoinRequests
-              ? "Disable Join Requests"
-              : "Allow Join Requests"}
-        </button>
 
         <h2 className="mt-6 text-xl font-bold text-slate-900">Team Members</h2>
         <div className="mt-3 grid gap-3 md:hidden">
@@ -260,63 +200,6 @@ export function MyTeamPage() {
           ))}
         </div>
         <DesktopMemberTable memberRows={memberRows} />
-
-        <h2 className="mt-8 text-xl font-bold text-slate-900">Incoming Join Requests</h2>
-        {requests.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-600">No incoming requests yet.</p>
-        ) : (
-          <div className="mt-3 grid gap-3">
-            {requests.map((request) => {
-              const pending = request.status === "pending";
-              const isProcessing = isProcessingRequestId === request.id;
-
-              return (
-                <article key={request.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">{request.requester?.name || "Participant"}</p>
-                      <p className="text-xs text-slate-600">{request.requester?.email || "No email"}</p>
-                      <p className="mt-1 text-xs text-slate-600">
-                        Gender: <span className="capitalize">{request.requester?.gender || "-"}</span> | Department: {request.requester?.department || "-"}
-                      </p>
-                      <p className="text-xs text-slate-600">Mobile: {request.requester?.mobile || "-"}</p>
-                    </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      request.status === "approved"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : request.status === "rejected"
-                          ? "bg-rose-100 text-rose-700"
-                          : "bg-amber-100 text-amber-700"
-                    }`}>
-                      {request.status}
-                    </span>
-                  </div>
-
-                  {pending && (
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() => reviewRequest(request.id, "approved")}
-                        className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
-                      >
-                        {isProcessing ? "Processing..." : "Approve"}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isProcessing}
-                        onClick={() => reviewRequest(request.id, "rejected")}
-                        className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
-                      >
-                        {isProcessing ? "Processing..." : "Reject"}
-                      </button>
-                    </div>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        )}
       </div>
     </section>
   );

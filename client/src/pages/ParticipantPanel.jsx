@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 const actions = [
   {
     title: "My Team",
-    description: "View your registered team, members, and join-request preference.",
+    description: "View your registered team and members.",
     to: "/participant/my-team"
   },
   {
     title: "Explore Teams",
-    description: "See other teams with member names and gender details, then send a join request.",
+    description: "See other teams with member names and details.",
     to: "/participant/explore-teams"
   },
   {

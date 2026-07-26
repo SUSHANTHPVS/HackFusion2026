@@ -70,7 +70,6 @@ function DesktopMemberTable({ teamId, memberRows }) {
 
 export function ExploreTeamsPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [isRequestingId, setIsRequestingId] = useState("");
   const [error, setError] = useState("");
   const [teams, setTeams] = useState([]);
 
@@ -104,24 +103,6 @@ export function ExploreTeamsPage() {
       isMounted = false;
     };
   }, []);
-
-  const sendJoinRequest = async (teamId) => {
-    setIsRequestingId(teamId);
-    setError("");
-
-    try {
-      const response = await api.post(`/participant/teams/${teamId}/join-request`);
-      const status = response.data?.status || "pending";
-
-      setTeams((prev) =>
-        prev.map((team) => (team.id === teamId ? { ...team, requestStatus: status } : team))
-      );
-    } catch (err) {
-      setError(getErrorMessage(err, "Could not send join request."));
-    } finally {
-      setIsRequestingId("");
-    }
-  };
 
   if (isLoading) {
     return (
@@ -160,20 +141,6 @@ export function ExploreTeamsPage() {
                     {team.themeTrack} | {team.participationType}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  disabled={!team.allowJoinRequests || team.requestStatus === "pending" || isRequestingId === team.id}
-                  onClick={() => sendJoinRequest(team.id)}
-                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {team.requestStatus === "pending"
-                    ? "Request Sent"
-                    : isRequestingId === team.id
-                      ? "Sending..."
-                      : team.allowJoinRequests
-                        ? "Request to Join"
-                        : "Leader Not Accepting"}
-                </button>
               </div>
 
               <div className="mt-4 grid gap-3 md:hidden">
