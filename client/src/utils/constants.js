@@ -27,7 +27,7 @@ export const ORGANIZER_LOGOS = [
   {
     name: "IEEE CS",
     shortName: "CS",
-    src: "/logos/ieee-cs-logo.png"
+    src: "/logos/ieee-cs-logo.jpg"
   }
 ];
 
