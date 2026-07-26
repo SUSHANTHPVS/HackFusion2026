@@ -129,6 +129,14 @@ export const adminLogin = asyncHandler(async (req, res) => {
   res.json(buildAuthResponse(user, token));
 });
 
+export const adminLoginHealth = asyncHandler(async (_req, res) => {
+  res.json({
+    adminLoginConfigured: Boolean(env.ADMIN_LOGIN_ID && env.ADMIN_LOGIN_PASSWORD),
+    adminDisplayNameConfigured: Boolean(env.ADMIN_DISPLAY_NAME),
+    nodeEnv: env.NODE_ENV
+  });
+});
+
 export const googleAuth = asyncHandler(async (req, res) => {
   const { idToken, clientId } = req.body;
   const audience = env.GOOGLE_CLIENT_ID || clientId;

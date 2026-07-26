@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { adminLogin, googleAuth, login, me, register } from "../controllers/authController.js";
+import { adminLogin, adminLoginHealth, googleAuth, login, me, register } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
@@ -35,6 +35,7 @@ const googleAuthSchema = z.object({
 router.post("/register", validate(registerSchema), register);
 router.post("/login", validate(loginSchema), login);
 router.post("/admin-login", validate(adminLoginSchema), adminLogin);
+router.get("/admin-login/health", adminLoginHealth);
 router.post("/google", validate(googleAuthSchema), googleAuth);
 router.get("/me", protect, me);
 
