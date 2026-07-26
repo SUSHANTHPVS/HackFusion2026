@@ -12,12 +12,26 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
   color: var(--text);
   background: radial-gradient(circle at 15% 20%, #d9f3ff 0%, #eef6ff 35%, #f8fbff 100%);
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+img,
+svg {
+  max-width: 100%;
 }
 
 h1,

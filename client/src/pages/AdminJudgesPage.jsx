@@ -6,6 +6,26 @@ function getErrorMessage(error, fallback = "Unable to load judges") {
   return error?.response?.data?.message || fallback;
 }
 
+function JudgeCard({ judge }) {
+  return (
+    <article className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:hidden">
+      <h3 className="text-base font-bold text-slate-900">{judge.name}</h3>
+      <p className="mt-1 break-all text-sm text-slate-700">{judge.email}</p>
+
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Department</dt>
+          <dd className="mt-1 text-slate-800">{judge.department || "N/A"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Teams Scored</dt>
+          <dd className="mt-1 text-slate-800">{judge.teamsScored || 0}</dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
 export function AdminJudgesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -74,8 +94,15 @@ export function AdminJudgesPage() {
           ) : judges.length === 0 ? (
             <p className="mt-4 text-sm text-slate-600">No judges available.</p>
           ) : (
-            <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
-              <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <>
+              <div className="mt-4 grid gap-3 md:hidden">
+                {judges.map((judge) => (
+                  <JudgeCard key={judge._id} judge={judge} />
+                ))}
+              </div>
+
+              <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
+                <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                   <tr>
                     <th className="px-3 py-2">Name</th>
@@ -94,8 +121,9 @@ export function AdminJudgesPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

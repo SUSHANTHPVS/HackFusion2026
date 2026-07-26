@@ -6,6 +6,68 @@ function getErrorMessage(error, fallback = "Something went wrong") {
   return error?.response?.data?.message || fallback;
 }
 
+function MemberCard({ member }) {
+  return (
+    <article className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm md:hidden">
+      <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{member.role}</p>
+      <h3 className="mt-1 text-base font-bold text-slate-900">{member.name}</h3>
+
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Gender</dt>
+          <dd className="mt-1 capitalize text-slate-800">{member.gender || "-"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Roll No</dt>
+          <dd className="mt-1 text-slate-800">{member.rollNo || "-"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Year</dt>
+          <dd className="mt-1 text-slate-800">{member.year || "-"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Branch</dt>
+          <dd className="mt-1 text-slate-800">{member.branch || "-"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Section</dt>
+          <dd className="mt-1 text-slate-800">{member.section || "-"}</dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
+function DesktopMemberTable({ teamId, memberRows }) {
+  return (
+    <div className="hidden overflow-auto rounded-xl border border-slate-200/80 md:block">
+      <div className="grid min-w-215 grid-cols-[130px_1.2fr_0.8fr_1fr_0.7fr_1fr_0.8fr] bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+        <span>Role</span>
+        <span>Name</span>
+        <span>Gender</span>
+        <span>Roll No</span>
+        <span>Year</span>
+        <span>Branch</span>
+        <span>Section</span>
+      </div>
+      {memberRows.map((member) => (
+        <div
+          key={`${teamId}-${member.role}-${member.name}-${member.rollNo}`}
+          className="grid min-w-215 grid-cols-[130px_1.2fr_0.8fr_1fr_0.7fr_1fr_0.8fr] border-t border-slate-200/80 px-4 py-3 text-sm"
+        >
+          <span className="text-slate-700">{member.role}</span>
+          <span className="font-medium text-slate-900">{member.name}</span>
+          <span className="capitalize text-slate-700">{member.gender || "-"}</span>
+          <span className="text-slate-700">{member.rollNo || "-"}</span>
+          <span className="text-slate-700">{member.year || "-"}</span>
+          <span className="text-slate-700">{member.branch || "-"}</span>
+          <span className="text-slate-700">{member.section || "-"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ExploreTeamsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRequestingId, setIsRequestingId] = useState("");
@@ -114,31 +176,12 @@ export function ExploreTeamsPage() {
                 </button>
               </div>
 
-              <div className="mt-4 overflow-auto rounded-xl border border-slate-200/80">
-                <div className="grid min-w-215 grid-cols-[130px_1.2fr_0.8fr_1fr_0.7fr_1fr_0.8fr] bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-                  <span>Role</span>
-                  <span>Name</span>
-                  <span>Gender</span>
-                  <span>Roll No</span>
-                  <span>Year</span>
-                  <span>Branch</span>
-                  <span>Section</span>
-                </div>
+              <div className="mt-4 grid gap-3 md:hidden">
                 {team.memberRows.map((member) => (
-                  <div
-                    key={`${team.id}-${member.role}-${member.name}-${member.rollNo}`}
-                    className="grid min-w-215 grid-cols-[130px_1.2fr_0.8fr_1fr_0.7fr_1fr_0.8fr] border-t border-slate-200/80 px-4 py-3 text-sm"
-                  >
-                    <span className="text-slate-700">{member.role}</span>
-                    <span className="font-medium text-slate-900">{member.name}</span>
-                    <span className="capitalize text-slate-700">{member.gender || "-"}</span>
-                    <span className="text-slate-700">{member.rollNo || "-"}</span>
-                    <span className="text-slate-700">{member.year || "-"}</span>
-                    <span className="text-slate-700">{member.branch || "-"}</span>
-                    <span className="text-slate-700">{member.section || "-"}</span>
-                  </div>
+                  <MemberCard key={`${team.id}-${member.role}-${member.name}-${member.rollNo}`} member={member} />
                 ))}
               </div>
+              <DesktopMemberTable teamId={team.id} memberRows={team.memberRows} />
             </article>
           ))}
         </div>

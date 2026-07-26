@@ -6,6 +6,46 @@ function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
 }
 
+function RegistrationCard({ item, isMarking, onMarkPresent }) {
+  return (
+    <article className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:hidden">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{item.teamName}</p>
+          <h3 className="mt-1 text-base font-bold text-slate-900">{item.teamLeaderName}</h3>
+        </div>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            item.checkedIn ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+          }`}
+        >
+          {item.checkedIn ? "Present" : "Pending"}
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</dt>
+          <dd className="mt-1 break-all text-slate-800">{item.accountEmail || "N/A"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment</dt>
+          <dd className="mt-1 capitalize text-slate-800">{item.paymentStatus}</dd>
+        </div>
+      </dl>
+
+      <button
+        type="button"
+        onClick={() => onMarkPresent(item.leaderId)}
+        disabled={item.checkedIn || !item.leaderId || isMarking}
+        className="mt-4 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {item.checkedIn ? "Confirmed" : isMarking ? "Marking..." : "Mark Present"}
+      </button>
+    </article>
+  );
+}
+
 export function AdminRegistrationsPage() {
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -113,8 +153,24 @@ export function AdminRegistrationsPage() {
         ) : rows.length === 0 ? (
           <p className="mt-4 text-sm text-slate-600">No registrations found.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <>
+            <div className="mt-4 grid gap-3 md:hidden">
+              {rows.map((item) => {
+                const isMarking = checkinLoadingId === item.leaderId;
+
+                return (
+                  <RegistrationCard
+                    key={item.teamId}
+                    item={item}
+                    isMarking={isMarking}
+                    onMarkPresent={markPresent}
+                  />
+                );
+              })}
+            </div>
+
+            <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
+              <table className="min-w-full divide-y divide-slate-200 text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                 <tr>
                   <th className="px-3 py-2">Team</th>
@@ -158,8 +214,9 @@ export function AdminRegistrationsPage() {
                   );
                 })}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </section>

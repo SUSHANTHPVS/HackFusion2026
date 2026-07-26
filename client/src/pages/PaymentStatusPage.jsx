@@ -294,13 +294,13 @@ export function PaymentStatusPage() {
           <p className="mt-3 text-slate-600">No payment attempts yet.</p>
         ) : (
           <div className="mt-3 overflow-hidden rounded-xl border border-slate-200/80">
-            <div className="grid grid-cols-[1.1fr_0.9fr_1fr] bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+            <div className="grid grid-cols-1 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 sm:grid-cols-[1.1fr_0.9fr_1fr]">
               <span>Order ID</span>
               <span>Status</span>
               <span>Created</span>
             </div>
             {paymentHistory.map((item) => (
-              <div key={item._id} className="grid grid-cols-[1.1fr_0.9fr_1fr] border-t border-slate-200/80 px-4 py-3 text-sm">
+              <div key={item._id} className="grid grid-cols-1 border-t border-slate-200/80 px-4 py-3 text-sm sm:grid-cols-[1.1fr_0.9fr_1fr]">
                 <span className="truncate pr-3 text-slate-700" title={item.orderId}>{item.orderId}</span>
                 <span className="capitalize font-semibold text-slate-900">{item.status}</span>
                 <span className="text-slate-700">{new Date(item.createdAt).toLocaleString()}</span>

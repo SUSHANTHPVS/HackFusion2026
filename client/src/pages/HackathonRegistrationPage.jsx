@@ -450,69 +450,84 @@ export function HackathonRegistrationPage() {
           required
         />
 
-        <select
-          value={leaderGender}
-          onChange={(event) => setLeaderGender(event.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2"
-          required
-        >
-          {GENDER_OPTIONS.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+        <label className="grid gap-1 text-sm font-semibold text-slate-700">
+          Gender
+          <select
+            value={leaderGender}
+            onChange={(event) => setLeaderGender(event.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+            required
+          >
+            {GENDER_OPTIONS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <select
-            value={year}
-            onChange={(event) => setYear(event.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            required
-          >
-            {YEAR_OPTIONS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <select
-            value={branch}
-            onChange={(event) => onBranchChange(event.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            required
-          >
-            {BRANCH_OPTIONS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <select
-            value={section}
-            onChange={(event) => setSection(event.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            required
-          >
-            {leaderSectionOptions.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">
+            Year
+            <select
+              value={year}
+              onChange={(event) => setYear(event.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+              required
+            >
+              {YEAR_OPTIONS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">
+            Branch
+            <select
+              value={branch}
+              onChange={(event) => onBranchChange(event.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+              required
+            >
+              {BRANCH_OPTIONS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">
+            Section
+            <select
+              value={section}
+              onChange={(event) => setSection(event.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+              required
+            >
+              {leaderSectionOptions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
-        <select
-          value={themeTrack}
-          onChange={(event) => setThemeTrack(event.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2"
-        >
-          {tracks.map((track) => (
-            <option key={track} value={track}>
-              {track}
-            </option>
-          ))}
-        </select>
+        <label className="grid gap-1 text-sm font-semibold text-slate-700">
+          Theme
+          <select
+            value={themeTrack}
+            onChange={(event) => setThemeTrack(event.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+          >
+            {tracks.map((track) => (
+              <option key={track} value={track}>
+                {track}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <div className="rounded-lg border border-slate-200 p-4">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Payment Method</h2>
@@ -562,17 +577,20 @@ export function HackathonRegistrationPage() {
                     className="rounded-lg border border-slate-300 px-3 py-2"
                     placeholder={`Member ${index + 1} Name`}
                   />
-                  <select
-                    value={item.gender}
-                    onChange={(event) => updateTeammate(index, "gender", event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2"
-                  >
-                    {GENDER_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                    Gender
+                    <select
+                      value={item.gender}
+                      onChange={(event) => updateTeammate(index, "gender", event.target.value)}
+                      className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                    >
+                      {GENDER_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <input
                     value={item.rollNo}
                     onChange={(event) => updateTeammate(index, "rollNo", event.target.value)}
@@ -580,39 +598,48 @@ export function HackathonRegistrationPage() {
                     placeholder="Roll No"
                   />
                   <div className="grid gap-2 sm:grid-cols-3">
-                    <select
-                      value={item.year}
-                      onChange={(event) => updateTeammate(index, "year", event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                    >
-                      {YEAR_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={item.branch}
-                      onChange={(event) => updateTeammate(index, "branch", event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                    >
-                      {BRANCH_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={item.section}
-                      onChange={(event) => updateTeammate(index, "section", event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                    >
-                      {getSectionOptionsForBranch(item.branch).map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                      Year
+                      <select
+                        value={item.year}
+                        onChange={(event) => updateTeammate(index, "year", event.target.value)}
+                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                      >
+                        {YEAR_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                      Branch
+                      <select
+                        value={item.branch}
+                        onChange={(event) => updateTeammate(index, "branch", event.target.value)}
+                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                      >
+                        {BRANCH_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                      Section
+                      <select
+                        value={item.section}
+                        onChange={(event) => updateTeammate(index, "section", event.target.value)}
+                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                      >
+                        {getSectionOptionsForBranch(item.branch).map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
                   <button
                     type="button"

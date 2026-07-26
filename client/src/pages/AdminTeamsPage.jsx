@@ -6,6 +6,41 @@ function getErrorMessage(error, fallback = "Unable to load teams") {
   return error?.response?.data?.message || fallback;
 }
 
+function TeamCard({ item }) {
+  return (
+    <article className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:hidden">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{item.teamName}</p>
+          <h3 className="mt-1 text-base font-bold text-slate-900">{item.teamLeaderName}</h3>
+        </div>
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold capitalize text-slate-700">
+          {item.paymentStatus}
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Type</dt>
+          <dd className="mt-1 capitalize text-slate-800">{item.participationType}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Members</dt>
+          <dd className="mt-1 text-slate-800">{1 + (item.teammates?.length || 0)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Track</dt>
+          <dd className="mt-1 text-slate-800">{item.themeTrack || "N/A"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Presence</dt>
+          <dd className="mt-1 text-slate-800">{item.checkedIn ? "Present" : "Pending"}</dd>
+        </div>
+      </dl>
+    </article>
+  );
+}
+
 export function AdminTeamsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -88,8 +123,15 @@ export function AdminTeamsPage() {
         ) : rows.length === 0 ? (
           <p className="mt-4 text-sm text-slate-600">No teams found.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <>
+            <div className="mt-4 grid gap-3 md:hidden">
+              {rows.map((item) => (
+                <TeamCard key={item.teamId} item={item} />
+              ))}
+            </div>
+
+            <div className="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 md:block">
+              <table className="min-w-full divide-y divide-slate-200 text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                 <tr>
                   <th className="px-3 py-2">Team</th>
@@ -114,8 +156,9 @@ export function AdminTeamsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </section>

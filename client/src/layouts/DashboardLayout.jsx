@@ -6,8 +6,8 @@ export function DashboardLayout({ title, navItems }) {
   const { user } = useAuth();
 
   return (
-    <div className="grid gap-6 md:grid-cols-[230px_1fr]">
-      <aside className="glass-card h-fit rounded-2xl p-4">
+    <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <aside className="glass-card h-fit rounded-2xl p-4 lg:sticky lg:top-24">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-cyan-200 bg-cyan-50">
             {user?.profilePicture ? (
@@ -38,7 +38,7 @@ export function DashboardLayout({ title, navItems }) {
           ))}
         </div>
       </aside>
-      <section>
+      <section className="min-w-0">
         <Outlet />
       </section>
     </div>
