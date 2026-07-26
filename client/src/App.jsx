@@ -18,7 +18,10 @@ import { ExploreTeamsPage } from "./pages/ExploreTeamsPage";
 import { FaqPage } from "./pages/FaqPage";
 import { HackathonRegistrationPage } from "./pages/HackathonRegistrationPage";
 import { HomePage } from "./pages/HomePage";
+import { JudgeAssignedTeamsPage } from "./pages/JudgeAssignedTeamsPage";
+import { JudgeLeaderboardPage } from "./pages/JudgeLeaderboardPage";
 import { JudgePanel } from "./pages/JudgePanel";
+import { JudgeScoreSubmissionPage } from "./pages/JudgeScoreSubmissionPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyTeamPage } from "./pages/MyTeamPage";
 import { PaymentStatusPage } from "./pages/PaymentStatusPage";
@@ -123,9 +126,9 @@ function App() {
           }
         >
           <Route index element={<JudgePanel />} />
-          <Route path="assigned-teams" element={<RoleSectionPage />} />
-          <Route path="score-submission" element={<RoleSectionPage />} />
-          <Route path="leaderboard" element={<RoleSectionPage />} />
+          <Route path="assigned-teams" element={<JudgeAssignedTeamsPage />} />
+          <Route path="score-submission" element={<JudgeScoreSubmissionPage />} />
+          <Route path="leaderboard" element={<JudgeLeaderboardPage />} />
         </Route>
       </Route>
 
