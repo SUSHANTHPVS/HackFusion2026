@@ -101,7 +101,7 @@ export const adminLogin = asyncHandler(async (req, res) => {
     throw new AppError("Invalid admin credentials", 401);
   }
 
-  let user = await User.findOne({ email: configuredId });
+  let user = await User.findOne({ email: configuredId }).select("+password");
 
   if (!user) {
     user = await User.create({
