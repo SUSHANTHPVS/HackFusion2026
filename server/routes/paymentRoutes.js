@@ -9,7 +9,7 @@ const router = Router();
 const createOrderSchema = z.object({
 	amount: z.coerce.number().int().min(100),
 	currency: z.string().trim().min(1).default("INR"),
-	receipt: z.string().trim().min(1)
+	receipt: z.string().trim().min(1).max(40)
 });
 
 router.post("/create-order", protect, authorize("participant"), validate(createOrderSchema), createCheckoutOrder);

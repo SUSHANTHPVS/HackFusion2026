@@ -21,12 +21,21 @@ const getRazorpayInstance = () => {
 export const createOrder = async ({ amount, receipt, notes = {}, currency = "INR" }) => {
   assertCredentials();
 
+  const normalizedReceipt = String(receipt || "").trim();
+  if (!normalizedReceipt) {
+    throw new AppError("Receipt is required", 400);
+  }
+
+  if (normalizedReceipt.length > 40) {
+    throw new AppError("Receipt must be 40 characters or fewer", 400);
+  }
+
   try {
     const razorpayInstance = getRazorpayInstance();
     const order = await razorpayInstance.orders.create({
       amount,
       currency,
-      receipt,
+      receipt: normalizedReceipt,
       notes
     });
 

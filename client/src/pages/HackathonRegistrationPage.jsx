@@ -101,7 +101,13 @@ function createTeamAndOrder(payload) {
 }
 
 function verifyPayment(paymentData) {
-  return api.post("/verify-payment", paymentData).then((res) => res.data);
+  const payload = {
+    razorpay_order_id: paymentData?.razorpay_order_id,
+    razorpay_payment_id: paymentData?.razorpay_payment_id,
+    razorpay_signature: paymentData?.razorpay_signature
+  };
+
+  return api.post("/verify-payment", payload).then((res) => res.data);
 }
 
 export function HackathonRegistrationPage() {

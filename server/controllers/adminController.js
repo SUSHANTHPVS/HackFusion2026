@@ -8,6 +8,14 @@ import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+function buildReceipt(prefix, id) {
+  const compactPrefix = String(prefix || "RP").replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "RP";
+  const timePart = Date.now().toString(36);
+  const idPart = String(id || "anon").replace(/[^a-zA-Z0-9]/g, "").slice(-8) || "anon";
+  const randomPart = Math.random().toString(36).slice(2, 6);
+  return `${compactPrefix}${timePart}${idPart}${randomPart}`.slice(0, 40);
+}
+
 export const dashboardStats = asyncHandler(async (_req, res) => {
   const [participants, teams, paid, checkedIn, ieeeMembers] = await Promise.all([
     User.countDocuments({ role: "participant" }),
@@ -102,7 +110,7 @@ export const createRecoveryOrder = asyncHandler(async (req, res) => {
     participationType = team?.participationType || ((team?.teammates?.length || 0) > 0 ? "team" : "individual");
   }
 
-  const receipt = `IEEE_RECOVERY_${Date.now()}_${payment.userId}`;
+  const receipt = buildReceipt("REC", payment.userId);
   const razorpayOrder = await createOrder({
     amount: payment.amount * 100,
     receipt,

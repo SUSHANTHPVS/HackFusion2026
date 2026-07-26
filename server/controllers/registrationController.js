@@ -14,6 +14,14 @@ function normalizeRoll(value = "") {
   return value.trim().toUpperCase();
 }
 
+function buildReceipt(prefix, id) {
+  const compactPrefix = String(prefix || "RP").replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "RP";
+  const timePart = Date.now().toString(36);
+  const idPart = String(id || "anon").replace(/[^a-zA-Z0-9]/g, "").slice(-8) || "anon";
+  const randomPart = Math.random().toString(36).slice(2, 6);
+  return `${compactPrefix}${timePart}${idPart}${randomPart}`.slice(0, 40);
+}
+
 function hasTeamCompositionChanged(existingTeam, participantDetails, participationType, normalizedTeammates) {
   if (existingTeam.participationType !== participationType) {
     return true;
@@ -168,7 +176,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     }
   }
 
-  const receipt = `IEEE_${Date.now()}_${req.user._id}`;
+  const receipt = buildReceipt("IEEE", req.user._id);
 
   let razorpayOrder;
   try {
