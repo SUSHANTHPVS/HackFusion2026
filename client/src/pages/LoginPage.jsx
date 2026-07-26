@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { GoogleAuthButton } from "../components/GoogleAuthButton";
 import { useAuth } from "../context/AuthContext";
@@ -71,8 +71,13 @@ export function LoginPage() {
         <button disabled={mutation.isPending} className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">
           {mutation.isPending ? "Authenticating..." : "Login"}
         </button>
-        {mutation.isError && <p className="text-sm text-rose-600">Invalid credentials.</p>}
+        {mutation.isError && (
+          <p className="text-sm text-rose-600">{mutation.error?.response?.data?.message || "Invalid credentials."}</p>
+        )}
       </form>
+      <p className="mt-5 text-center text-sm text-slate-600">
+        Admin access? <Link to="/admin/login" className="font-semibold text-cyan-700">Use admin login</Link>
+      </p>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 import { User } from "../models/User.js";
 import { env } from "../config/env.js";
 import { OAuth2Client } from "google-auth-library";
+import crypto from "crypto";
 import { signToken } from "../services/tokenService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -32,6 +33,17 @@ function setAuthCookie(res, token) {
   });
 }
 
+function safeEqual(left, right) {
+  const leftBuffer = Buffer.from(String(left || ""), "utf8");
+  const rightBuffer = Buffer.from(String(right || ""), "utf8");
+
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
 export const register = asyncHandler(async (req, res) => {
   const normalizedEmail = req.body.email.toLowerCase();
   const exists = await User.findOne({ email: normalizedEmail });
@@ -58,12 +70,58 @@ export const register = asyncHandler(async (req, res) => {
 
 export const login = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: req.body.email.toLowerCase() }).select("+password");
+  if (user?.role === "admin") {
+    throw new AppError("Use the dedicated admin login page.", 403);
+  }
+
   if (user?.authProvider === "google") {
     throw new AppError("Use Continue with Google for this account.", 400);
   }
 
   if (!user || !(await user.comparePassword(req.body.password))) {
     throw new AppError("Invalid credentials", 401);
+  }
+
+  const token = signToken(user._id);
+  setAuthCookie(res, token);
+  res.json(buildAuthResponse(user, token));
+});
+
+export const adminLogin = asyncHandler(async (req, res) => {
+  if (!env.ADMIN_LOGIN_ID || !env.ADMIN_LOGIN_PASSWORD) {
+    throw new AppError("Admin login is not configured on server.", 503);
+  }
+
+  const submittedId = String(req.body.adminId || "").trim().toLowerCase();
+  const submittedPassword = String(req.body.password || "");
+  const configuredId = env.ADMIN_LOGIN_ID.toLowerCase();
+  const configuredPassword = env.ADMIN_LOGIN_PASSWORD;
+
+  if (!safeEqual(submittedId, configuredId) || !safeEqual(submittedPassword, configuredPassword)) {
+    throw new AppError("Invalid admin credentials", 401);
+  }
+
+  let user = await User.findOne({ email: configuredId });
+
+  if (!user) {
+    user = await User.create({
+      name: env.ADMIN_DISPLAY_NAME,
+      email: configuredId,
+      password: configuredPassword,
+      role: "admin",
+      department: "Administration",
+      authProvider: "local",
+      ieeeMember: false
+    });
+  } else {
+    if (user.role !== "admin") {
+      throw new AppError("Configured admin account email belongs to a non-admin user.", 409);
+    }
+
+    if (user.name !== env.ADMIN_DISPLAY_NAME) {
+      user.name = env.ADMIN_DISPLAY_NAME;
+      await user.save();
+    }
   }
 
   const token = signToken(user._id);

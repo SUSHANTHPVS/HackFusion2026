@@ -5,6 +5,8 @@ import { DashboardLayout } from "./layouts/DashboardLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminPanel } from "./pages/AdminPanel";
 import { AdminPaymentsPage } from "./pages/AdminPaymentsPage";
+import { AdminRegistrationsPage } from "./pages/AdminRegistrationsPage";
+import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { ContactPage } from "./pages/ContactPage";
 import { CopyrightRightsPage } from "./pages/CopyrightRightsPage";
 import { ExploreTeamsPage } from "./pages/ExploreTeamsPage";
@@ -73,6 +75,7 @@ function App() {
         <Route path="/hackathon-register" element={<HackathonRegistrationPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
 
         <Route
           path="/participant"
@@ -98,7 +101,7 @@ function App() {
           }
         >
           <Route index element={<AdminPanel />} />
-          <Route path="registrations" element={<RoleSectionPage />} />
+          <Route path="registrations" element={<AdminRegistrationsPage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="teams" element={<RoleSectionPage />} />
           <Route path="judges" element={<RoleSectionPage />} />

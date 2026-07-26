@@ -208,7 +208,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   const teams = await Team.find(teamFilter)
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate("leader", "name email mobile")
+    .populate("leader", "name email mobile checkedIn")
     .lean();
 
   const teamIds = teams.map((item) => item._id);
@@ -257,8 +257,10 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
           section: member.section
         })),
         accountName: team.leader?.name || "",
+        leaderId: team.leader?._id || null,
         accountEmail: team.leader?.email || "",
         accountMobile: team.leader?.mobile || "",
+        checkedIn: Boolean(team.leader?.checkedIn),
         paymentStatus,
         participationConfirmed: paymentStatus === "success",
         paymentAmountInr: payment?.amount || null,
