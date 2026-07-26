@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminPanel } from "./pages/AdminPanel";
+import { AdminPaymentsPage } from "./pages/AdminPaymentsPage";
 import { ContactPage } from "./pages/ContactPage";
 import { CopyrightRightsPage } from "./pages/CopyrightRightsPage";
 import { ExploreTeamsPage } from "./pages/ExploreTeamsPage";
@@ -98,7 +99,7 @@ function App() {
         >
           <Route index element={<AdminPanel />} />
           <Route path="registrations" element={<RoleSectionPage />} />
-          <Route path="payments" element={<RoleSectionPage />} />
+          <Route path="payments" element={<AdminPaymentsPage />} />
           <Route path="teams" element={<RoleSectionPage />} />
           <Route path="judges" element={<RoleSectionPage />} />
           <Route path="certificates" element={<RoleSectionPage />} />

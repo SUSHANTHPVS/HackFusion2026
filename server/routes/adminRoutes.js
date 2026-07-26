@@ -5,6 +5,7 @@ import {
   dashboardStats,
   generateWinnerCertificate,
   listPaymentRecoveryQueue,
+  recentWebhookEvents,
   searchRegistrations,
   paymentAuditTrail,
   registrationsTimeline
@@ -23,6 +24,7 @@ router.get("/stats", protect, authorize("admin"), dashboardStats);
 router.get("/timeline", protect, authorize("admin"), registrationsTimeline);
 router.get("/registrations/search", protect, authorize("admin"), searchRegistrations);
 router.get("/payments/recovery-queue", protect, authorize("admin"), listPaymentRecoveryQueue);
+router.get("/payments/webhooks", protect, authorize("admin"), recentWebhookEvents);
 router.get("/payments/:orderId/audit", protect, authorize("admin"), paymentAuditTrail);
 router.post("/payments/:paymentId/recovery-order", protect, authorize("admin"), createRecoveryOrder);
 router.post("/certificates/winner", protect, authorize("admin"), validate(winnerSchema), generateWinnerCertificate);

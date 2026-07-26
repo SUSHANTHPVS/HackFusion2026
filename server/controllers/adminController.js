@@ -94,6 +94,36 @@ export const paymentAuditTrail = asyncHandler(async (req, res) => {
   res.json({ orderId: req.params.orderId, logs });
 });
 
+export const recentWebhookEvents = asyncHandler(async (req, res) => {
+  const limit = Math.min(Math.max(Number(req.query.limit || 50), 1), 200);
+  const status = String(req.query.status || "").trim();
+  const eventType = String(req.query.eventType || "").trim();
+
+  const filter = { source: "webhook" };
+  if (status) {
+    filter.status = status;
+  }
+  if (eventType) {
+    filter.eventType = eventType;
+  }
+
+  const logs = await PaymentAudit.find(filter)
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate("userId", "name email")
+    .populate("teamId", "name");
+
+  res.json({
+    total: logs.length,
+    limit,
+    filters: {
+      status: status || null,
+      eventType: eventType || null
+    },
+    logs
+  });
+});
+
 export const createRecoveryOrder = asyncHandler(async (req, res) => {
   const payment = await Payment.findById(req.params.paymentId);
   if (!payment) {

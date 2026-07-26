@@ -15,13 +15,15 @@ const schema = z.object({
   REGISTRATION_CLOSED: z.coerce.boolean().default(false),
   RAZORPAY_KEY_ID: z.string().min(1).optional(),
   RAZORPAY_KEY_SECRET: z.string().min(1).optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_FORM_WEBHOOK_URL: z.string().url().optional(),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().min(1),
   SMTP_PASS: z.string().min(1),
-  SMTP_FROM: z.string().min(1)
+  SMTP_FROM: z.string().min(1),
+  PAYMENT_ALERT_EMAILS: z.string().optional()
 });
 
 export const env = schema.parse(process.env);

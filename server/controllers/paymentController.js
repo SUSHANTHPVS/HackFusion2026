@@ -1,11 +1,11 @@
 import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
-import { sendRegistrationEmail } from "../services/emailService.js";
+import { sendPaymentDisputeAlertEmail, sendRegistrationEmail } from "../services/emailService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { createOrder } from "../services/razorpayService.js";
 import { generateQrDataUrl } from "../services/qrService.js";
-import { verifyPaymentSignature } from "../services/razorpayService.js";
+import { verifyPaymentSignature, verifyWebhookSignature } from "../services/razorpayService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -88,7 +88,9 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
   }
 
   payment.paymentId = paymentId;
-  payment.signature = signature;
+  if (signature) {
+    payment.signature = signature;
+  }
   payment.status = "success";
   await payment.save();
 
@@ -168,4 +170,179 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   }
 
   res.json(result.payload);
+});
+
+/**
+ * POST /payments/webhook
+ * Razorpay webhook handler (server-to-server).
+ */
+export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
+  const signature = req.headers["x-razorpay-signature"];
+  const payloadBuffer = Buffer.isBuffer(req.body)
+    ? req.body
+    : Buffer.from(JSON.stringify(req.body || {}), "utf8");
+
+  verifyWebhookSignature(payloadBuffer, signature);
+
+  const payloadText = payloadBuffer.toString("utf8");
+  const event = JSON.parse(payloadText || "{}");
+  const eventType = String(event?.event || "");
+  const paymentEntity = event?.payload?.payment?.entity;
+  const orderEntity = event?.payload?.order?.entity;
+  const refundEntity = event?.payload?.refund?.entity;
+  const disputeEntity = event?.payload?.dispute?.entity;
+  const orderId = paymentEntity?.order_id || orderEntity?.id;
+  const paymentId = paymentEntity?.id || refundEntity?.payment_id || disputeEntity?.payment_id;
+
+  if (orderId) {
+    await logPaymentAudit({
+      orderId,
+      eventType: "WEBHOOK_RECEIVED",
+      source: "webhook",
+      status: "info",
+      message: `Webhook received: ${eventType || "unknown"}`,
+      payload: {
+        eventType,
+        paymentId,
+        rawStatus: paymentEntity?.status
+      }
+    });
+  }
+
+  if ((eventType === "payment.captured" || eventType === "order.paid") && orderId && paymentId) {
+    const result = await markPaymentSuccess({
+      orderId,
+      paymentId,
+      source: "webhook"
+    });
+
+    await logPaymentAudit({
+      orderId,
+      eventType: "WEBHOOK_CAPTURED",
+      source: "webhook",
+      status: result.statusCode >= 400 ? "failed" : "success",
+      message: result.payload?.message || "Webhook capture processed",
+      payload: { paymentId, eventType }
+    });
+
+    return res.status(200).json({ received: true });
+  }
+
+  if (eventType === "payment.failed" && orderId) {
+    const payment = await Payment.findOne({ orderId });
+
+    if (payment && payment.status !== "success") {
+      payment.status = "failed";
+      if (paymentId) {
+        payment.paymentId = paymentId;
+      }
+      await payment.save();
+    }
+
+    await logPaymentAudit({
+      paymentRef: payment?._id,
+      orderId,
+      userId: payment?.userId,
+      teamId: payment?.teamId,
+      eventType: "WEBHOOK_FAILED",
+      source: "webhook",
+      status: "failed",
+      message: "Webhook reported payment failure",
+      payload: {
+        paymentId,
+        reason: paymentEntity?.error_description || paymentEntity?.error_reason || "unknown"
+      }
+    });
+  }
+
+  if (eventType.startsWith("refund.")) {
+    const payment = paymentId ? await Payment.findOne({ paymentId }) : null;
+    const auditOrderId = orderId || payment?.orderId || "unknown-order";
+    const refundStatus = refundEntity?.status || "unknown";
+
+    await logPaymentAudit({
+      paymentRef: payment?._id,
+      orderId: auditOrderId,
+      userId: payment?.userId,
+      teamId: payment?.teamId,
+      eventType: "WEBHOOK_REFUND",
+      source: "webhook",
+      status: eventType === "refund.failed" ? "failed" : "info",
+      message: `Refund webhook: ${eventType}`,
+      payload: {
+        eventType,
+        paymentId,
+        refundId: refundEntity?.id,
+        refundStatus,
+        amount: refundEntity?.amount,
+        speedProcessed: refundEntity?.speed_processed,
+        notes: refundEntity?.notes || null
+      }
+    });
+
+    return res.status(200).json({ received: true });
+  }
+
+  if (eventType.startsWith("payment.dispute.")) {
+    const payment = paymentId ? await Payment.findOne({ paymentId }) : null;
+    const auditOrderId = orderId || payment?.orderId || "unknown-order";
+    const disputeStatus = disputeEntity?.status || "unknown";
+
+    let auditStatus = "info";
+    if (eventType === "payment.dispute.lost") {
+      auditStatus = "failed";
+    }
+    if (eventType === "payment.dispute.won") {
+      auditStatus = "success";
+    }
+
+    await logPaymentAudit({
+      paymentRef: payment?._id,
+      orderId: auditOrderId,
+      userId: payment?.userId,
+      teamId: payment?.teamId,
+      eventType: "WEBHOOK_DISPUTE",
+      source: "webhook",
+      status: auditStatus,
+      message: `Dispute webhook: ${eventType}`,
+      payload: {
+        eventType,
+        paymentId,
+        disputeId: disputeEntity?.id,
+        disputeStatus,
+        amount: disputeEntity?.amount,
+        reasonCode: disputeEntity?.reason_code || null,
+        reasonDescription: disputeEntity?.reason_description || null,
+        phase: disputeEntity?.phase || null
+      }
+    });
+
+    if (eventType === "payment.dispute.created" || eventType === "payment.dispute.action_required") {
+      const [participant, team] = await Promise.all([
+        payment?.userId ? User.findById(payment.userId).select("email") : null,
+        payment?.teamId ? Team.findById(payment.teamId).select("name") : null
+      ]);
+
+      void sendPaymentDisputeAlertEmail({
+        eventType,
+        disputeId: disputeEntity?.id,
+        paymentId,
+        orderId: auditOrderId,
+        amount: disputeEntity?.amount,
+        currency: disputeEntity?.currency || "INR",
+        reasonCode: disputeEntity?.reason_code || null,
+        reasonDescription: disputeEntity?.reason_description || null,
+        phase: disputeEntity?.phase || null,
+        disputeStatus,
+        participantEmail: participant?.email || null,
+        teamName: team?.name || null
+      }).catch((emailError) => {
+        console.error("Dispute alert email failed", emailError?.message || emailError);
+      });
+    }
+
+    return res.status(200).json({ received: true });
+  }
+
+  return res.status(200).json({ received: true });
 });

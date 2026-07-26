@@ -89,6 +89,36 @@ export const verifyPaymentSignature = ({ razorpay_order_id, razorpay_payment_id,
   return true;
 };
 
+export const verifyWebhookSignature = (payloadBuffer, signatureHeader) => {
+  if (!env.RAZORPAY_WEBHOOK_SECRET) {
+    throw new AppError("Razorpay webhook secret not configured", 500);
+  }
+
+  if (!signatureHeader) {
+    throw new AppError("Missing Razorpay webhook signature", 400);
+  }
+
+  const expected = crypto
+    .createHmac("sha256", env.RAZORPAY_WEBHOOK_SECRET)
+    .update(payloadBuffer)
+    .digest("hex");
+
+  const expectedBuffer = Buffer.from(expected, "utf8");
+  const receivedBuffer = Buffer.from(String(signatureHeader), "utf8");
+
+  if (expectedBuffer.length !== receivedBuffer.length) {
+    throw new AppError("Invalid Razorpay webhook signature", 400);
+  }
+
+  const isValid = crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+
+  if (!isValid) {
+    throw new AppError("Invalid Razorpay webhook signature", 400);
+  }
+
+  return true;
+};
+
 const assertCredentials = () => {
   if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
     throw new AppError(

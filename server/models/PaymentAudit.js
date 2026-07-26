@@ -15,6 +15,8 @@ const paymentAuditSchema = new mongoose.Schema(
         "WEBHOOK_RECEIVED",
         "WEBHOOK_CAPTURED",
         "WEBHOOK_FAILED",
+        "WEBHOOK_REFUND",
+        "WEBHOOK_DISPUTE",
         "RECOVERY_ORDER_CREATED"
       ],
       required: true,

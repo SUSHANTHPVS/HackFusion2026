@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { createCheckoutOrder, verifyPayment } from "../controllers/paymentController.js";
+import { createCheckoutOrder, verifyPayment, handleRazorpayWebhook } from "../controllers/paymentController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
@@ -11,6 +11,8 @@ const createOrderSchema = z.object({
 	currency: z.string().trim().min(1).default("INR"),
 	receipt: z.string().trim().min(1).max(40)
 });
+
+router.post("/webhook", handleRazorpayWebhook);
 
 router.post("/create-order", protect, authorize("participant"), validate(createOrderSchema), createCheckoutOrder);
 
