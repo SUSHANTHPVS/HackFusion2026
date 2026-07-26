@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BadgeIndianRupee, CheckCircle2, Clock3, Download, Loader2, XCircle } from "lucide-react";
+import { jsPDF } from "jspdf";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Something went wrong") {
@@ -52,15 +53,31 @@ function downloadReceipt({ payment, profile, team }) {
     `Team Name: ${team?.name || "N/A"}`
   ];
 
-  const blob = new Blob([receiptLines.join("\n")], { type: "text/plain;charset=utf-8" });
-  const blobUrl = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = blobUrl;
-  link.download = `receipt-${safeOrderId}.txt`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(blobUrl);
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const left = 48;
+  const right = pageWidth - 48;
+  let y = 56;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text("IEEE Hackathon Payment Receipt", left, y);
+  y += 14;
+
+  doc.setDrawColor(203, 213, 225);
+  doc.line(left, y + 6, right, y + 6);
+  y += 28;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+
+  for (const line of receiptLines.slice(2)) {
+    const wrapped = doc.splitTextToSize(line, right - left);
+    doc.text(wrapped, left, y);
+    y += wrapped.length * 16;
+  }
+
+  doc.save(`receipt-${safeOrderId}.pdf`);
 }
 
 export function PaymentStatusPage() {
