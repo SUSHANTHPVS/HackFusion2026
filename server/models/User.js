@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function onSave(next) {
-  if (!this.password && this.authProvider === "local") {
+  if (this.isNew && !this.password && this.authProvider === "local") {
     return next(new Error("Password is required for local authentication users."));
   }
 

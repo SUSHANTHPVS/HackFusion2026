@@ -2,13 +2,19 @@ import { User } from "../models/User.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const checkInByParticipantId = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.body.participantId);
-  if (!user) {
+  const checkedIn = req.body.checkedIn ?? true;
+  const result = await User.updateOne(
+    { _id: req.body.participantId },
+    { $set: { checkedIn } }
+  );
+
+  if (result.matchedCount === 0) {
     return res.status(404).json({ message: "Participant not found" });
   }
 
-  user.checkedIn = true;
-  await user.save();
-
-  res.json({ message: "Attendance marked", participantId: user._id });
+  res.json({
+    message: checkedIn ? "Attendance marked" : "Attendance removed",
+    participantId: req.body.participantId,
+    checkedIn
+  });
 });

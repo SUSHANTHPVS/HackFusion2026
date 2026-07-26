@@ -7,7 +7,8 @@ import { validate } from "../middleware/validate.js";
 const router = Router();
 
 const schema = z.object({
-  participantId: z.string().min(1)
+  participantId: z.string().min(1),
+  checkedIn: z.boolean().optional()
 });
 
 router.post("/scan", protect, authorize("admin"), validate(schema), checkInByParticipantId);
