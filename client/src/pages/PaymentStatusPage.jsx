@@ -35,47 +35,130 @@ function downloadReceipt({ payment, profile, team }) {
   const amountInr = Number(payment.amount).toFixed(2);
   const paymentDate = payment.createdAt ? new Date(payment.createdAt).toLocaleString() : "N/A";
   const safeOrderId = String(payment.orderId || "payment").replace(/[^a-zA-Z0-9_-]/g, "");
-  const receiptLines = [
-    "IEEE Hackathon Payment Receipt",
-    "",
-    `Receipt Generated At: ${new Date().toLocaleString()}`,
-    `Payment Date: ${paymentDate}`,
-    `Status: ${payment.status}`,
-    `Amount: INR ${amountInr}`,
-    `Currency: ${payment.currency || "INR"}`,
-    `Participation Type: ${payment.participationType || "N/A"}`,
-    `Order ID: ${payment.orderId || "N/A"}`,
-    `Payment ID: ${payment.paymentId || "N/A"}`,
-    "",
-    `Participant Name: ${profile?.name || "N/A"}`,
-    `Participant Email: ${profile?.email || "N/A"}`,
-    `Participant Mobile: ${profile?.mobile || "N/A"}`,
-    `Team Name: ${team?.name || "N/A"}`
-  ];
+  const websiteName = "IEEE Hackathon Website";
+  const websiteUrl = window.location.origin;
+  const generatedAt = new Date().toLocaleString();
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const left = 48;
-  const right = pageWidth - 48;
-  let y = 56;
+  const pageHeight = doc.internal.pageSize.getHeight();
 
+  const colors = {
+    navy: [10, 25, 47],
+    ieeeBlue: [0, 98, 155],
+    accent: [0, 194, 255],
+    surface: [244, 249, 255],
+    text: [18, 38, 58],
+    muted: [100, 116, 139],
+    white: [255, 255, 255],
+    border: [203, 213, 225]
+  };
+
+  const margin = 38;
+  const contentWidth = pageWidth - margin * 2;
+  const headerHeight = 118;
+
+  doc.setFillColor(...colors.surface);
+  doc.rect(0, 0, pageWidth, pageHeight, "F");
+
+  doc.setFillColor(...colors.navy);
+  doc.roundedRect(margin, margin, contentWidth, headerHeight, 14, 14, "F");
+
+  doc.setFillColor(...colors.accent);
+  doc.roundedRect(margin, margin + headerHeight - 8, contentWidth, 8, 4, 4, "F");
+
+  doc.setTextColor(...colors.white);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("IEEE Hackathon Payment Receipt", left, y);
-  y += 14;
-
-  doc.setDrawColor(203, 213, 225);
-  doc.line(left, y + 6, right, y + 6);
-  y += 28;
+  doc.setFontSize(20);
+  doc.text("IEEE Hackathon Payment Receipt", margin + 20, margin + 36);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
+  doc.text(websiteName, margin + 20, margin + 58);
+  doc.text(websiteUrl, margin + 20, margin + 75);
+  doc.text(`Generated: ${generatedAt}`, margin + 20, margin + 92);
 
-  for (const line of receiptLines.slice(2)) {
-    const wrapped = doc.splitTextToSize(line, right - left);
-    doc.text(wrapped, left, y);
-    y += wrapped.length * 16;
+  let y = margin + headerHeight + 20;
+
+  doc.setFillColor(...colors.white);
+  doc.setDrawColor(...colors.border);
+  doc.roundedRect(margin, y, contentWidth, 74, 10, 10, "FD");
+
+  doc.setTextColor(...colors.muted);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("AMOUNT PAID", margin + 20, y + 24);
+
+  doc.setTextColor(...colors.ieeeBlue);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(24);
+  doc.text(`INR ${amountInr}`, margin + 20, y + 52);
+
+  doc.setTextColor(...colors.text);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(`Status: ${payment.status}`, margin + contentWidth - 130, y + 32);
+  doc.text(`Currency: ${payment.currency || "INR"}`, margin + contentWidth - 130, y + 50);
+
+  y += 92;
+
+  function drawSection(title, rows) {
+    const rowHeight = 22;
+    const sectionHeight = 34 + rows.length * rowHeight + 12;
+
+    doc.setFillColor(...colors.white);
+    doc.setDrawColor(...colors.border);
+    doc.roundedRect(margin, y, contentWidth, sectionHeight, 10, 10, "FD");
+
+    doc.setFillColor(...colors.ieeeBlue);
+    doc.roundedRect(margin, y, contentWidth, 28, 10, 10, "F");
+
+    doc.setTextColor(...colors.white);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(title, margin + 16, y + 18);
+
+    let rowY = y + 44;
+    for (const [label, value] of rows) {
+      doc.setTextColor(...colors.muted);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text(label.toUpperCase(), margin + 16, rowY);
+
+      doc.setTextColor(...colors.text);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      const valueText = String(value || "N/A");
+      const wrapped = doc.splitTextToSize(valueText, contentWidth - 170);
+      doc.text(wrapped, margin + 132, rowY);
+      rowY += rowHeight;
+    }
+
+    y += sectionHeight + 14;
   }
+
+  drawSection("Payment Details", [
+    ["Payment Date", paymentDate],
+    ["Participation", payment.participationType || "N/A"],
+    ["Order ID", payment.orderId || "N/A"],
+    ["Payment ID", payment.paymentId || "N/A"]
+  ]);
+
+  drawSection("Participant Details", [
+    ["Name", profile?.name || "N/A"],
+    ["Email", profile?.email || "N/A"],
+    ["Mobile", profile?.mobile || "N/A"],
+    ["Team Name", team?.name || "N/A"]
+  ]);
+
+  doc.setTextColor(...colors.muted);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(
+    "This receipt is generated by IEEE Hackathon Website and can be used for payment confirmation.",
+    margin,
+    pageHeight - 24
+  );
 
   doc.save(`receipt-${safeOrderId}.pdf`);
 }
