@@ -1,8 +1,11 @@
 import { Payment } from "../models/Payment.js";
 import { PaymentAudit } from "../models/PaymentAudit.js";
+import { Score } from "../models/Score.js";
 import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
+import { EventSettingsAudit } from "../models/EventSettingsAudit.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
+import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
@@ -282,5 +285,164 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       limit
     },
     rows
+  });
+});
+
+export const listJudges = asyncHandler(async (_req, res) => {
+  const judges = await User.find({ role: "judge" })
+    .sort({ createdAt: -1 })
+    .select("name email department authProvider createdAt")
+    .lean();
+
+  const judgeIds = judges.map((item) => item._id);
+  const scoreStats = judgeIds.length
+    ? await Score.aggregate([
+        { $match: { judgeId: { $in: judgeIds } } },
+        {
+          $group: {
+            _id: "$judgeId",
+            teamsScored: { $sum: 1 },
+            averageScoreGiven: { $avg: "$total" }
+          }
+        }
+      ])
+    : [];
+
+  const scoreMap = new Map(scoreStats.map((item) => [String(item._id), item]));
+
+  res.json({
+    judges: judges.map((judge) => {
+      const stats = scoreMap.get(String(judge._id));
+      return {
+        ...judge,
+        teamsScored: stats?.teamsScored || 0,
+        averageScoreGiven: stats?.averageScoreGiven ? Number(stats.averageScoreGiven.toFixed(2)) : null
+      };
+    })
+  });
+});
+
+export const upsertJudge = asyncHandler(async (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const name = String(req.body.name || "").trim();
+  const department = String(req.body.department || "").trim();
+  const password = req.body.password ? String(req.body.password) : undefined;
+
+  let user = await User.findOne({ email }).select("+password");
+
+  if (!user) {
+    if (!password) {
+      return res.status(400).json({ message: "Password is required when creating a new judge account." });
+    }
+
+    user = await User.create({
+      name,
+      email,
+      password,
+      role: "judge",
+      department: department || "General",
+      authProvider: "local",
+      ieeeMember: false
+    });
+
+    return res.status(201).json({
+      message: "Judge account created.",
+      judge: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        department: user.department
+      }
+    });
+  }
+
+  user.role = "judge";
+  if (name) {
+    user.name = name;
+  }
+  if (department) {
+    user.department = department;
+  }
+  if (password && user.authProvider === "local") {
+    user.password = password;
+  }
+
+  await user.save();
+
+  res.json({
+    message: "User promoted/updated as judge.",
+    judge: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      department: user.department
+    }
+  });
+});
+
+export const getAdminSettings = asyncHandler(async (_req, res) => {
+  const settings = await getEventSettings();
+  res.json(settings);
+});
+
+export const getAdminSettingsHistory = asyncHandler(async (req, res) => {
+  const limit = Math.min(Math.max(Number(req.query.limit || 20), 1), 100);
+  const logs = await EventSettingsAudit.find({})
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate("changedBy", "name email role")
+    .lean();
+
+  res.json({
+    total: logs.length,
+    limit,
+    logs
+  });
+});
+
+export const updateAdminSettings = asyncHandler(async (req, res) => {
+  const before = await getEventSettings();
+  const settings = await updateEventSettings(req.body);
+
+  // Keep runtime env values aligned with persisted settings for modules that still read env directly.
+  env.REGISTRATION_CLOSED = settings.registrationClosed;
+  env.INDIVIDUAL_FEE_INR = settings.individualFeeInr;
+  env.TEAM_FEE_INR = settings.teamFeeInr;
+
+  await EventSettingsAudit.create({
+    action: "update",
+    changedBy: req.user?._id,
+    changedByEmail: req.user?.email || "",
+    before,
+    after: settings
+  });
+
+  res.json({
+    message: "Settings saved persistently.",
+    ...settings
+  });
+});
+
+export const resetAdminSettings = asyncHandler(async (req, res) => {
+  const before = await getEventSettings();
+  const settings = await resetEventSettingsToDefaults();
+
+  env.REGISTRATION_CLOSED = settings.registrationClosed;
+  env.INDIVIDUAL_FEE_INR = settings.individualFeeInr;
+  env.TEAM_FEE_INR = settings.teamFeeInr;
+
+  await EventSettingsAudit.create({
+    action: "reset",
+    changedBy: req.user?._id,
+    changedByEmail: req.user?.email || "",
+    before,
+    after: settings
+  });
+
+  res.json({
+    message: "Settings reset to defaults and saved persistently.",
+    ...settings
   });
 });

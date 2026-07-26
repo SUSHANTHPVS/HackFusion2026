@@ -2,6 +2,7 @@ import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
+import { getEventSettings } from "../services/eventSettingsService.js";
 import { buildRegistrationSyncPayload, syncRegistrationToGoogle } from "../services/registrationSyncService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -81,6 +82,7 @@ function validateNoDuplicateMembers(participantDetails, normalizedTeammates) {
 }
 
 export const createTeamAndOrder = asyncHandler(async (req, res) => {
+  const eventSettings = await getEventSettings();
   const participationType = req.body.participationType;
   const normalizedTeammates = (req.body.teammates || []).map((item) => ({
     name: item.name.trim(),
@@ -99,7 +101,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     branch: req.body.branch.trim(),
     section: req.body.section.trim().toUpperCase()
   };
-  const paymentAmount = participationType === "individual" ? env.INDIVIDUAL_FEE_INR : env.TEAM_FEE_INR;
+  const paymentAmount = participationType === "individual" ? eventSettings.individualFeeInr : eventSettings.teamFeeInr;
   const paymentAmountPaise = paymentAmount * 100;
   const triggerRegistrationSync = (team, paymentStatus) => {
     if (!team) {
@@ -127,7 +129,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   validateNoDuplicateMembers(participantDetails, normalizedTeammates);
 
   const existingTeam = await Team.findOne({ leader: req.user._id });
-  if (existingTeam && env.REGISTRATION_CLOSED) {
+  if (existingTeam && eventSettings.registrationClosed) {
     const changed = hasTeamCompositionChanged(
       existingTeam,
       participantDetails,

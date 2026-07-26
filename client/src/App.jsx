@@ -4,9 +4,14 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
 import { AdminPanel } from "./pages/AdminPanel";
+import { AdminAnalyticsPage } from "./pages/AdminAnalyticsPage";
+import { AdminCertificatesPage } from "./pages/AdminCertificatesPage";
+import { AdminJudgesPage } from "./pages/AdminJudgesPage";
 import { AdminPaymentsPage } from "./pages/AdminPaymentsPage";
 import { AdminRegistrationsPage } from "./pages/AdminRegistrationsPage";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
+import { AdminSettingsPage } from "./pages/AdminSettingsPage";
+import { AdminTeamsPage } from "./pages/AdminTeamsPage";
 import { ContactPage } from "./pages/ContactPage";
 import { CopyrightRightsPage } from "./pages/CopyrightRightsPage";
 import { ExploreTeamsPage } from "./pages/ExploreTeamsPage";
@@ -21,7 +26,6 @@ import { ParticipantPanel } from "./pages/ParticipantPanel";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { RefundPolicyPage } from "./pages/RefundPolicyPage";
-import { RoleSectionPage } from "./pages/RoleSectionPage";
 import { RulesPage } from "./pages/RulesPage";
 import { SchedulePage } from "./pages/SchedulePage";
 import { SimpleInfoPage } from "./pages/SimpleInfoPage";
@@ -103,11 +107,11 @@ function App() {
           <Route index element={<AdminPanel />} />
           <Route path="registrations" element={<AdminRegistrationsPage />} />
           <Route path="payments" element={<AdminPaymentsPage />} />
-          <Route path="teams" element={<RoleSectionPage />} />
-          <Route path="judges" element={<RoleSectionPage />} />
-          <Route path="certificates" element={<RoleSectionPage />} />
-          <Route path="analytics" element={<RoleSectionPage />} />
-          <Route path="settings" element={<RoleSectionPage />} />
+          <Route path="teams" element={<AdminTeamsPage />} />
+          <Route path="judges" element={<AdminJudgesPage />} />
+          <Route path="certificates" element={<AdminCertificatesPage />} />
+          <Route path="analytics" element={<AdminAnalyticsPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
 
         <Route
