@@ -80,7 +80,7 @@ export const MANAGEMENT_TEAM = [
   },
   {
     name: "M Gayathri",
-    role: "Vice Chair & Hackathon Lead",
+    role: "Vice Chair",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/gayathri-madduri-2406a6334/"
   },
@@ -92,13 +92,13 @@ export const MANAGEMENT_TEAM = [
   },
   {
     name: "N Deepthi",
-    role: "Web Master",
+    role: "Member",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/nagabhushigari-deepthi-0a0382343/"
   },
   {
     name: "Syed Shainaj",
-    role: "Treasurer",
+    role: "Member",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/syed-shainaj-244383343/"
   },
@@ -110,19 +110,19 @@ export const MANAGEMENT_TEAM = [
   },
   {
     name: "A Vamsieswar",
-    role: "Member",
+    role: "Web Master",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/vamsieswar-aari-b54a65342?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
     name: "A Dimpull",
-    role: "Member",
+    role: "Treasurer",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/dimpull-chowdary-2b8120325?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
     name: "Mallikarjun",
-    role: "Support Lead",
+    role: "Web Master",
     chapter: "IEEE RAS",
     
   },
