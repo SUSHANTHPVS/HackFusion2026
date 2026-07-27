@@ -37,7 +37,7 @@ function RegistrationCard({ item, isMarking, onTogglePresence }) {
       <button
         type="button"
         onClick={() => onTogglePresence(item.leaderId, !item.checkedIn)}
-        disabled={!item.leaderId || isMarking}
+        disabled={!item.leaderId || isMarking || item.paymentStatus !== "success"}
         className="mt-4 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isMarking
@@ -72,7 +72,8 @@ export function AdminRegistrationsPage() {
       const response = await api.get("/admin/registrations/search", {
         params: {
           q: query,
-          limit: 300
+          limit: 300,
+          paymentStatus: "success"
         }
       });
 
@@ -114,7 +115,7 @@ export function AdminRegistrationsPage() {
       <div className="glass-card rounded-3xl p-6 shadow-lg md:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Admin Control</p>
         <h1 className="mt-3 text-3xl font-extrabold text-slate-900 md:text-4xl">Registrations and Presence</h1>
-        <p className="mt-3 text-slate-700">View all registrations and confirm participant presence on hackathon day.</p>
+        <p className="mt-3 text-slate-700">View paid registrations and confirm participant presence on hackathon day. Only teams with successful payment are shown.</p>
       </div>
 
       <div className="glass-card rounded-2xl p-6">
@@ -208,7 +209,7 @@ export function AdminRegistrationsPage() {
                         <button
                           type="button"
                           onClick={() => togglePresence(item.leaderId, !item.checkedIn)}
-                          disabled={!item.leaderId || isMarking}
+                          disabled={!item.leaderId || isMarking || item.paymentStatus !== "success"}
                           className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {isMarking ? "Updating..." : item.checkedIn ? "Remove Present" : "Mark Present"}

@@ -190,7 +190,30 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   const paymentStatusFilter = String(req.query.paymentStatus || "").trim().toLowerCase();
   const limit = Math.min(Math.max(Number(req.query.limit || 100), 1), 300);
 
+  // When filtering by payment status, resolve the matching teamIds from the
+  // payments collection first so the restriction is enforced at the DB level.
+  let allowedTeamIds = null;
+  if (paymentStatusFilter) {
+    const paidTeams = await Payment.aggregate([
+      { $sort: { createdAt: -1 } },
+      {
+        $group: {
+          _id: "$teamId",
+          status: { $first: "$status" }
+        }
+      },
+      { $match: { status: paymentStatusFilter } }
+    ]);
+    allowedTeamIds = paidTeams.map((item) => item._id);
+  }
+
   const teamFilter = {};
+
+  // Restrict to allowed teamIds when a payment status filter is active.
+  if (allowedTeamIds !== null) {
+    teamFilter._id = { $in: allowedTeamIds };
+  }
+
   if (query) {
     const regex = new RegExp(query, "i");
     teamFilter.$or = [
@@ -237,45 +260,43 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
     latestPayments.map((item) => [String(item._id), item])
   );
 
-  const rows = teams
-    .map((team) => {
-      const payment = paymentMap.get(String(team._id)) || null;
-      const paymentStatus = payment?.status || "not-started";
+  const rows = teams.map((team) => {
+    const payment = paymentMap.get(String(team._id)) || null;
+    const paymentStatus = payment?.status || "not-started";
 
-      return {
-        teamId: team._id,
-        teamName: team.name,
-        participationType: team.participationType,
-        themeTrack: team.themeTrack,
-        teamLeaderName: team.leaderName,
-        rollNo: team.rollNo,
-        year: team.year,
-        branch: team.branch,
-        section: team.section,
-        teammates: (team.teammates || []).map((member) => ({
-          name: member.name,
-          rollNo: member.rollNo,
-          year: member.year,
-          branch: member.branch,
-          section: member.section
-        })),
-        accountName: team.leader?.name || "",
-        leaderId: team.leader?._id || null,
-        accountEmail: team.leader?.email || "",
-        accountMobile: team.leader?.mobile || "",
-        checkedIn: Boolean(team.leader?.checkedIn),
-        paymentStatus,
-        participationConfirmed: paymentStatus === "success",
-        paymentAmountInr: payment?.amount || null,
-        paymentCurrency: payment?.currency || "INR",
-        orderId: payment?.orderId || "",
-        paymentId: payment?.paymentId || "",
-        paymentUpdatedAt: payment?.updatedAt || null,
-        createdAt: team.createdAt,
-        updatedAt: team.updatedAt
-      };
-    })
-    .filter((item) => !paymentStatusFilter || item.paymentStatus === paymentStatusFilter);
+    return {
+      teamId: team._id,
+      teamName: team.name,
+      participationType: team.participationType,
+      themeTrack: team.themeTrack,
+      teamLeaderName: team.leaderName,
+      rollNo: team.rollNo,
+      year: team.year,
+      branch: team.branch,
+      section: team.section,
+      teammates: (team.teammates || []).map((member) => ({
+        name: member.name,
+        rollNo: member.rollNo,
+        year: member.year,
+        branch: member.branch,
+        section: member.section
+      })),
+      accountName: team.leader?.name || "",
+      leaderId: team.leader?._id || null,
+      accountEmail: team.leader?.email || "",
+      accountMobile: team.leader?.mobile || "",
+      checkedIn: Boolean(team.leader?.checkedIn),
+      paymentStatus,
+      participationConfirmed: paymentStatus === "success",
+      paymentAmountInr: payment?.amount || null,
+      paymentCurrency: payment?.currency || "INR",
+      orderId: payment?.orderId || "",
+      paymentId: payment?.paymentId || "",
+      paymentUpdatedAt: payment?.updatedAt || null,
+      createdAt: team.createdAt,
+      updatedAt: team.updatedAt
+    };
+  });
 
   res.json({
     total: rows.length,
