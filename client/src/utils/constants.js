@@ -73,111 +73,106 @@ export const SPECIAL_AWARDS = [
 
 export const MANAGEMENT_TEAM = [
   {
+    name: "K Chedhitha",
+    role: "Chair",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/chedhitha-chowdary-kothapalli-830465296/"
+  },
+  {
+    name: "M Gayathri",
+    role: "Vice Chair & Hackathon Lead",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/gayathri-madduri-2406a6334/"
+  },
+  {
+    name: "M Bhavishya",
+    role: "Secretary",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/madichetty-bhavishya-501b87342"
+  },
+  {
+    name: "N Deepthi",
+    role: "Web Master",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/nagabhushigari-deepthi-0a0382343/"
+  },
+  {
+    name: "Syed Shainaj",
+    role: "Treasurer",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/syed-shainaj-244383343/"
+  },
+  {
+    name: "G Niharika",
+    role: "Member",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/gaddapara-niharika-reddy-b357b0313"
+  },
+  {
+    name: "A Vamsieswar",
+    role: "Member",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/vamsieswar-aari-b54a65342?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+  },
+  {
+    name: "A Dimpull",
+    role: "Member",
+    chapter: "IEEE RAS",
+    linkedin: "https://www.linkedin.com/in/dimpull-chowdary-2b8120325?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+  },
+  {
+    name: "Mallikarjun",
+    role: "Support Lead",
+    chapter: "IEEE RAS",
+    
+  },
+  {
     name: "Sushanth P V",
-    role: "Technical Lead",
+    role: "Technical & Registration Lead",
     chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/sushanth-p-v-67290a31b/"
   },
   {
-    name: "Aarav Menon",
-    role: "Event Lead",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Nisha Iyer",
-    role: "Registration Head",
+    name: "K Nava Chaitanya",
+    role: "Chair",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    
   },
   {
-    name: "Rahul Dev",
-    role: "Sponsorship Lead",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Kavin M",
-    role: "Technical Operations",
+    name: "V Babitha",
+    role: "Vice Chair",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/babitha-v-a4b5893ab?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Priya S",
-    role: "Marketing & Outreach",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Aditya R",
-    role: "Logistics Coordinator",
+    name: "B Himaya Sree",
+    role: "Secretary",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/bandaru-himaya-sree-b014a22a6?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Harini K",
-    role: "Volunteer Coordinator",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Manoj V",
-    role: "Web Operations",
+    name: "K Venkata Teja",
+    role: "Web Master",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/venkata-teja-kurra-16792b342?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Sneha R",
-    role: "Design Lead",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Arjun P",
-    role: "Sponsorship Coordinator",
+    name: "B Satish",
+    role: "Treasurer",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/sathish-batthula/"
   },
   {
-    name: "Keerthana M",
-    role: "Hospitality Lead",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Naveen S",
-    role: "Stage & Venue Operations",
+    name: "K Keerthi",
+    role: "Member",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/kalla-keerthi?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Divya T",
-    role: "Content & Communications",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Vishal N",
-    role: "Mentor Relations",
+    name: "K Sai Priyanka",
+    role: "Promotions Lead",
     chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
+    linkedin: "https://www.linkedin.com/in/sai-priyanka-2710032b6/"
   },
-  {
-    name: "Bhavana L",
-    role: "Registration Operations",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Sriram K",
-    role: "Technical Support",
-    chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/"
-  },
-  {
-    name: "Aishwarya D",
-    role: "Media & Documentation",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/"
-  }
+  
 ];
