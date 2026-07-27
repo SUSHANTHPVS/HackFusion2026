@@ -201,7 +201,8 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
           _id: "$teamId",
           status: { $first: "$status" },
           paymentId: { $first: "$paymentId" },
-          signature: { $first: "$signature" }
+          signature: { $first: "$signature" },
+          orderId: { $first: "$orderId" }
         }
       },
       // Only include payments that have been verified (have both paymentId and signature)
@@ -214,6 +215,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
     
     allowedTeamIds = verifiedPayments.map((item) => item._id);
     console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with verified payments (signature + paymentId)`);
+    console.log(`[searchRegistrations] Details:`, verifiedPayments.slice(0, 5).map(p => ({ teamId: p._id, orderId: p.orderId, hasPaymentId: !!p.paymentId, hasSignature: !!p.signature })));
   }
 
   const teamFilter = {};
