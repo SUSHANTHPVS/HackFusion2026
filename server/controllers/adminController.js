@@ -215,7 +215,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
     
     allowedTeamIds = verifiedPayments.map((item) => item._id);
     console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with verified payments (signature + paymentId)`);
-    console.log(`[searchRegistrations] Details:`, verifiedPayments.slice(0, 5).map(p => ({ teamId: p._id, orderId: p.orderId, hasPaymentId: !!p.paymentId, hasSignature: !!p.signature })));
+    console.log(`[searchRegistrations] Verified Team IDs:`, allowedTeamIds.map(id => id.toString()));
   }
 
   const teamFilter = {};
@@ -476,5 +476,72 @@ export const resetAdminSettings = asyncHandler(async (req, res) => {
   res.json({
     message: "Settings reset to defaults and saved persistently.",
     ...settings
+  });
+});
+
+export const getPaymentVerificationStatus = asyncHandler(async (req, res) => {
+  const allPayments = await Payment.aggregate([
+    { $sort: { createdAt: -1 } },
+    {
+      $group: {
+        _id: "$teamId",
+        status: { $first: "$status" },
+        paymentId: { $first: "$paymentId" },
+        signature: { $first: "$signature" },
+        orderId: { $first: "$orderId" },
+        userId: { $first: "$userId" },
+        createdAt: { $first: "$createdAt" }
+      }
+    },
+    { $sort: { createdAt: -1 } }
+  ]);
+
+  const verified = [];
+  const unverified = [];
+  const created = [];
+  const failed = [];
+
+  for (const payment of allPayments) {
+    const user = await User.findById(payment.userId).select("name email");
+    const team = await Team.findById(payment._id).select("name");
+    
+    const entry = {
+      teamId: payment._id,
+      orderId: payment.orderId,
+      status: payment.status,
+      hasPaymentId: !!payment.paymentId,
+      hasSignature: !!payment.signature,
+      userName: user?.name || "Unknown",
+      userEmail: user?.email || "Unknown",
+      teamName: team?.name || "Unknown",
+      createdAt: payment.createdAt
+    };
+
+    if (payment.status === "success" && payment.paymentId && payment.signature) {
+      verified.push(entry);
+    } else if (payment.status === "success" && (!payment.paymentId || !payment.signature)) {
+      unverified.push({
+        ...entry,
+        reason: !payment.paymentId ? "Missing paymentId" : "Missing signature"
+      });
+    } else if (payment.status === "created") {
+      created.push(entry);
+    } else if (payment.status === "failed") {
+      failed.push(entry);
+    }
+  }
+
+  res.json({
+    total: allPayments.length,
+    verified: verified.length,
+    unverified: unverified.length,
+    created: created.length,
+    failed: failed.length,
+    details: {
+      verified,
+      unverified,
+      created,
+      failed
+    }
   });
 });
