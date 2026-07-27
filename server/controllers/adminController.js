@@ -205,6 +205,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       { $match: { status: paymentStatusFilter } }
     ]);
     allowedTeamIds = paidTeams.map((item) => item._id);
+    console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with successful payments`);
   }
 
   const teamFilter = {};
