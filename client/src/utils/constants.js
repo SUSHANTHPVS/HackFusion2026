@@ -169,7 +169,7 @@ export const MANAGEMENT_TEAM = [
     linkedin: "https://www.linkedin.com/in/kalla-keerthi?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "K Sai Priyanka",
+    name: "Y Sai Priyanka",
     role: "Promotions Lead",
     chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/sai-priyanka-2710032b6/"
