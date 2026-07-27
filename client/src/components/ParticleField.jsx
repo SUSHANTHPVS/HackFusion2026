@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
 
-const tags = ["Robotics", "AI", "Circuits"];
-
 export function ParticleField() {
   return (
     <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -27,13 +25,6 @@ export function ParticleField() {
           }}
         />
       ))}
-      <div className="absolute bottom-6 left-6 flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <span key={tag} className="rounded-full border border-cyan-300/40 bg-white/40 px-4 py-1 text-xs font-semibold tracking-wider text-slate-700">
-            {tag}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
