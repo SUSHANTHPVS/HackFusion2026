@@ -6,7 +6,7 @@ import { User } from "../models/User.js";
 import { EventSettingsAudit } from "../models/EventSettingsAudit.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
-import { Payment } from "../models/Payment.js";
+import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
