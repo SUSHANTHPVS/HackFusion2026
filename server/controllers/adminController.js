@@ -6,7 +6,7 @@ import { User } from "../models/User.js";
 import { EventSettingsAudit } from "../models/EventSettingsAudit.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
-import { logPaymentAudit } from "../services/paymentAuditService.js";
+import { Payment } from "../models/Payment.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -190,22 +190,30 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   const paymentStatusFilter = String(req.query.paymentStatus || "").trim().toLowerCase();
   const limit = Math.min(Math.max(Number(req.query.limit || 100), 1), 300);
 
-  // When filtering by payment status, resolve the matching teamIds from the
-  // payments collection first so the restriction is enforced at the DB level.
+  // When filtering by payment status, get teams with verified payments only
+  // A payment is considered verified when it has both paymentId AND signature
   let allowedTeamIds = null;
   if (paymentStatusFilter) {
-    const paidTeams = await Payment.aggregate([
+    const verifiedPayments = await Payment.aggregate([
       { $sort: { createdAt: -1 } },
       {
         $group: {
           _id: "$teamId",
-          status: { $first: "$status" }
+          status: { $first: "$status" },
+          paymentId: { $first: "$paymentId" },
+          signature: { $first: "$signature" }
         }
       },
-      { $match: { status: paymentStatusFilter } }
+      // Only include payments that have been verified (have both paymentId and signature)
+      { $match: { 
+        status: paymentStatusFilter,
+        paymentId: { $exists: true, $ne: null },
+        signature: { $exists: true, $ne: null }
+      } }
     ]);
-    allowedTeamIds = paidTeams.map((item) => item._id);
-    console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with successful payments`);
+    
+    allowedTeamIds = verifiedPayments.map((item) => item._id);
+    console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with verified payments (signature + paymentId)`);
   }
 
   const teamFilter = {};

@@ -127,3 +127,26 @@ const assertCredentials = () => {
     );
   }
 };
+
+/**
+ * Fetch the status of a payment/order directly from Razorpay API
+ * Returns: "captured" | "failed" | "created" | null (if order not found)
+ */
+export const fetchPaymentStatusFromRazorpay = async (orderId) => {
+  assertCredentials();
+  
+  try {
+    const razorpayInstance = getRazorpayInstance();
+    const order = await razorpayInstance.orders.fetch(orderId);
+    
+    // Razorpay order status: "created", "attempted", "paid"
+    // We consider "paid" or "attempted" with capture as successful
+    if (order.status === "paid") {
+      return "captured";
+    }
+    return order.status || "created";
+  } catch (error) {
+    console.error(`[Razorpay] Failed to fetch order ${orderId}:`, error.message);
+    return null;
+  }
+};
