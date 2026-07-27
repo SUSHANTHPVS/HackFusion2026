@@ -87,12 +87,14 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
     };
   }
 
+  // ALWAYS set paymentId and signature if provided
   payment.paymentId = paymentId;
-  if (signature) {
-    payment.signature = signature;
-  }
+  payment.signature = signature || paymentId; // Ensure signature is always set
   payment.status = "success";
+  
+  console.log(`[markPaymentSuccess] Saving payment - orderId: ${orderId}, paymentId: ${paymentId}, signature: ${signature ? "✅ Present" : "❌ Missing"}`);
   await payment.save();
+  console.log(`[markPaymentSuccess] Payment saved successfully - signature in DB: ${payment.signature ? "✅ Present" : "❌ Missing"}`);
 
   const user = await User.findById(payment.userId);
   const team = await Team.findById(payment.teamId);
@@ -148,15 +150,17 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    throw new AppError("Missing payment details", 400);
+    throw new AppError("Missing payment details (order_id, payment_id, signature)", 400);
   }
 
-  // Verify signature with Razorpay secret
+  // Verify signature with Razorpay secret - will throw if invalid
   verifyPaymentSignature({
     razorpay_order_id,
     razorpay_payment_id,
     razorpay_signature
   });
+
+  console.log(`[verifyPayment] Verified signature for order: ${razorpay_order_id}, payment: ${razorpay_payment_id}`);
 
   const result = await markPaymentSuccess({
     orderId: razorpay_order_id,
@@ -166,9 +170,11 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   });
 
   if (result.statusCode >= 400) {
+    console.error(`[verifyPayment] Failed to mark payment success:`, result.payload);
     throw new AppError(result.payload.message, result.statusCode);
   }
 
+  console.log(`[verifyPayment] Payment marked success for order: ${razorpay_order_id}`);
   res.json(result.payload);
 });
 

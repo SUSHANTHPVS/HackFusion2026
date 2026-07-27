@@ -15,7 +15,8 @@ import {
   updateAdminSettings,
   paymentAuditTrail,
   registrationsTimeline,
-  getPaymentVerificationStatus
+  getPaymentVerificationStatus,
+  diagnosisTeamsWithPayments
 } from "../controllers/adminController.js";
 import { authorize, protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
@@ -44,6 +45,7 @@ router.get("/stats", protect, authorize("admin"), dashboardStats);
 router.get("/timeline", protect, authorize("admin"), registrationsTimeline);
 router.get("/registrations/search", protect, authorize("admin"), searchRegistrations);
 router.get("/payments/verification-status", protect, authorize("admin"), getPaymentVerificationStatus);
+router.get("/diagnosis/teams-with-payments", protect, authorize("admin"), diagnosisTeamsWithPayments);
 router.get("/judges", protect, authorize("admin"), listJudges);
 router.post("/judges", protect, authorize("admin"), validate(upsertJudgeSchema), upsertJudge);
 router.get("/settings", protect, authorize("admin"), getAdminSettings);

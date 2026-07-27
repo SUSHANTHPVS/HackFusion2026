@@ -545,3 +545,38 @@ export const getPaymentVerificationStatus = asyncHandler(async (req, res) => {
     }
   });
 });
+
+export const diagnosisTeamsWithPayments = asyncHandler(async (req, res) => {
+  // Get ALL teams with their payment information - for debugging
+  const allTeams = await Team.find({})
+    .select("name leaderName leader")
+    .populate("leader", "name email");
+
+  const teamsData = [];
+  for (const team of allTeams) {
+    const payment = await Payment.findOne({ teamId: team._id })
+      .sort({ createdAt: -1 })
+      .select("status paymentId signature orderId amount");
+    
+    teamsData.push({
+      teamId: team._id,
+      teamName: team.name,
+      leaderName: team.leaderName,
+      leaderEmail: team.leader?.email || "Unknown",
+      leaderId: team.leader?._id || null,
+      payment: payment ? {
+        status: payment.status,
+        hasPaymentId: !!payment.paymentId,
+        hasSignature: !!payment.signature,
+        orderId: payment.orderId,
+        amount: payment.amount
+      } : null,
+      willAppearInRegistrations: payment && payment.status === "success" && payment.paymentId && payment.signature
+    });
+  }
+
+  res.json({
+    total: teamsData.length,
+    teams: teamsData
+  });
+});
