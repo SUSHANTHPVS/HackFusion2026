@@ -70,37 +70,53 @@ function DesktopMemberTable({ teamId, memberRows }) {
 
 export function ExploreTeamsPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [teams, setTeams] = useState([]);
+
+  const loadTeams = async ({ isRefresh = false } = {}) => {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+    setError("");
+
+    try {
+      const response = await api.get("/participant/explore-teams");
+      setTeams(response.data?.teams || []);
+    } catch (err) {
+      setError(getErrorMessage(err, "Unable to load teams."));
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadTeams() {
-      setIsLoading(true);
-      setError("");
-
-      try {
-        const response = await api.get("/participant/explore-teams");
-        if (!isMounted) {
-          return;
-        }
-        setTeams(response.data?.teams || []);
-      } catch (err) {
-        if (isMounted) {
-          setError(getErrorMessage(err, "Unable to load teams."));
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+    async function initialize() {
+      if (isMounted) {
+        await loadTeams();
       }
     }
 
-    loadTeams();
+    initialize();
+
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(() => {
+      if (isMounted) {
+        loadTeams({ isRefresh: true });
+      }
+    }, 10000);
 
     return () => {
       isMounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -115,14 +131,24 @@ export function ExploreTeamsPage() {
   return (
     <section className="space-y-5">
       <div className="glass-card rounded-3xl p-6 shadow-lg md:p-8">
-        <div className="flex items-center gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500 to-blue-700 text-white shadow-md">
-            <Users size={18} />
-          </span>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Participant Dashboard</p>
-            <h1 className="mt-1 text-3xl font-extrabold text-slate-900 md:text-4xl">Explore Other Teams</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-500 to-blue-700 text-white shadow-md">
+              <Users size={18} />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Participant Dashboard</p>
+              <h1 className="mt-1 text-3xl font-extrabold text-slate-900 md:text-4xl">Explore Other Teams</h1>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => loadTeams({ isRefresh: true })}
+            disabled={isRefreshing}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </button>
         </div>
       </div>
 
