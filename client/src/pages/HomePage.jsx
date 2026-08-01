@@ -61,7 +61,7 @@ export function HomePage() {
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
-              to="/participant/dashboard"
+              to="/participant"
               className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700"
             >
               Go to Dashboard
