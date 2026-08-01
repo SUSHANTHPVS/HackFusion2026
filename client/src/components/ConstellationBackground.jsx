@@ -18,9 +18,9 @@ export function ConstellationBackground() {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const isCompact = window.matchMedia("(max-width: 900px)").matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const threshold = isCompact ? 80 : 102;
+    const threshold = isCompact ? 88 : 116;
     const influenceRadius = isCompact ? 82 : 116;
-    const pointCount = isCompact ? 72 : 120;
+    const pointCount = isCompact ? 80 : 132;
 
     let width = 0;
     let height = 0;
@@ -72,7 +72,7 @@ export function ConstellationBackground() {
           const distance = Math.hypot(dx, dy);
 
           if (distance < threshold) {
-            const alpha = (1 - distance / threshold) * (isCompact ? 0.08 : 0.12);
+            const alpha = (1 - distance / threshold) * (isCompact ? 0.17 : 0.24);
             ctx.strokeStyle = `rgba(0,98,155,${alpha})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -85,18 +85,18 @@ export function ConstellationBackground() {
 
       for (const point of points) {
         let dotRadius = isCompact ? 1.25 : 1.45;
-        let dotAlpha = isCompact ? 0.22 : 0.28;
+        let dotAlpha = isCompact ? 0.34 : 0.42;
 
         if (pointer.active) {
           const distanceToPointer = Math.hypot(point.x - pointer.x, point.y - pointer.y);
           if (distanceToPointer < influenceRadius) {
             const boost = 1 - distanceToPointer / influenceRadius;
             dotRadius += boost * 0.6;
-            dotAlpha += boost * 0.13;
+            dotAlpha += boost * 0.2;
           }
         }
 
-        ctx.fillStyle = `rgba(0,98,155,${Math.min(dotAlpha, 0.5)})`;
+        ctx.fillStyle = `rgba(0,98,155,${Math.min(dotAlpha, 0.75)})`;
         ctx.beginPath();
         ctx.arc(point.x, point.y, dotRadius, 0, Math.PI * 2);
         ctx.fill();

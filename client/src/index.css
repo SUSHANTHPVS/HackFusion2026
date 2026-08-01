@@ -52,20 +52,25 @@ h6 {
 .mesh-bg {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   background-image:
     radial-gradient(circle at 25% 20%, rgba(0, 98, 155, 0.14), transparent 45%),
     radial-gradient(circle at 80% 30%, rgba(0, 194, 255, 0.18), transparent 35%),
     linear-gradient(120deg, rgba(0, 98, 155, 0.03), rgba(10, 25, 47, 0.03));
+  pointer-events: none;
 }
 
 .global-constellation {
   position: fixed;
   inset: 0;
-  z-index: -1;
-  opacity: 0.85;
-  mix-blend-mode: multiply;
+  z-index: 1;
+  opacity: 0.92;
   pointer-events: none;
+}
+
+.site-shell {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-primary-cta {
@@ -93,6 +98,6 @@ h6 {
 
 @media (max-width: 900px) {
   .global-constellation {
-    opacity: 0.7;
+    opacity: 0.8;
   }
 }
