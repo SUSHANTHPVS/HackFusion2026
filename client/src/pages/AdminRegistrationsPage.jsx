@@ -46,6 +46,20 @@ function buildExportRows(rows) {
   });
 }
 
+function buildParticipantExportRows(rows) {
+  return rows.flatMap((item) => {
+    const members = getAllMembers(item);
+
+    return members.map((member) => ({
+      TeamName: item.teamName || "N/A",
+      "Team Mates Names": member.name || "N/A",
+      "Roll Number": member.rollNo || "N/A",
+      Branch: member.branch || "N/A",
+      Section: member.section || "N/A"
+    }));
+  });
+}
+
 // Detailed participant information modal
 function ParticipantDetailModal({ item, isMarking, onTogglePresence, onClose }) {
   if (!item) return null;
@@ -278,6 +292,7 @@ export function AdminRegistrationsPage() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   const exportRows = useMemo(() => buildExportRows(rows), [rows]);
+  const participantExportRows = useMemo(() => buildParticipantExportRows(rows), [rows]);
 
   const downloadExcel = () => {
     if (exportRows.length === 0) {
@@ -288,6 +303,17 @@ export function AdminRegistrationsPage() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
     XLSX.writeFile(workbook, "registrations-presence.xlsx");
+  };
+
+  const downloadParticipantExcel = () => {
+    if (participantExportRows.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(participantExportRows, { header: EXPORT_HEADERS });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
+    XLSX.writeFile(workbook, "registrations-presence-participant-wise.xlsx");
   };
 
   const loadRegistrations = async ({ refreshing = false } = {}) => {
@@ -368,7 +394,15 @@ export function AdminRegistrationsPage() {
               disabled={exportRows.length === 0}
               className="inline-flex items-center gap-2 rounded-lg border border-cyan-300 px-4 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Download size={16} /> Download Excel
+              <Download size={16} /> Download Excel (Team-wise)
+            </button>
+            <button
+              type="button"
+              onClick={downloadParticipantExcel}
+              disabled={participantExportRows.length === 0}
+              className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download size={16} /> Download Excel (Participant-wise)
             </button>
             <button
               type="button"
