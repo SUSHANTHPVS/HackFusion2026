@@ -1,5 +1,6 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { IntroGate } from "./components/IntroGate";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 import { PublicLayout } from "./layouts/PublicLayout";
@@ -67,77 +68,83 @@ function info(title, description) {
 }
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
+
   return (
-    <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-10 text-center text-slate-600">Loading page...</div>}>
-      <Routes>
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/theme" element={<ThemePage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/rules" element={<RulesPage />} />
-          <Route path="/faq" element={<FaqPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
-          <Route path="/refund-policy" element={<RefundPolicyPage />} />
-          <Route path="/copyright-rights" element={<CopyrightRightsPage />} />
-          <Route path="/sponsors" element={info("Sponsors", "Our sponsors and partnership opportunities.")} />
-          <Route path="/hackathon-register" element={<HackathonRegistrationPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
+    <>
+      <Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-10 text-center text-slate-600">Loading page...</div>}>
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/theme" element={<ThemePage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/rules" element={<RulesPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+            <Route path="/refund-policy" element={<RefundPolicyPage />} />
+            <Route path="/copyright-rights" element={<CopyrightRightsPage />} />
+            <Route path="/sponsors" element={info("Sponsors", "Our sponsors and partnership opportunities.")} />
+            <Route path="/hackathon-register" element={<HackathonRegistrationPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
 
-          <Route
-            path="/participant"
-            element={
-              <ProtectedRoute roles={["participant"]}>
-                <DashboardLayout title="Participant" navItems={participantNav} />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<ParticipantPanel />} />
-            <Route path="my-team" element={<MyTeamPage />} />
-            <Route path="explore-teams" element={<ExploreTeamsPage />} />
-            <Route path="payment-status" element={<PaymentStatusPage />} />
-            <Route path="profile" element={<ProfilePage />} />
+            <Route
+              path="/participant"
+              element={
+                <ProtectedRoute roles={["participant"]}>
+                  <DashboardLayout title="Participant" navItems={participantNav} />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<ParticipantPanel />} />
+              <Route path="my-team" element={<MyTeamPage />} />
+              <Route path="explore-teams" element={<ExploreTeamsPage />} />
+              <Route path="payment-status" element={<PaymentStatusPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
+
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <DashboardLayout title="Admin" navItems={adminNav} />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminPanel />} />
+              <Route path="registrations" element={<AdminRegistrationsPage />} />
+              <Route path="payments" element={<AdminPaymentsPage />} />
+              <Route path="teams" element={<AdminTeamsPage />} />
+              <Route path="judges" element={<AdminJudgesPage />} />
+              <Route path="certificates" element={<AdminCertificatesPage />} />
+              <Route path="analytics" element={<AdminAnalyticsPage />} />
+              <Route path="settings" element={<AdminSettingsPage />} />
+            </Route>
+
+            <Route
+              path="/judge"
+              element={
+                <ProtectedRoute roles={["judge"]}>
+                  <DashboardLayout title="Judge" navItems={judgeNav} />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<JudgePanel />} />
+              <Route path="assigned-teams" element={<JudgeAssignedTeamsPage />} />
+              <Route path="score-submission" element={<JudgeScoreSubmissionPage />} />
+              <Route path="leaderboard" element={<JudgeLeaderboardPage />} />
+            </Route>
           </Route>
 
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute roles={["admin"]}>
-                <DashboardLayout title="Admin" navItems={adminNav} />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminPanel />} />
-            <Route path="registrations" element={<AdminRegistrationsPage />} />
-            <Route path="payments" element={<AdminPaymentsPage />} />
-            <Route path="teams" element={<AdminTeamsPage />} />
-            <Route path="judges" element={<AdminJudgesPage />} />
-            <Route path="certificates" element={<AdminCertificatesPage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
-          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
 
-          <Route
-            path="/judge"
-            element={
-              <ProtectedRoute roles={["judge"]}>
-                <DashboardLayout title="Judge" navItems={judgeNav} />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<JudgePanel />} />
-            <Route path="assigned-teams" element={<JudgeAssignedTeamsPage />} />
-            <Route path="score-submission" element={<JudgeScoreSubmissionPage />} />
-            <Route path="leaderboard" element={<JudgeLeaderboardPage />} />
-          </Route>
-        </Route>
-
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+      {showIntro ? <IntroGate onComplete={() => setShowIntro(false)} /> : null}
+    </>
   );
 }
 

@@ -96,8 +96,157 @@ h6 {
   box-shadow: 0 10px 22px rgba(10, 25, 47, 0.16);
 }
 
+.intro-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 22% 20%, rgba(0, 98, 155, 0.2), rgba(10, 25, 47, 0.96));
+  transition: opacity 220ms ease;
+}
+
+.intro-gate--closing {
+  opacity: 0;
+}
+
+.intro-gate__backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 80% 70%, rgba(0, 194, 255, 0.18), transparent 46%),
+    linear-gradient(130deg, rgba(0, 98, 155, 0.14), rgba(10, 25, 47, 0.12));
+}
+
+.intro-gate__glow {
+  position: absolute;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 9999px;
+  filter: blur(62px);
+  opacity: 0.38;
+  animation: introDrift 6.5s ease-in-out infinite;
+}
+
+.intro-gate__glow--left {
+  left: 8%;
+  top: 14%;
+  background: rgba(0, 194, 255, 0.6);
+}
+
+.intro-gate__glow--right {
+  right: 8%;
+  bottom: 10%;
+  animation-delay: 1.2s;
+  background: rgba(0, 98, 155, 0.68);
+}
+
+.intro-gate__card {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 34rem);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(151, 218, 255, 0.34);
+  background: linear-gradient(160deg, rgba(8, 37, 58, 0.8), rgba(11, 52, 79, 0.74));
+  box-shadow: 0 20px 55px rgba(2, 10, 26, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  padding: 1.4rem 1.4rem 1.2rem;
+  color: #eef8ff;
+}
+
+.intro-gate__eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(176, 230, 255, 0.96);
+}
+
+.intro-gate__title {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  line-height: 1.05;
+  font-weight: 800;
+  color: #f4fbff;
+}
+
+.intro-gate__subtitle {
+  margin: 0.55rem 0 1.1rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: rgba(211, 241, 255, 0.94);
+}
+
+.intro-gate__barShell {
+  height: 0.44rem;
+  border-radius: 9999px;
+  background: rgba(161, 228, 255, 0.26);
+  overflow: hidden;
+}
+
+.intro-gate__barFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4fc7ff, #87deff 65%, #c2f1ff);
+  box-shadow: 0 0 18px rgba(104, 214, 255, 0.72);
+  transition: width 90ms linear;
+}
+
+.intro-gate__metaRow {
+  margin-top: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.intro-gate__percent {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(184, 236, 255, 0.95);
+}
+
+.intro-gate__skip {
+  border: 1px solid rgba(151, 218, 255, 0.5);
+  border-radius: 9999px;
+  background: rgba(11, 52, 79, 0.4);
+  color: #dcf4ff;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.intro-gate__skip:hover {
+  background: rgba(14, 69, 106, 0.7);
+}
+
+@keyframes introDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(10px, -14px) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-gate__glow {
+    animation: none;
+  }
+}
+
 @media (max-width: 900px) {
   .global-constellation {
     opacity: 0.88;
+  }
+
+  .intro-gate__card {
+    width: min(94vw, 30rem);
+    padding: 1.15rem 1.05rem 1rem;
   }
 }
