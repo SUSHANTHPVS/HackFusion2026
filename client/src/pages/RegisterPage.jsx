@@ -39,7 +39,7 @@ export function RegisterPage() {
     mutationFn: authService.googleAuth,
     onSuccess: (data) => {
       login(data);
-      navigate("/participant");
+      navigate("/");
     }
   });
 

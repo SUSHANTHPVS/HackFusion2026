@@ -34,7 +34,7 @@ export function LoginPage() {
       const role = data.user.role;
       if (role === "admin") navigate("/admin");
       else if (role === "judge") navigate("/judge");
-      else navigate("/participant");
+      else navigate("/");
     },
     [login, navigate, redirectPath]
   );
