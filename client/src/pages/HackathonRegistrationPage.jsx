@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 import { BRANCH_OPTIONS, GENDER_OPTIONS, YEAR_OPTIONS, getSectionOptionsForBranch } from "../utils/constants";
@@ -119,7 +120,7 @@ function createEmptyFieldErrors(teammateCount = 1) {
     teamName: "",
     teamLeaderName: "",
     rollNo: "",
-    teammates: Array.from({ length: teammateCount }, () => ({ name: "", rollNo: "" }))
+    teammates: Array.from({ length: teammateCount }, () => ({ name: "", rollNo: "", mobile: "" }))
   };
 }
 
@@ -179,6 +180,7 @@ export function HackathonRegistrationPage() {
       name: "",
       gender: GENDER_OPTIONS[0].value,
       rollNo: "",
+      mobile: "",
       year: YEAR_OPTIONS[0],
       branch: BRANCH_OPTIONS[0],
       section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
@@ -188,6 +190,8 @@ export function HackathonRegistrationPage() {
   const [paymentMessage, setPaymentMessage] = useState("");
   const [requiresLogin, setRequiresLogin] = useState(false);
   const [fieldErrors, setFieldErrors] = useState(() => createEmptyFieldErrors(1));
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [successfulTeam, setSuccessfulTeam] = useState(null);
 
   const isUnauthorizedError = (error) => {
     if (error?.response?.status !== 401) {
@@ -203,6 +207,12 @@ export function HackathonRegistrationPage() {
     onSuccess: (data) => {
       setPaymentMessage("Payment verified! Registration successful.");
       setOrderData(null);
+      setPaymentVerified(true);
+      setSuccessfulTeam({
+        name: teamName.trim(),
+        participationType,
+        teammates: participationType === "team" ? teammates : []
+      });
     },
     onError: (error) => {
       setPaymentMessage(error?.response?.data?.message || "Payment verification failed.");
@@ -214,6 +224,8 @@ export function HackathonRegistrationPage() {
     onSuccess: (data) => {
       setRequiresLogin(false);
       setOrderData(data);
+      setPaymentVerified(data.paymentStatus === "success");
+      setSuccessfulTeam(data.team || null);
 
       if (data.paymentStatus === "success") {
         setPaymentMessage("Registration already completed for your account.");
@@ -282,7 +294,7 @@ export function HackathonRegistrationPage() {
   };
 
   const updateTeammate = (index, field, value) => {
-    if (field === "name" || field === "rollNo") {
+    if (field === "name" || field === "rollNo" || field === "mobile") {
       setFieldErrors((prev) => ({
         ...prev,
         teammates: prev.teammates.map((item, idx) =>
@@ -320,6 +332,7 @@ export function HackathonRegistrationPage() {
           name: "",
           gender: GENDER_OPTIONS[0].value,
           rollNo: "",
+          mobile: "",
           year: YEAR_OPTIONS[0],
           branch: BRANCH_OPTIONS[0],
           section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
@@ -342,19 +355,22 @@ export function HackathonRegistrationPage() {
     event.preventDefault();
     setPaymentMessage("");
     setRequiresLogin(false);
+    setPaymentVerified(false);
+    setSuccessfulTeam(null);
     resetFieldErrors(teammates.length);
 
     const normalizedTeammates = teammates.map((item) => ({
       name: item.name.trim(),
       gender: item.gender,
       rollNo: item.rollNo.trim().toUpperCase(),
+      mobile: item.mobile.trim(),
       year: item.year.trim(),
       branch: item.branch.trim(),
       section: item.section.trim()
     }));
 
     const filledTeammates = normalizedTeammates.filter(
-      (item) => item.name && item.rollNo && item.year && item.branch && item.section
+      (item) => item.name && item.rollNo && item.mobile && item.year && item.branch && item.section
     );
 
     if (!teamName.trim() || !teamLeaderName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim()) {
@@ -370,7 +386,7 @@ export function HackathonRegistrationPage() {
 
     if (participationType === "team") {
       if (filledTeammates.length !== teammates.length) {
-        setPaymentMessage("Each teammate row must include name, roll no, year, branch, and section, or remove the row.");
+        setPaymentMessage("Each teammate row must include name, mobile, roll no, year, branch, and section, or remove the row.");
         return;
       }
 
@@ -409,6 +425,23 @@ export function HackathonRegistrationPage() {
 
       if (new Set(teammateNames).size !== teammateNames.length) {
         setPaymentMessage("Duplicate teammate names are not allowed.");
+        return;
+      }
+
+      const invalidMobileIndex = filledTeammates.findIndex((item) => !/^\d{10}$/.test(item.mobile));
+      if (invalidMobileIndex >= 0) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          teammates: prev.teammates.map((item, idx) =>
+            idx === invalidMobileIndex ? { ...item, mobile: "Mobile number must be exactly 10 digits." } : item
+          )
+        }));
+        setPaymentMessage("Each teammate mobile number must contain exactly 10 digits.");
+        return;
+      }
+
+      if (new Set(filledTeammates.map((item) => item.mobile)).size !== filledTeammates.length) {
+        setPaymentMessage("Duplicate teammate mobile numbers are not allowed.");
         return;
       }
     }
@@ -517,6 +550,7 @@ export function HackathonRegistrationPage() {
                       name: "",
                       gender: GENDER_OPTIONS[0].value,
                       rollNo: "",
+                      mobile: "",
                       year: YEAR_OPTIONS[0],
                       branch: BRANCH_OPTIONS[0],
                       section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
@@ -722,6 +756,15 @@ export function HackathonRegistrationPage() {
                     placeholder="Roll No"
                   />
                   {fieldErrors.teammates[index]?.rollNo ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].rollNo}</p> : null}
+                  <input
+                    value={item.mobile}
+                    onChange={(event) => updateTeammate(index, "mobile", event.target.value.replace(/\D/g, ""))}
+                    className={getInputClass(Boolean(fieldErrors.teammates[index]?.mobile))}
+                    placeholder="Mobile Number"
+                    inputMode="numeric"
+                    maxLength={10}
+                  />
+                  {fieldErrors.teammates[index]?.mobile ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].mobile}</p> : null}
                   <div className="grid gap-2 sm:grid-cols-3">
                     <label className="grid gap-1 text-sm font-semibold text-slate-700">
                       Year
@@ -841,6 +884,17 @@ export function HackathonRegistrationPage() {
           Organizer note: set valid PhonePe credentials in server environment (`PHONEPE_MERCHANT_ID`, `PHONEPE_SALT_KEY`) and restart backend.
         </p>
       )}
+
+      {paymentVerified ? (
+        <WhatsAppAccessCard
+          payment={{ status: "success", participationType, amount: selectedFee }}
+          team={successfulTeam || {
+            name: teamName.trim(),
+            participationType,
+            teammates: participationType === "team" ? teammates : []
+          }}
+        />
+      ) : null}
 
       {orderData?.transactionId && (
         <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">

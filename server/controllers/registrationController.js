@@ -37,10 +37,10 @@ function hasTeamCompositionChanged(existingTeam, participantDetails, participati
   }
 
   const currentTeammates = (existingTeam.teammates || [])
-    .map((item) => `${normalizeName(item.name)}|${item.gender}|${normalizeRoll(item.rollNo)}`)
+    .map((item) => `${normalizeName(item.name)}|${item.gender}|${normalizeRoll(item.rollNo)}|${String(item.mobile || "").trim()}`)
     .sort();
   const incomingTeammates = normalizedTeammates
-    .map((item) => `${normalizeName(item.name)}|${item.gender}|${normalizeRoll(item.rollNo)}`)
+    .map((item) => `${normalizeName(item.name)}|${item.gender}|${normalizeRoll(item.rollNo)}|${String(item.mobile || "").trim()}`)
     .sort();
 
   if (currentTeammates.length !== incomingTeammates.length) {
@@ -59,6 +59,7 @@ function validateNoDuplicateMembers(participantDetails, normalizedTeammates) {
   for (const teammate of normalizedTeammates) {
     const rollNo = normalizeRoll(teammate.rollNo);
     const name = normalizeName(teammate.name);
+    const mobile = String(teammate.mobile || "").trim();
 
     if (rollNo === leaderRollNo) {
       throw new AppError("Team leader roll number cannot be duplicated in teammates.", 400);
@@ -78,6 +79,10 @@ function validateNoDuplicateMembers(participantDetails, normalizedTeammates) {
 
     teammateRollNos.add(rollNo);
     teammateNames.add(name);
+
+    if (!/^\d{10}$/.test(mobile)) {
+      throw new AppError("Each teammate mobile number must contain exactly 10 digits.", 400);
+    }
   }
 }
 
@@ -135,6 +140,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     name: item.name.trim(),
     gender: item.gender,
     rollNo: item.rollNo.trim().toUpperCase(),
+    mobile: String(item.mobile || "").trim(),
     year: item.year.trim(),
     branch: item.branch.trim(),
     section: item.section.trim().toUpperCase()

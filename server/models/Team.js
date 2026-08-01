@@ -5,6 +5,7 @@ const teammateSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     gender: { type: String, enum: ["male", "female"], required: true },
     rollNo: { type: String, required: true, trim: true, uppercase: true },
+    mobile: { type: String, required: true, trim: true },
     year: { type: String, required: true, trim: true },
     branch: { type: String, required: true, trim: true },
     section: { type: String, required: true, trim: true, uppercase: true }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BadgeIndianRupee, CheckCircle2, Clock3, Download, Loader2, XCircle } from "lucide-react";
 import { jsPDF } from "jspdf";
+import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Something went wrong") {
@@ -286,6 +287,8 @@ export function PaymentStatusPage() {
           </div>
         )}
       </div>
+
+      {payment?.status === "success" ? <WhatsAppAccessCard payment={payment} team={team} /> : null}
 
       <div className="glass-card rounded-2xl p-6">
         <h2 className="text-xl font-bold text-slate-900">Payment History</h2>
