@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, Users } from "lucide-react";
+import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Something went wrong") {
@@ -76,6 +77,7 @@ export function MyTeamPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [team, setTeam] = useState(null);
+  const [payment, setPayment] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -90,6 +92,7 @@ export function MyTeamPage() {
           return;
         }
         setTeam(dashboardResponse.data?.team || null);
+        setPayment(dashboardResponse.data?.payment || null);
       } catch (err) {
         if (isMounted) {
           setError(getErrorMessage(err, "Unable to load team details."));
@@ -201,6 +204,8 @@ export function MyTeamPage() {
         </div>
         <DesktopMemberTable memberRows={memberRows} />
       </div>
+
+      {payment?.status === "success" ? <WhatsAppAccessCard payment={payment} team={team} /> : null}
     </section>
   );
 }

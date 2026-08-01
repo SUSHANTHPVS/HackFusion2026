@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PageIntro } from "../components/PageIntro";
 import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
@@ -30,11 +31,14 @@ const actions = [
 export function ParticipantPanel() {
   const [payment, setPayment] = useState(null);
   const [team, setTeam] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadDashboard() {
+      setIsLoading(true);
+
       try {
         const response = await api.get("/participant/dashboard");
         if (!isMounted) {
@@ -47,6 +51,10 @@ export function ParticipantPanel() {
         if (isMounted) {
           setPayment(null);
           setTeam(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
         }
       }
     }
@@ -61,7 +69,19 @@ export function ParticipantPanel() {
   return (
     <div className="space-y-5">
       <PageIntro title="Participant Dashboard" description="Track team details, payment status, and profile updates." />
-      {payment?.status === "success" ? <WhatsAppAccessCard payment={payment} team={team} /> : null}
+      {isLoading ? (
+        <section className="glass-card rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 text-slate-700">
+            <Loader2 className="animate-spin" size={18} />
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Checking WhatsApp access</p>
+              <p className="text-sm text-slate-600">Please wait while we verify your payment and unlock the group link.</p>
+            </div>
+          </div>
+        </section>
+      ) : payment?.status === "success" ? (
+        <WhatsAppAccessCard payment={payment} team={team} />
+      ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         {actions.map((action) => (
           <Link key={action.to} to={action.to} className="glass-card rounded-xl p-5 transition hover:shadow-md">
