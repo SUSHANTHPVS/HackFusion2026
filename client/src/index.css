@@ -59,55 +59,26 @@ h6 {
     linear-gradient(120deg, rgba(0, 98, 155, 0.03), rgba(10, 25, 47, 0.03));
 }
 
-.holo-card {
-  background:
-    radial-gradient(circle at 12% 16%, rgba(0, 98, 155, 0.18), transparent 42%),
-    radial-gradient(circle at 84% 72%, rgba(0, 194, 255, 0.16), transparent 45%),
-    linear-gradient(145deg, rgba(228, 245, 255, 0.9), rgba(255, 255, 255, 0.82) 52%, rgba(233, 247, 255, 0.92));
-  backdrop-filter: blur(10px);
+.aurora-panel {
+  background: linear-gradient(145deg, rgba(240, 250, 255, 0.9), rgba(255, 255, 255, 0.85));
   box-shadow:
-    inset 0 0 72px rgba(0, 98, 155, 0.13),
-    0 16px 38px rgba(10, 25, 47, 0.13);
-  transform-style: preserve-3d;
-  will-change: transform;
+    inset 0 0 75px rgba(0, 98, 155, 0.09),
+    0 16px 34px rgba(10, 25, 47, 0.11);
 }
 
-.holo-glow {
-  border-radius: inherit;
-  box-shadow:
-    inset 0 0 1px rgba(255, 255, 255, 0.85),
-    inset 0 0 28px rgba(0, 98, 155, 0.12);
-  animation: holoPulse 4.8s ease-in-out infinite;
+.aurora-grid {
+  opacity: 0.42;
+  background-image:
+    linear-gradient(rgba(0, 98, 155, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 98, 155, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(circle at 50% 50%, black 52%, transparent 95%);
 }
 
-.holo-sheen {
-  border-radius: inherit;
-  opacity: 0.52;
-  background: linear-gradient(115deg, transparent 16%, rgba(255, 255, 255, 0.52) 44%, transparent 68%);
-  transform: translateX(-62%);
-  animation: holoSweep 6.8s ease-in-out infinite;
-}
-
-.holo-orbital-ring {
-  border-color: rgba(0, 98, 155, 0.34);
-  box-shadow: 0 0 20px rgba(0, 98, 155, 0.17);
-  animation: orbitPulse 5.2s ease-in-out infinite;
-}
-
-.holo-card-compact {
-  box-shadow:
-    inset 0 0 50px rgba(0, 98, 155, 0.1),
-    0 12px 28px rgba(10, 25, 47, 0.09);
-}
-
-.holo-card-compact .holo-sheen {
-  opacity: 0.34;
-  animation-duration: 8.5s;
-}
-
-.holo-card-compact .holo-orbital-ring {
-  opacity: 0.45;
-  animation-duration: 6.6s;
+.constellation-canvas {
+  z-index: 1;
+  opacity: 0.88;
+  mix-blend-mode: multiply;
 }
 
 .hero-primary-cta {
@@ -134,68 +105,23 @@ h6 {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .holo-stat-tile {
+  .hero-stat-tile {
     transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
   }
 
-  .holo-stat-tile:hover {
+  .hero-stat-tile:hover {
     transform: translateY(-3px);
     border-color: rgba(147, 197, 253, 0.9);
     box-shadow: 0 14px 25px rgba(0, 98, 155, 0.18);
   }
 }
 
-@keyframes holoPulse {
-  0%,
-  100% {
-    opacity: 0.66;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes holoSweep {
-  0%,
-  16% {
-    transform: translateX(-62%);
-  }
-
-  58%,
-  100% {
-    transform: translateX(58%);
-  }
-}
-
-@keyframes orbitPulse {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(0.93);
-    opacity: 0.35;
-  }
-
-  50% {
-    transform: translate(-50%, -50%) scale(1.08);
-    opacity: 0.72;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .holo-glow,
-  .holo-sheen,
-  .holo-orbital-ring {
-    animation: none;
-  }
-}
-
 @media (max-width: 900px) {
-  .holo-card {
+  .aurora-panel {
     backdrop-filter: blur(8px);
   }
 
-  .holo-orbital-ring {
-    width: 8rem;
-    height: 8rem;
+  .constellation-canvas {
+    opacity: 0.7;
   }
 }
