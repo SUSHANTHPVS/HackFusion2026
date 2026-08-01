@@ -138,6 +138,7 @@ function useOptionalTexture(path, options) {
 
 function GlobeScene({ qualityTier }) {
   const globeGroupRef = useRef(null);
+  const earthSpinRef = useRef(null);
   const cloudsRef = useRef(null);
   const earthMaterialRef = useRef(null);
   const earthTexture = useOptionalTexture("/textures/earth-day.jpg", { srgb: true });
@@ -158,13 +159,18 @@ function GlobeScene({ qualityTier }) {
   const segments = qualityTier === "low" ? 32 : qualityTier === "medium" ? 44 : 56;
 
   useFrame((state, delta) => {
+    const safeDelta = Math.min(delta, 0.033);
+
     if (globeGroupRef.current) {
-      globeGroupRef.current.rotation.y += delta * 0.2;
-      globeGroupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.18) * 0.04;
+      globeGroupRef.current.rotation.z = THREE.MathUtils.lerp(globeGroupRef.current.rotation.z, -0.41, 2.3 * safeDelta);
+    }
+
+    if (earthSpinRef.current) {
+      earthSpinRef.current.rotation.y += safeDelta * 0.16;
     }
 
     if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.08;
+      cloudsRef.current.rotation.y += safeDelta * 0.19;
     }
   });
 
@@ -205,37 +211,39 @@ function GlobeScene({ qualityTier }) {
 
   return (
     <group ref={globeGroupRef}>
-      <mesh castShadow>
-        <sphereGeometry args={[1, segments, segments]} />
-        <meshPhongMaterial
-          ref={earthMaterialRef}
-          map={globeMap}
-          normalMap={normalMap}
-          specularMap={specularMap}
-          specular="#b9e3ff"
-          shininess={34}
-          color="#ffffff"
-          emissive="#0b3f63"
-          emissiveIntensity={0.06}
-          normalScale={new THREE.Vector2(0.4, 0.4)}
-        />
-      </mesh>
+      <group ref={earthSpinRef}>
+        <mesh castShadow>
+          <sphereGeometry args={[1, segments, segments]} />
+          <meshPhongMaterial
+            ref={earthMaterialRef}
+            map={globeMap}
+            normalMap={normalMap}
+            specularMap={specularMap}
+            specular="#8fc9ec"
+            shininess={26}
+            color="#ffffff"
+            emissive="#083450"
+            emissiveIntensity={0.04}
+            normalScale={new THREE.Vector2(0.35, 0.35)}
+          />
+        </mesh>
 
-      <mesh ref={cloudsRef}>
-        <sphereGeometry args={[1.022, segments, segments]} />
-        <meshStandardMaterial
-          map={cloudMap}
-          color="#ffffff"
-          transparent
-          opacity={0.26}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </mesh>
+        <mesh ref={cloudsRef}>
+          <sphereGeometry args={[1.02, segments, segments]} />
+          <meshStandardMaterial
+            map={cloudMap}
+            color="#ffffff"
+            transparent
+            opacity={0.2}
+            blending={THREE.NormalBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      </group>
 
       <mesh>
         <sphereGeometry args={[1.08, segments, segments]} />
-        <meshBasicMaterial color="#96ddff" transparent opacity={0.17} side={THREE.BackSide} />
+        <meshBasicMaterial color="#7fd6ff" transparent opacity={0.12} side={THREE.BackSide} />
       </mesh>
 
       <group position={[2.25, 1.6, 2.85]}>
@@ -255,12 +263,10 @@ function GlobeScene({ qualityTier }) {
 function SceneLights() {
   return (
     <>
-      <hemisphereLight skyColor="#e2f4ff" groundColor="#22435f" intensity={0.62} />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[3.5, 2.4, 4.5]} intensity={1.95} color="#fff7eb" />
-      <directionalLight position={[-2, -1, -3]} intensity={0.42} color="#72dbff" />
-      <pointLight position={[0.1, 3.1, 2.15]} intensity={1.05} color="#7fe0ff" />
-      <pointLight position={[0, -2.3, -1.6]} intensity={0.36} color="#0ea5e9" />
+      <hemisphereLight skyColor="#dff3ff" groundColor="#1f3e55" intensity={0.46} />
+      <ambientLight intensity={0.28} />
+      <directionalLight position={[3.5, 2.4, 4.5]} intensity={2.05} color="#fff6e8" />
+      <directionalLight position={[-2, -1, -3]} intensity={0.22} color="#7dd9ff" />
     </>
   );
 }
@@ -366,10 +372,10 @@ export function Hero3DScene() {
       <Canvas
         dpr={dprByTier[qualityTier]}
         camera={{ position: [0, 0, 4.6], fov: isCompactViewport ? 48 : 42 }}
-        gl={{ antialias: false, powerPreference: "high-performance" }}
+        gl={{ antialias: qualityTier !== "low", powerPreference: "high-performance" }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.17;
+          gl.toneMappingExposure = 1.08;
         }}
       >
         <color attach="background" args={["#dff4ff"]} />
@@ -380,12 +386,12 @@ export function Hero3DScene() {
         <Sparkles
           count={sparkleCountByTier[qualityTier]}
           size={sparkleSizeByTier[qualityTier]}
-          speed={0.12}
-          opacity={0.36}
-          color={new THREE.Color("#8ad9ff")}
+          speed={0.08}
+          opacity={0.2}
+          color={new THREE.Color("#b9e9ff")}
           scale={[4.4, 2.6, 2.6]}
         />
-        <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} autoRotate autoRotateSpeed={0.12} />
+        <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} autoRotate={false} />
       </Canvas>
     </div>
   );
