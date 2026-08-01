@@ -1,6 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { Eye, EyeOff } from "lucide-react";
 import { useCallback } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -18,6 +20,7 @@ export function LoginPage() {
   const location = useLocation();
   const { login } = useAuth();
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
+  const [showPassword, setShowPassword] = useState(false);
   const redirectPath = new URLSearchParams(location.search).get("redirect");
 
   const handleLoginSuccess = useCallback(
@@ -66,7 +69,23 @@ export function LoginPage() {
       <form className="mt-6 grid gap-4" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
         <input {...register("email")} className="rounded-lg border border-slate-300 px-3 py-2" placeholder="Email" />
         {errors.email && <p className="text-sm text-rose-600">{errors.email.message}</p>}
-        <input {...register("password")} type="password" className="rounded-lg border border-slate-300 px-3 py-2" placeholder="Password" />
+        <div className="relative">
+          <input
+            {...register("password")}
+            type={showPassword ? "text" : "password"}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-11"
+            placeholder="Password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
         {errors.password && <p className="text-sm text-rose-600">{errors.password.message}</p>}
         <button disabled={mutation.isPending} className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">
           {mutation.isPending ? "Authenticating..." : "Login"}

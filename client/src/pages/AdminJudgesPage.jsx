@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Unable to load judges") {
@@ -33,6 +33,7 @@ export function AdminJudgesPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({ email: "", name: "", department: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const loadJudges = async () => {
     setError("");
@@ -154,13 +155,24 @@ export function AdminJudgesPage() {
               className="rounded-lg border border-slate-300 px-3 py-2"
               placeholder="Department (optional)"
             />
-            <input
-              type="password"
-              value={form.password}
-              onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
-              className="rounded-lg border border-slate-300 px-3 py-2"
-              placeholder="Password (required for new account)"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-11"
+                placeholder="Password (required for new account)"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             <button disabled={isSaving} className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">
               <UserPlus size={16} /> {isSaving ? "Saving..." : "Save Judge"}

@@ -81,6 +81,53 @@ function validateNoDuplicateMembers(participantDetails, normalizedTeammates) {
   }
 }
 
+function buildIncomingMemberSets(participantDetails, normalizedTeammates) {
+  const incomingRollNos = new Set([normalizeRoll(participantDetails.rollNo)]);
+  const incomingNames = new Set([normalizeName(participantDetails.teamLeaderName)]);
+
+  for (const teammate of normalizedTeammates) {
+    incomingRollNos.add(normalizeRoll(teammate.rollNo));
+    incomingNames.add(normalizeName(teammate.name));
+  }
+
+  return { incomingRollNos, incomingNames };
+}
+
+async function validateNoDuplicateMembersAcrossRegistrations(participantDetails, normalizedTeammates, existingTeamId) {
+  const { incomingRollNos, incomingNames } = buildIncomingMemberSets(participantDetails, normalizedTeammates);
+
+  const existingTeams = await Team.find(
+    existingTeamId ? { _id: { $ne: existingTeamId } } : {},
+    { name: 1, leaderName: 1, rollNo: 1, teammates: 1 }
+  ).lean();
+
+  for (const team of existingTeams) {
+    const leaderRollNo = normalizeRoll(team.rollNo);
+    const leaderName = normalizeName(team.leaderName);
+
+    if (incomingRollNos.has(leaderRollNo)) {
+      throw new AppError(`Roll number ${team.rollNo} is already registered with team ${team.name}.`, 409);
+    }
+
+    if (incomingNames.has(leaderName)) {
+      throw new AppError(`Name ${team.leaderName} is already registered with team ${team.name}.`, 409);
+    }
+
+    for (const teammate of team.teammates || []) {
+      const teammateRollNo = normalizeRoll(teammate.rollNo);
+      const teammateName = normalizeName(teammate.name);
+
+      if (incomingRollNos.has(teammateRollNo)) {
+        throw new AppError(`Roll number ${teammate.rollNo} is already registered with team ${team.name}.`, 409);
+      }
+
+      if (incomingNames.has(teammateName)) {
+        throw new AppError(`Name ${teammate.name} is already registered with team ${team.name}.`, 409);
+      }
+    }
+  }
+}
+
 export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const eventSettings = await getEventSettings();
   const participationType = req.body.participationType;
@@ -126,9 +173,11 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     throw new AppError("Team participation must have 1 to 3 teammates (2 to 4 members including leader).", 400);
   }
 
-  validateNoDuplicateMembers(participantDetails, normalizedTeammates);
-
   const existingTeam = await Team.findOne({ leader: req.user._id });
+
+  validateNoDuplicateMembers(participantDetails, normalizedTeammates);
+  await validateNoDuplicateMembersAcrossRegistrations(participantDetails, normalizedTeammates, existingTeam?._id);
+
   if (existingTeam && eventSettings.registrationClosed) {
     const changed = hasTeamCompositionChanged(
       existingTeam,

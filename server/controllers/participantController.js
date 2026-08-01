@@ -117,28 +117,14 @@ export const updateProfile = asyncHandler(async (req, res) => {
 });
 
 export const listExploreTeams = asyncHandler(async (req, res) => {
-  // Get only teams with verified payments (3-layer verification)
-  const verifiedTeamIds = await Payment.find({
-    status: "success",
-    paymentId: { $exists: true, $ne: null },
-    signature: { $exists: true, $ne: null }
-  })
-    .select("teamId")
-    .distinct("teamId");
-
   const ownTeam = await Team.findOne({ leader: req.user._id }).select("_id").lean();
 
   const teams = await Team.find({
-    _id: { $in: verifiedTeamIds, $ne: ownTeam?._id }
+    _id: { $ne: ownTeam?._id },
+    status: { $in: ["registered", "checked-in", "submitted"] }
   })
     .sort({ createdAt: -1 })
     .lean();
-
-  const requests = await JoinRequest.find({ requester: req.user._id })
-    .select("team status")
-    .lean();
-
-  const requestMap = new Map(requests.map((item) => [String(item.team), item.status]));
 
   const data = teams.map((team) => ({
     id: team._id,

@@ -110,6 +110,58 @@ function verifyPayment(paymentData) {
   return api.post("/verify-payment", payload).then((res) => res.data);
 }
 
+function getInputClass(hasError) {
+  return `rounded-lg border px-3 py-2 ${hasError ? "border-rose-500 focus:border-rose-500" : "border-slate-300"}`;
+}
+
+function createEmptyFieldErrors(teammateCount = 1) {
+  return {
+    teamName: "",
+    teamLeaderName: "",
+    rollNo: "",
+    teammates: Array.from({ length: teammateCount }, () => ({ name: "", rollNo: "" }))
+  };
+}
+
+function extractDuplicateFieldError(message, teammates) {
+  const text = String(message || "").trim();
+  if (!text) {
+    return null;
+  }
+
+  const rollMatch = text.match(/^Roll number\s+(.+?)\s+is already registered with team\s+/i);
+  if (rollMatch) {
+    const duplicateRollNo = rollMatch[1]?.trim().toUpperCase();
+    if (!duplicateRollNo) {
+      return null;
+    }
+
+    const teammateIndex = teammates.findIndex((item) => item.rollNo.trim().toUpperCase() === duplicateRollNo);
+    if (teammateIndex >= 0) {
+      return { path: "teammates.rollNo", index: teammateIndex, message: text };
+    }
+
+    return { path: "rollNo", message: text };
+  }
+
+  const nameMatch = text.match(/^Name\s+(.+?)\s+is already registered with team\s+/i);
+  if (nameMatch) {
+    const duplicateName = nameMatch[1]?.trim().toLowerCase();
+    if (!duplicateName) {
+      return null;
+    }
+
+    const teammateIndex = teammates.findIndex((item) => item.name.trim().toLowerCase() === duplicateName);
+    if (teammateIndex >= 0) {
+      return { path: "teammates.name", index: teammateIndex, message: text };
+    }
+
+    return { path: "teamLeaderName", message: text };
+  }
+
+  return null;
+}
+
 export function HackathonRegistrationPage() {
   const { isAuthenticated, user } = useAuth();
   const [participationType, setParticipationType] = useState("individual");
@@ -135,6 +187,7 @@ export function HackathonRegistrationPage() {
   const [orderData, setOrderData] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [requiresLogin, setRequiresLogin] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState(() => createEmptyFieldErrors(1));
 
   const isUnauthorizedError = (error) => {
     if (error?.response?.status !== 401) {
@@ -177,7 +230,30 @@ export function HackathonRegistrationPage() {
       }
 
       setRequiresLogin(false);
-      setPaymentMessage(error?.response?.data?.message || "Could not create registration order.");
+      const serverMessage = error?.response?.data?.message || "Could not create registration order.";
+      const duplicateError = extractDuplicateFieldError(serverMessage, teammates);
+
+      if (duplicateError?.path === "rollNo") {
+        setFieldErrors((prev) => ({ ...prev, rollNo: serverMessage }));
+      } else if (duplicateError?.path === "teamLeaderName") {
+        setFieldErrors((prev) => ({ ...prev, teamLeaderName: serverMessage }));
+      } else if (duplicateError?.path === "teammates.rollNo" && duplicateError.index >= 0) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          teammates: prev.teammates.map((item, idx) =>
+            idx === duplicateError.index ? { ...item, rollNo: serverMessage } : item
+          )
+        }));
+      } else if (duplicateError?.path === "teammates.name" && duplicateError.index >= 0) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          teammates: prev.teammates.map((item, idx) =>
+            idx === duplicateError.index ? { ...item, name: serverMessage } : item
+          )
+        }));
+      }
+
+      setPaymentMessage(serverMessage);
     }
   });
 
@@ -195,6 +271,10 @@ export function HackathonRegistrationPage() {
       : `Individual Participation (1 member) - INR ${selectedFee}`;
   const leaderSectionOptions = useMemo(() => getSectionOptionsForBranch(branch), [branch]);
 
+  const resetFieldErrors = (teammateCount = teammates.length) => {
+    setFieldErrors(createEmptyFieldErrors(teammateCount));
+  };
+
   const onBranchChange = (nextBranch) => {
     setBranch(nextBranch);
     const options = getSectionOptionsForBranch(nextBranch);
@@ -202,6 +282,15 @@ export function HackathonRegistrationPage() {
   };
 
   const updateTeammate = (index, field, value) => {
+    if (field === "name" || field === "rollNo") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        teammates: prev.teammates.map((item, idx) =>
+          idx === index ? { ...item, [field]: "" } : item
+        )
+      }));
+    }
+
     setTeammates((prev) =>
       prev.map((item, idx) => {
         if (idx !== index) {
@@ -225,7 +314,7 @@ export function HackathonRegistrationPage() {
   const addTeammate = () => {
     setTeammates((prev) => {
       if (prev.length >= 3) return prev;
-      return [
+      const next = [
         ...prev,
         {
           name: "",
@@ -236,17 +325,24 @@ export function HackathonRegistrationPage() {
           section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
         }
       ];
+      resetFieldErrors(next.length);
+      return next;
     });
   };
 
   const removeTeammate = (index) => {
-    setTeammates((prev) => prev.filter((_, idx) => idx !== index));
+    setTeammates((prev) => {
+      const next = prev.filter((_, idx) => idx !== index);
+      resetFieldErrors(next.length);
+      return next;
+    });
   };
 
   const onCreateOrder = (event) => {
     event.preventDefault();
     setPaymentMessage("");
     setRequiresLogin(false);
+    resetFieldErrors(teammates.length);
 
     const normalizedTeammates = teammates.map((item) => ({
       name: item.name.trim(),
@@ -262,6 +358,12 @@ export function HackathonRegistrationPage() {
     );
 
     if (!teamName.trim() || !teamLeaderName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim()) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        teamName: !teamName.trim() ? "Team name is required." : prev.teamName,
+        teamLeaderName: !teamLeaderName.trim() ? "Team leader name is required." : prev.teamLeaderName,
+        rollNo: !rollNo.trim() ? "Leader roll number is required." : prev.rollNo
+      }));
       setPaymentMessage("Team and participant details are required before payment.");
       return;
     }
@@ -283,11 +385,19 @@ export function HackathonRegistrationPage() {
       const teammateNames = filledTeammates.map((item) => item.name.toLowerCase());
 
       if (teammateRollNos.includes(leaderRollNo)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          rollNo: "Team leader roll number cannot be used by a teammate."
+        }));
         setPaymentMessage("Team leader roll number cannot be used by a teammate.");
         return;
       }
 
       if (teammateNames.includes(leaderNameNormalized)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          teamLeaderName: "Team leader name cannot be duplicated in teammate entries."
+        }));
         setPaymentMessage("Team leader name cannot be duplicated in teammate entries.");
         return;
       }
@@ -400,6 +510,7 @@ export function HackathonRegistrationPage() {
                 setParticipationType(type);
                 setPaymentMessage("");
                 setOrderData(null);
+                resetFieldErrors(type === "individual" ? 1 : teammates.length);
                 if (type === "individual") {
                   setTeammates([
                     {
@@ -428,27 +539,39 @@ export function HackathonRegistrationPage() {
       <form className="mt-6 grid gap-4" onSubmit={onCreateOrder}>
         <input
           value={teamName}
-          onChange={(event) => setTeamName(event.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2"
+          onChange={(event) => {
+            setTeamName(event.target.value);
+            setFieldErrors((prev) => ({ ...prev, teamName: "" }));
+          }}
+          className={getInputClass(Boolean(fieldErrors.teamName))}
           placeholder="Team Name"
           required
         />
+        {fieldErrors.teamName ? <p className="text-sm text-rose-600">{fieldErrors.teamName}</p> : null}
 
         <input
           value={teamLeaderName}
-          onChange={(event) => setTeamLeaderName(event.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2"
+          onChange={(event) => {
+            setTeamLeaderName(event.target.value);
+            setFieldErrors((prev) => ({ ...prev, teamLeaderName: "" }));
+          }}
+          className={getInputClass(Boolean(fieldErrors.teamLeaderName))}
           placeholder="Team Leader Name"
           required
         />
+        {fieldErrors.teamLeaderName ? <p className="text-sm text-rose-600">{fieldErrors.teamLeaderName}</p> : null}
 
         <input
           value={rollNo}
-          onChange={(event) => setRollNo(event.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2"
+          onChange={(event) => {
+            setRollNo(event.target.value);
+            setFieldErrors((prev) => ({ ...prev, rollNo: "" }));
+          }}
+          className={getInputClass(Boolean(fieldErrors.rollNo))}
           placeholder="Roll No"
           required
         />
+        {fieldErrors.rollNo ? <p className="text-sm text-rose-600">{fieldErrors.rollNo}</p> : null}
 
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
           Gender
@@ -574,9 +697,10 @@ export function HackathonRegistrationPage() {
                   <input
                     value={item.name}
                     onChange={(event) => updateTeammate(index, "name", event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2"
+                    className={getInputClass(Boolean(fieldErrors.teammates[index]?.name))}
                     placeholder={`Member ${index + 1} Name`}
                   />
+                  {fieldErrors.teammates[index]?.name ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].name}</p> : null}
                   <label className="grid gap-1 text-sm font-semibold text-slate-700">
                     Gender
                     <select
@@ -594,9 +718,10 @@ export function HackathonRegistrationPage() {
                   <input
                     value={item.rollNo}
                     onChange={(event) => updateTeammate(index, "rollNo", event.target.value)}
-                    className="rounded-lg border border-slate-300 px-3 py-2"
+                    className={getInputClass(Boolean(fieldErrors.teammates[index]?.rollNo))}
                     placeholder="Roll No"
                   />
+                  {fieldErrors.teammates[index]?.rollNo ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].rollNo}</p> : null}
                   <div className="grid gap-2 sm:grid-cols-3">
                     <label className="grid gap-1 text-sm font-semibold text-slate-700">
                       Year

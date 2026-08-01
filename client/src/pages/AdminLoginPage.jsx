@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -14,6 +16,7 @@ const schema = z.object({
 export function AdminLoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -47,12 +50,23 @@ export function AdminLoginPage() {
         </div>
 
         <div>
-          <input
-            {...register("password")}
-            type="password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
-            placeholder="Admin password"
-          />
+          <div className="relative">
+            <input
+              {...register("password")}
+              type={showPassword ? "text" : "password"}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-11"
+              placeholder="Admin password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {errors.password ? <p className="mt-1 text-sm text-rose-600">{errors.password.message}</p> : null}
         </div>
 
