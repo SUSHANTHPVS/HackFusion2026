@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BrandLogoGroup } from "../components/BrandLogoGroup";
@@ -6,10 +7,75 @@ import { ManagementTeamSection } from "../components/ManagementTeamSection";
 import { ParticleField } from "../components/ParticleField";
 import { PrizePoolSection } from "../components/PrizePoolSection";
 import { StatGrid } from "../components/StatGrid";
+import { useAuth } from "../context/AuthContext";
+import { api } from "../services/api";
 
 export function HomePage() {
+  const { user } = useAuth();
+  const [payment, setPayment] = useState(null);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPaymentStatus() {
+      if (user?.role !== "participant") {
+        return;
+      }
+
+      setIsCheckingPayment(true);
+
+      try {
+        const response = await api.get("/participant/dashboard");
+        if (!isMounted) {
+          return;
+        }
+
+        setPayment(response.data?.payment || null);
+      } catch {
+        if (isMounted) {
+          setPayment(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCheckingPayment(false);
+        }
+      }
+    }
+
+    loadPaymentStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.role]);
+
   return (
     <div className="space-y-8">
+      {payment?.status === "success" ? (
+        <section className="glass-card rounded-3xl border border-emerald-200 bg-linear-to-r from-emerald-50 via-white to-cyan-50 p-6 shadow-lg md:p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Registration status</p>
+          <h2 className="mt-2 text-2xl font-extrabold text-slate-900 md:text-3xl">You have already registered for the hackathon</h2>
+          <p className="mt-3 max-w-3xl text-sm text-slate-700 md:text-base">
+            If you have not joined the communication group yet, go to the dashboard. Your WhatsApp join link is available there.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              to="/participant/dashboard"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700"
+            >
+              Go to Dashboard
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      {isCheckingPayment ? (
+        <section className="glass-card rounded-3xl border border-slate-200/80 bg-white/80 p-4 text-sm text-slate-600 shadow-sm">
+          Checking your registration status...
+        </section>
+      ) : null}
+
       <section className="glass-card relative overflow-hidden rounded-3xl p-6 shadow-xl sm:p-8 md:p-12">
         <ParticleField />
         <div className="relative z-10">
