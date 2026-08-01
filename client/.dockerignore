@@ -1,0 +1,13 @@
+node_modules
+dist
+.vite
+.git
+.gitignore
+Dockerfile
+npm-debug.log*
+.yarn
+.pnpm-store
+coverage
+*.local
+.env
+.env.*

@@ -21,6 +21,21 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
    - Client: `cd client && npm run dev`
    - Server: `cd server && npm run dev`
 
+## Docker Deployment
+1. Ensure `server/.env` exists and contains production-ready values.
+2. Build and start both services:
+   - `docker compose up --build -d`
+3. Open the app:
+   - Client: `http://localhost`
+   - Server health: `http://localhost:8080/health`
+4. Stop services:
+   - `docker compose down`
+
+### Docker Notes
+- Client is served by Nginx and proxies `/api/*` to the backend container.
+- `docker-compose.yml` forces `CLIENT_ORIGIN=http://localhost` for browser access.
+- Backend still uses all secrets from `server/.env`.
+
 ## Core API Endpoints
 - `POST /api/auth/register`
 - `POST /api/auth/login`
