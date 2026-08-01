@@ -36,6 +36,9 @@ Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
 - `docker-compose.yml` forces `CLIENT_ORIGIN=http://localhost` for browser access.
 - Backend still uses all secrets from `server/.env`.
 
+### Local Runbook
+- See `LOCAL_DOCKER.md` for a quick local Docker workflow and troubleshooting guide.
+
 ## Core API Endpoints
 - `POST /api/auth/register`
 - `POST /api/auth/login`
