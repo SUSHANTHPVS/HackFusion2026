@@ -6,6 +6,14 @@ function getErrorMessage(error, fallback = "Unable to load analytics") {
   return error?.response?.data?.message || fallback;
 }
 
+function formatCurrency(value) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
+}
+
 export function AdminAnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,6 +44,37 @@ export function AdminAnalyticsPage() {
   }, []);
 
   const topDepartments = useMemo(() => (stats?.departments || []).slice(0, 5), [stats?.departments]);
+  const topDepartmentsMax = useMemo(() => Math.max(...topDepartments.map((item) => Number(item.count || 0)), 1), [topDepartments]);
+
+  const timelineWithVisuals = useMemo(() => {
+    const timelineMax = Math.max(...timeline.map((item) => Number(item.count || 0)), 1);
+
+    return timeline.map((item) => ({
+      ...item,
+      value: Number(item.count || 0),
+      barHeight: Math.max(8, Math.round((Number(item.count || 0) / timelineMax) * 72))
+    }));
+  }, [timeline]);
+
+  const checkInPercent = useMemo(() => {
+    const teams = Number(stats?.teams || 0);
+    const checkedIn = Number(stats?.checkedInTeams || 0);
+    if (!teams) {
+      return 0;
+    }
+
+    return Math.min(100, Math.round((checkedIn / teams) * 100));
+  }, [stats?.teams, stats?.checkedInTeams]);
+
+  const paidPercent = useMemo(() => {
+    const participants = Number(stats?.participants || 0);
+    const payments = Number(stats?.payments || 0);
+    if (!participants) {
+      return 0;
+    }
+
+    return Math.min(100, Math.round((payments / participants) * 100));
+  }, [stats?.participants, stats?.payments]);
 
   if (isLoading) {
     return (
@@ -62,7 +101,35 @@ export function AdminAnalyticsPage() {
           <div className="glass-card rounded-xl p-5"><p className="text-sm text-slate-500">Paid</p><p className="mt-1 text-2xl font-bold text-slate-900">{stats.payments}</p></div>
           <div className="glass-card rounded-xl p-5"><p className="text-sm text-slate-500">Checked-In</p><p className="mt-1 text-2xl font-bold text-slate-900">{stats.checkedInTeams}</p></div>
           <div className="glass-card rounded-xl p-5"><p className="text-sm text-slate-500">IEEE Members</p><p className="mt-1 text-2xl font-bold text-slate-900">{stats.ieeeMembers}</p></div>
-          <div className="glass-card rounded-xl p-5"><p className="text-sm text-slate-500">Revenue</p><p className="mt-1 text-2xl font-bold text-slate-900">INR {stats.revenue || 0}</p></div>
+          <div className="glass-card rounded-xl p-5"><p className="text-sm text-slate-500">Revenue</p><p className="mt-1 text-2xl font-bold text-slate-900">{formatCurrency(stats.revenue)}</p></div>
+        </div>
+      ) : null}
+
+      {stats ? (
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div className="glass-card rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-slate-900">Check-in Progress</h2>
+            <p className="mt-2 text-sm text-slate-600">Team presence completion based on paid registrations.</p>
+            <div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full rounded-full bg-linear-to-r from-emerald-500 to-cyan-500" style={{ width: `${checkInPercent}%` }} />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <span className="font-semibold text-slate-900">{checkInPercent}% Completed</span>
+              <span className="text-slate-600">{stats.checkedInTeams} / {stats.teams} teams</span>
+            </div>
+          </div>
+
+          <div className="glass-card rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-slate-900">Payment Conversion</h2>
+            <p className="mt-2 text-sm text-slate-600">How many participants have completed successful payments.</p>
+            <div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200">
+              <div className="h-full rounded-full bg-linear-to-r from-blue-600 to-cyan-500" style={{ width: `${paidPercent}%` }} />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <span className="font-semibold text-slate-900">{paidPercent}% Converted</span>
+              <span className="text-slate-600">{stats.payments} / {stats.participants} participants</span>
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -72,11 +139,19 @@ export function AdminAnalyticsPage() {
           {topDepartments.length === 0 ? (
             <p className="mt-3 text-sm text-slate-600">No department data available.</p>
           ) : (
-            <ul className="mt-3 space-y-2 text-sm text-slate-700">
+            <ul className="mt-4 space-y-3 text-sm text-slate-700">
               {topDepartments.map((item) => (
-                <li key={item._id} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
-                  <span>{item._id || "Unknown"}</span>
-                  <span className="font-semibold">{item.count}</span>
+                <li key={item._id} className="rounded-lg border border-slate-200 bg-white/70 p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="font-semibold text-slate-800">{item._id || "Unknown"}</span>
+                    <span className="font-bold text-slate-900">{item.count}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-linear-to-r from-fuchsia-500 to-cyan-500"
+                      style={{ width: `${Math.round((Number(item.count || 0) / topDepartmentsMax) * 100)}%` }}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>
@@ -85,17 +160,31 @@ export function AdminAnalyticsPage() {
 
         <div className="glass-card rounded-2xl p-6">
           <h2 className="text-xl font-bold text-slate-900">Registration Timeline</h2>
-          {timeline.length === 0 ? (
+          {timelineWithVisuals.length === 0 ? (
             <p className="mt-3 text-sm text-slate-600">No timeline data available.</p>
           ) : (
-            <ul className="mt-3 max-h-72 space-y-2 overflow-y-auto text-sm text-slate-700">
-              {timeline.map((item) => (
-                <li key={item._id} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
-                  <span>{item._id}</span>
-                  <span className="font-semibold">{item.count}</span>
-                </li>
-              ))}
-            </ul>
+            <>
+              <div className="mt-4 flex h-28 items-end gap-2 overflow-x-auto rounded-lg border border-slate-200 bg-white/70 px-3 py-3">
+                {timelineWithVisuals.map((item) => (
+                  <div key={`bar-${item._id}`} className="flex min-w-8 flex-col items-center justify-end">
+                    <div
+                      className="w-6 rounded-t-md bg-linear-to-t from-cyan-600 to-blue-400"
+                      style={{ height: `${item.barHeight}px` }}
+                      title={`${item._id}: ${item.value}`}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <ul className="mt-3 max-h-56 space-y-2 overflow-y-auto text-sm text-slate-700">
+                {timelineWithVisuals.map((item) => (
+                  <li key={item._id} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
+                    <span>{item._id}</span>
+                    <span className="font-semibold">{item.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
       </div>

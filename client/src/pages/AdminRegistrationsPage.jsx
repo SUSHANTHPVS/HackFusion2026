@@ -7,6 +7,8 @@ function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
 }
 
+const EXPORT_HEADERS = ["TeamName", "Team Mates Names", "Roll Number", "Branch", "Section"];
+
 function getAllMembers(item) {
   return [
     {
@@ -27,7 +29,7 @@ function getAllMembers(item) {
 }
 
 function buildCsvValue(values) {
-  return values.filter(Boolean).join(" | ") || "N/A";
+  return values.filter(Boolean).join(", ") || "N/A";
 }
 
 function buildExportRows(rows) {
@@ -36,10 +38,10 @@ function buildExportRows(rows) {
 
     return {
       TeamName: item.teamName || "N/A",
-      "Team Mates Names": buildCsvValue(members.map((member) => `${member.role}: ${member.name}`)),
-      "Roll Number": buildCsvValue(members.map((member) => `${member.role}: ${member.rollNo}`)),
-      Branch: buildCsvValue(members.map((member) => `${member.role}: ${member.branch}`)),
-      Section: buildCsvValue(members.map((member) => `${member.role}: ${member.section}`))
+      "Team Mates Names": buildCsvValue(members.map((member) => member.name || "N/A")),
+      "Roll Number": buildCsvValue(members.map((member) => member.rollNo || "N/A")),
+      Branch: buildCsvValue(members.map((member) => member.branch || "N/A")),
+      Section: buildCsvValue(members.map((member) => member.section || "N/A"))
     };
   });
 }
@@ -282,7 +284,7 @@ export function AdminRegistrationsPage() {
       return;
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    const worksheet = XLSX.utils.json_to_sheet(exportRows, { header: EXPORT_HEADERS });
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
     XLSX.writeFile(workbook, "registrations-presence.xlsx");
