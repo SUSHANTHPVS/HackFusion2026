@@ -29,7 +29,10 @@ export function RegisterPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: authService.register
+    mutationFn: authService.register,
+    onSuccess: () => {
+      navigate("/login");
+    }
   });
 
   const googleMutation = useMutation({
