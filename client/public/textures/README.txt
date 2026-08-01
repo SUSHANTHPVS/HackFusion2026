@@ -3,6 +3,7 @@ Earth texture files currently used by the homepage globe:
 - earth-clouds.png
 - earth-normal.jpg
 - earth-specular.jpg
+- earth-night.png
 
 Downloaded from three.js example texture set:
 - https://github.com/mrdoob/three.js/tree/dev/examples/textures/planets

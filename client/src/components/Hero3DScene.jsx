@@ -139,17 +139,21 @@ function useOptionalTexture(path, options) {
 function GlobeScene({ qualityTier }) {
   const globeGroupRef = useRef(null);
   const cloudsRef = useRef(null);
+  const earthMaterialRef = useRef(null);
   const earthTexture = useOptionalTexture("/textures/earth-day.jpg", { srgb: true });
   const cloudTexture = useOptionalTexture("/textures/earth-clouds.png", { srgb: false });
   const normalTexture = useOptionalTexture("/textures/earth-normal.jpg", { srgb: false });
   const specularTexture = useOptionalTexture("/textures/earth-specular.jpg", { srgb: false });
+  const nightTexture = useOptionalTexture("/textures/earth-night.png", { srgb: true });
   const fallbackEarthTexture = useMemo(() => createProceduralEarthTexture(), []);
   const fallbackCloudTexture = useMemo(() => createProceduralCloudTexture(), []);
+  const sunDirection = useMemo(() => new THREE.Vector3(3.5, 2.4, 4.5).normalize(), []);
 
   const globeMap = earthTexture === undefined ? fallbackEarthTexture : earthTexture || fallbackEarthTexture;
   const cloudMap = cloudTexture === undefined ? fallbackCloudTexture : cloudTexture || fallbackCloudTexture;
   const normalMap = normalTexture || null;
   const specularMap = specularTexture || null;
+  const nightMap = nightTexture || null;
 
   const segments = qualityTier === "low" ? 32 : qualityTier === "medium" ? 44 : 56;
 
@@ -164,20 +168,56 @@ function GlobeScene({ qualityTier }) {
     }
   });
 
+  useEffect(() => {
+    const material = earthMaterialRef.current;
+
+    if (!material) {
+      return;
+    }
+
+    material.onBeforeCompile = (shader) => {
+      shader.uniforms.nightMap = { value: nightMap || globeMap };
+      shader.uniforms.sunDirection = { value: sunDirection };
+      shader.uniforms.nightIntensity = { value: nightMap ? 1.9 : 0.55 };
+
+      shader.vertexShader = shader.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying vec3 vWorldNormal;")
+        .replace(
+          "#include <begin_vertex>",
+          "#include <begin_vertex>\nvWorldNormal = normalize(mat3(modelMatrix) * normal);"
+        );
+
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          "#include <common>",
+          "#include <common>\nuniform sampler2D nightMap;\nuniform vec3 sunDirection;\nuniform float nightIntensity;\nvarying vec3 vWorldNormal;"
+        )
+        .replace(
+          "#include <dithering_fragment>",
+          "float dayFacing = dot(normalize(vWorldNormal), normalize(sunDirection));\nfloat nightMask = smoothstep(0.15, -0.22, dayFacing);\nvec3 nightColor = texture2D(nightMap, vMapUv).rgb * nightMask * nightIntensity;\noutgoingLight += nightColor;\n#include <dithering_fragment>"
+        );
+
+      material.userData.shader = shader;
+    };
+
+    material.needsUpdate = true;
+  }, [globeMap, nightMap, sunDirection]);
+
   return (
     <group ref={globeGroupRef}>
       <mesh castShadow>
         <sphereGeometry args={[1, segments, segments]} />
         <meshPhongMaterial
+          ref={earthMaterialRef}
           map={globeMap}
           normalMap={normalMap}
           specularMap={specularMap}
-          specular="#6ab9ff"
-          shininess={24}
+          specular="#d8efff"
+          shininess={48}
           color="#ffffff"
-          emissive="#0a2f4a"
-          emissiveIntensity={0.06}
-          normalScale={new THREE.Vector2(0.42, 0.42)}
+          emissive="#0b3f63"
+          emissiveIntensity={0.08}
+          normalScale={new THREE.Vector2(0.5, 0.5)}
         />
       </mesh>
 
@@ -185,9 +225,9 @@ function GlobeScene({ qualityTier }) {
         <sphereGeometry args={[1.022, segments, segments]} />
         <meshStandardMaterial
           map={cloudMap}
-          color="#f5fbff"
+          color="#ffffff"
           transparent
-          opacity={0.24}
+          opacity={0.34}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -195,8 +235,19 @@ function GlobeScene({ qualityTier }) {
 
       <mesh>
         <sphereGeometry args={[1.08, segments, segments]} />
-        <meshBasicMaterial color="#8be2ff" transparent opacity={0.12} side={THREE.BackSide} />
+        <meshBasicMaterial color="#9fe6ff" transparent opacity={0.23} side={THREE.BackSide} />
       </mesh>
+
+      <group position={[2.25, 1.6, 2.85]}>
+        <mesh>
+          <sphereGeometry args={[0.12, 16, 16]} />
+          <meshBasicMaterial color="#fff5cf" />
+        </mesh>
+        <mesh>
+          <sphereGeometry args={[0.34, 20, 20]} />
+          <meshBasicMaterial color="#ffe7ad" transparent opacity={0.38} blending={THREE.AdditiveBlending} depthWrite={false} />
+        </mesh>
+      </group>
     </group>
   );
 }
@@ -204,11 +255,12 @@ function GlobeScene({ qualityTier }) {
 function SceneLights() {
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[3, 2, 4]} intensity={1.15} />
-      <directionalLight position={[-2, -1, -3]} intensity={0.3} color="#67e8f9" />
-      <pointLight position={[0, 2.8, 1.8]} intensity={0.8} color="#22d3ee" />
-      <pointLight position={[0, -2.3, -1.6]} intensity={0.32} color="#0ea5e9" />
+      <hemisphereLight skyColor="#8ec9ff" groundColor="#102337" intensity={0.34} />
+      <ambientLight intensity={0.28} />
+      <directionalLight position={[3.5, 2.4, 4.5]} intensity={2.3} color="#fff7eb" />
+      <directionalLight position={[-2, -1, -3]} intensity={0.55} color="#63d5ff" />
+      <pointLight position={[0.1, 3.1, 2.15]} intensity={1.25} color="#9ee7ff" />
+      <pointLight position={[0, -2.3, -1.6]} intensity={0.32} color="#0b7ec4" />
     </>
   );
 }
@@ -310,14 +362,18 @@ export function Hero3DScene() {
   };
 
   return (
-    <div className="h-70 w-full overflow-hidden rounded-2xl border border-cyan-200/60 bg-linear-to-br from-cyan-100/55 via-white/70 to-sky-100/65 shadow-[inset_0_0_80px_rgba(14,165,233,0.14)] sm:h-80">
+    <div className="h-70 w-full overflow-hidden rounded-2xl border border-sky-400/35 bg-linear-to-br from-[#041122] via-[#071a30] to-[#0a2742] shadow-[inset_0_0_100px_rgba(56,189,248,0.18)] sm:h-80">
       <Canvas
         dpr={dprByTier[qualityTier]}
         camera={{ position: [0, 0, 4.6], fov: isCompactViewport ? 48 : 42 }}
         gl={{ antialias: false, powerPreference: "high-performance" }}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.28;
+        }}
       >
-        <color attach="background" args={["#eef9ff"]} />
-        <fog attach="fog" args={["#eef9ff", 5.8, 11.5]} />
+        <color attach="background" args={["#07162a"]} />
+        <fog attach="fog" args={["#07162a", 4.6, 9.8]} />
         <SceneLights />
         <MouseReactiveCamera enabled={!isCompactViewport} />
         <GlobeScene qualityTier={qualityTier} />
@@ -325,11 +381,11 @@ export function Hero3DScene() {
           count={sparkleCountByTier[qualityTier]}
           size={sparkleSizeByTier[qualityTier]}
           speed={0.12}
-          opacity={0.38}
-          color={new THREE.Color("#7fdcff")}
+          opacity={0.28}
+          color={new THREE.Color("#bdeaff")}
           scale={[4.4, 2.6, 2.6]}
         />
-        <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} autoRotate autoRotateSpeed={0.1} />
+        <OrbitControls enableZoom={false} enablePan={false} enableRotate={false} autoRotate autoRotateSpeed={0.12} />
       </Canvas>
     </div>
   );
