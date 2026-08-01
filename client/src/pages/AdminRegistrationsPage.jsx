@@ -1,9 +1,47 @@
-import { useEffect, useState } from "react";
-import { Loader2, Search, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Loader2, Search, X } from "lucide-react";
+import * as XLSX from "xlsx";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
+}
+
+function getAllMembers(item) {
+  return [
+    {
+      role: "Team Leader",
+      name: item.teamLeaderName || item.leaderName || "N/A",
+      rollNo: item.rollNo || "N/A",
+      branch: item.branch || "N/A",
+      section: item.section || "N/A"
+    },
+    ...(item.teammates || []).map((member, index) => ({
+      role: `Teammate ${index + 1}`,
+      name: member.name || "N/A",
+      rollNo: member.rollNo || "N/A",
+      branch: member.branch || "N/A",
+      section: member.section || "N/A"
+    }))
+  ];
+}
+
+function buildCsvValue(values) {
+  return values.filter(Boolean).join(" | ") || "N/A";
+}
+
+function buildExportRows(rows) {
+  return rows.map((item) => {
+    const members = getAllMembers(item);
+
+    return {
+      TeamName: item.teamName || "N/A",
+      "Team Mates Names": buildCsvValue(members.map((member) => `${member.role}: ${member.name}`)),
+      "Roll Number": buildCsvValue(members.map((member) => `${member.role}: ${member.rollNo}`)),
+      Branch: buildCsvValue(members.map((member) => `${member.role}: ${member.branch}`)),
+      Section: buildCsvValue(members.map((member) => `${member.role}: ${member.section}`))
+    };
+  });
 }
 
 // Detailed participant information modal
@@ -14,7 +52,7 @@ function ParticipantDetailModal({ item, isMarking, onTogglePresence, onClose }) 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl">
         {/* Header */}
-        <div className="border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-4 flex items-center justify-between">
+        <div className="border-b border-slate-200 bg-linear-to-r from-cyan-50 to-blue-50 px-6 py-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Team Details</p>
             <h2 className="mt-2 text-2xl font-bold text-slate-900">{item.teamName}</h2>
@@ -166,11 +204,20 @@ function ParticipantDetailModal({ item, isMarking, onTogglePresence, onClose }) 
 }
 
 function RegistrationCard({ item, isMarking, onTogglePresence, onViewDetails }) {
+  const memberSummary = getAllMembers(item)
+    .map((member) => `${member.role}: ${member.name} (${member.rollNo}, ${member.branch}, ${member.section})`)
+    .join(" • ");
+
   return (
     <article className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:hidden">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{item.teamName}</p>
+
+      <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
+        <p className="font-semibold uppercase tracking-wide text-slate-500">Team Details</p>
+        <p className="mt-1 leading-5">{memberSummary}</p>
+      </div>
           <h3 className="mt-1 text-base font-bold text-slate-900">{item.teamLeaderName}</h3>
         </div>
         <span
@@ -227,6 +274,19 @@ export function AdminRegistrationsPage() {
   const [actionMessage, setActionMessage] = useState("");
   const [checkinLoadingId, setCheckinLoadingId] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
+
+  const exportRows = useMemo(() => buildExportRows(rows), [rows]);
+
+  const downloadExcel = () => {
+    if (exportRows.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(exportRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+    XLSX.writeFile(workbook, "registrations-presence.xlsx");
+  };
 
   const loadRegistrations = async ({ refreshing = false } = {}) => {
     if (refreshing) {
@@ -299,13 +359,23 @@ export function AdminRegistrationsPage() {
               className="w-full border-none bg-transparent text-sm outline-none"
             />
           </div>
-          <button
-            type="button"
-            onClick={() => loadRegistrations({ refreshing: true })}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={downloadExcel}
+              disabled={exportRows.length === 0}
+              className="inline-flex items-center gap-2 rounded-lg border border-cyan-300 px-4 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download size={16} /> Download Excel
+            </button>
+            <button
+              type="button"
+              onClick={() => loadRegistrations({ refreshing: true })}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
         </div>
 
         <div className="mt-3 flex gap-2">
@@ -365,7 +435,14 @@ export function AdminRegistrationsPage() {
 
                     return (
                       <tr key={item.teamId} className="hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedItem(item)}>
-                        <td className="px-3 py-2 font-semibold text-slate-900">{item.teamName}</td>
+                          <td className="px-3 py-2 font-semibold text-slate-900">
+                            <div>{item.teamName}</div>
+                            <div className="mt-1 text-xs font-normal text-slate-600">
+                              {getAllMembers(item)
+                                .map((member) => `${member.role}: ${member.name} (${member.rollNo}, ${member.branch}, ${member.section})`)
+                                .join(" • ")}
+                            </div>
+                          </td>
                         <td className="px-3 py-2 text-slate-700">{item.teamLeaderName}</td>
                         <td className="px-3 py-2 text-slate-700">{item.accountEmail || "N/A"}</td>
                         <td className="px-3 py-2 capitalize text-slate-700">{item.paymentStatus}</td>
