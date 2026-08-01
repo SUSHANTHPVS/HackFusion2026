@@ -149,7 +149,7 @@ export function Navbar() {
       ) : null}
 
       {isLogoutConfirmOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 p-4" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
+        <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-900/45 p-4" role="dialog" aria-modal="true" aria-labelledby="logout-confirm-title">
           <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <h2 id="logout-confirm-title" className="text-lg font-bold text-slate-900">Confirm Logout</h2>
