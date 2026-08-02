@@ -15,3 +15,7 @@ export async function countSuccessfulRegisteredParticipants() {
   const teams = await Team.find({ _id: { $in: successfulTeamIds } }, { teammates: 1 }).lean();
   return teams.reduce((total, team) => total + countTeamParticipantSlots(team), 0);
 }
+
+export async function countSuccessfulRegisteredTeams() {
+  return Payment.distinct("teamId", { status: "success" }).then((teamIds) => teamIds.length);
+}

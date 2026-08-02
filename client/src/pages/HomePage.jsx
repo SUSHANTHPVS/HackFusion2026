@@ -18,6 +18,7 @@ export function HomePage() {
   const [registrationStatus, setRegistrationStatus] = useState({
     capacity: REGISTRATION_CAPACITY,
     registered: 0,
+    registeredTeams: 0,
     remaining: REGISTRATION_CAPACITY,
     registrationClosed: false
   });
@@ -74,6 +75,7 @@ export function HomePage() {
         setRegistrationStatus({
           capacity: Number(response.data?.capacity || REGISTRATION_CAPACITY),
           registered: Number(response.data?.registered || 0),
+          registeredTeams: Number(response.data?.registeredTeams || 0),
           remaining: Number(response.data?.remaining ?? REGISTRATION_CAPACITY),
           registrationClosed: Boolean(response.data?.registrationClosed)
         });
@@ -167,6 +169,11 @@ export function HomePage() {
                 {isCheckingRegistrationStatus
                   ? "Checking remaining registrations..."
                   : `Registrations left: ${registrationStatus.remaining}`}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-600">
+                {isCheckingRegistrationStatus
+                  ? ""
+                  : `Registered teams: ${registrationStatus.registeredTeams}`}
               </p>
             </div>
 

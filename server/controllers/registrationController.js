@@ -3,7 +3,7 @@ import { Team } from "../models/Team.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { getEventSettings } from "../services/eventSettingsService.js";
-import { countSuccessfulRegisteredParticipants } from "../services/registrationCapacityService.js";
+import { countSuccessfulRegisteredParticipants, countSuccessfulRegisteredTeams } from "../services/registrationCapacityService.js";
 import { buildRegistrationSyncPayload, syncRegistrationToGoogle } from "../services/registrationSyncService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -372,15 +372,17 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
 
 export const getRegistrationStatus = asyncHandler(async (_req, res) => {
   const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
-  const [totalRegistrations, eventSettings] = await Promise.all([
+  const [totalParticipants, totalTeams, eventSettings] = await Promise.all([
     countSuccessfulRegisteredParticipants(),
+    countSuccessfulRegisteredTeams(),
     getEventSettings()
   ]);
-  const remaining = Math.max(registrationCapacity - totalRegistrations, 0);
+  const remaining = Math.max(registrationCapacity - totalParticipants, 0);
 
   res.json({
     capacity: registrationCapacity,
-    registered: totalRegistrations,
+    registered: totalParticipants,
+    registeredTeams: totalTeams,
     remaining,
     registrationClosed: Boolean(eventSettings.registrationClosed) || remaining === 0
   });
