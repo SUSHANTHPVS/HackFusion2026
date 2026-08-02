@@ -40,7 +40,7 @@ export function Navbar() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <Link to="/" className="flex items-center gap-3">
           <BrandLogoGroup compact className="hidden sm:flex" />
-          <span className="text-lg font-extrabold tracking-tight text-slate-900">IEEE Hackathon</span>
+          <span className="text-lg font-extrabold tracking-tight text-slate-900">Hack Fusion 2026</span>
         </Link>
         <div className="hidden items-center gap-6 lg:flex">
           {links.map((link) => (
