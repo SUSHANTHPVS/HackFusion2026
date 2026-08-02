@@ -79,7 +79,7 @@ export function HomePage() {
       <section className="glass-card relative overflow-hidden rounded-3xl p-6 shadow-xl sm:p-8 md:p-12">
         <ParticleField />
         <div className="relative z-10">
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-stretch">
             <div className="max-w-3xl">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">IEEE RAS x IEEE CS</p>
               <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">2-Day Hackathon</h1>
@@ -106,19 +106,19 @@ export function HomePage() {
               </div>
             </div>
 
-            <aside className="w-full max-w-65 justify-self-end rounded-2xl border border-cyan-200/80 bg-white/85 p-3 shadow-2xl ring-1 ring-cyan-100 backdrop-blur-sm lg:-mt-4 lg:translate-x-2">
+            <aside className="w-full max-w-65 justify-self-end self-stretch rounded-2xl border border-cyan-200/80 bg-white/80 p-4 shadow-lg ring-1 ring-cyan-100 backdrop-blur-sm">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-700">Event Access</p>
               <img
                 src="/logos/hackathon-id-card.jpg"
                 alt="Hackathon ID card"
-                className="mt-2 h-44 w-full rounded-lg border border-slate-200 bg-white object-contain p-1"
+                className="mt-3 h-44 w-full rounded-lg border border-slate-200 bg-white object-contain p-1"
                 loading="lazy"
                 onError={(event) => {
                   event.currentTarget.onerror = null;
                   event.currentTarget.src = "/logos/hackathon-id-card.svg";
                 }}
               />
-              <p className="mt-2 text-xs font-semibold text-slate-700">ID Card Will Be Given At The Venue</p>
+              <p className="mt-3 text-xs font-semibold text-slate-700">ID Card Will Be Given At The Venue</p>
             </aside>
           </div>
         </div>
