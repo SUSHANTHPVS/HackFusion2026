@@ -79,30 +79,47 @@ export function HomePage() {
       <section className="glass-card relative overflow-hidden rounded-3xl p-6 shadow-xl sm:p-8 md:p-12">
         <ParticleField />
         <div className="relative z-10">
-          <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">IEEE RAS x IEEE CS</p>
-            <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">2-Day Hackathon</h1>
-            <p className="mt-4 text-lg font-semibold text-slate-700 sm:text-xl">Build. Innovate. Impact.</p>
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="max-w-3xl">
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">IEEE RAS x IEEE CS</p>
+              <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">2-Day Hackathon</h1>
+              <p className="mt-4 text-lg font-semibold text-slate-700 sm:text-xl">Build. Innovate. Impact.</p>
 
-            <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-sm">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-600">Powered By</p>
-              <BrandLogoGroup className="mt-3 flex-wrap justify-center sm:justify-start" showNames />
+              <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-600">Powered By</p>
+                <BrandLogoGroup className="mt-3 flex-wrap justify-center sm:justify-start" showNames />
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  to="/hackathon-register"
+                  className="hero-primary-cta rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
+                >
+                  Register Now
+                </Link>
+                <Link
+                  to="/theme"
+                  className="hero-secondary-cta rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300"
+                >
+                  Explore Theme
+                </Link>
+              </div>
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/hackathon-register"
-                className="hero-primary-cta rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
-              >
-                Register Now
-              </Link>
-              <Link
-                to="/theme"
-                className="hero-secondary-cta rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300"
-              >
-                Explore Theme
-              </Link>
-            </div>
+            <aside className="w-full max-w-65 justify-self-end rounded-2xl border border-cyan-200/80 bg-white/85 p-3 shadow-2xl ring-1 ring-cyan-100 backdrop-blur-sm lg:-mt-4 lg:translate-x-2">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-700">Event Access</p>
+              <img
+                src="/logos/hackathon-id-card.jpg"
+                alt="Hackathon ID card"
+                className="mt-2 h-36 w-full rounded-lg border border-slate-200 object-cover"
+                loading="lazy"
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = "/logos/hackathon-id-card.svg";
+                }}
+              />
+              <p className="mt-2 text-xs font-semibold text-slate-700">Carry your ID card for check-in and entry.</p>
+            </aside>
           </div>
         </div>
       </section>

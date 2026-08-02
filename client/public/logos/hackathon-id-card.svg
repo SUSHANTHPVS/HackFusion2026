@@ -1,0 +1,33 @@
+<svg width="640" height="420" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Hackathon ID Card</title>
+  <desc id="desc">Illustration of a hackathon ID card with lanyard and participant details.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="640" height="420" rx="28" fill="url(#bg)"/>
+  <path d="M320 34 C290 48, 286 86, 286 112 L286 128" stroke="#0f172a" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M320 34 C350 48, 354 86, 354 112 L354 128" stroke="#0f172a" stroke-width="14" fill="none" stroke-linecap="round"/>
+
+  <rect x="170" y="120" width="300" height="240" rx="20" fill="url(#card)" stroke="#0f172a" stroke-width="4"/>
+  <rect x="170" y="120" width="300" height="52" rx="18" fill="#0f172a"/>
+  <text x="320" y="153" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">HACKATHON PASS</text>
+
+  <circle cx="230" cy="230" r="38" fill="#cbd5e1"/>
+  <circle cx="230" cy="216" r="16" fill="#94a3b8"/>
+  <rect x="208" y="236" width="44" height="24" rx="12" fill="#94a3b8"/>
+
+  <text x="288" y="215" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">Participant</text>
+  <text x="288" y="242" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#334155">Access: All Zones</text>
+  <text x="288" y="266" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#334155">ID: IEEE-2026</text>
+
+  <rect x="208" y="288" width="224" height="38" rx="10" fill="#0f172a"/>
+  <text x="320" y="313" text-anchor="middle" font-family="Consolas, monospace" font-size="18" fill="#f8fafc">|| ||| || |||| |||</text>
+</svg>

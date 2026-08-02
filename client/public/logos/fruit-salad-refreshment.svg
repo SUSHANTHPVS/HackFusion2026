@@ -1,0 +1,33 @@
+<svg width="640" height="420" viewBox="0 0 640 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Fruit Salad Refreshments</title>
+  <desc id="desc">Colorful bowl of fruit salad representing refreshments at the event.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#fb7185"/>
+    </linearGradient>
+    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="640" height="420" rx="28" fill="url(#bg)"/>
+
+  <ellipse cx="320" cy="270" rx="190" ry="105" fill="#f8fafc" opacity="0.45"/>
+  <path d="M140 235 C170 330, 470 330, 500 235" fill="url(#bowl)" stroke="#475569" stroke-width="5"/>
+  <ellipse cx="320" cy="235" rx="182" ry="64" fill="#fff" stroke="#475569" stroke-width="5"/>
+
+  <circle cx="240" cy="210" r="28" fill="#ef4444"/>
+  <circle cx="280" cy="192" r="24" fill="#f59e0b"/>
+  <circle cx="322" cy="202" r="30" fill="#22c55e"/>
+  <circle cx="365" cy="190" r="23" fill="#eab308"/>
+  <circle cx="400" cy="214" r="26" fill="#3b82f6"/>
+  <circle cx="285" cy="232" r="18" fill="#a3e635"/>
+  <circle cx="350" cy="230" r="20" fill="#fb7185"/>
+
+  <path d="M252 156 C262 132, 284 126, 300 142" stroke="#15803d" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M385 154 C404 132, 422 130, 438 150" stroke="#166534" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+  <text x="320" y="350" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#0f172a">Fresh Fruit Salad</text>
+</svg>
