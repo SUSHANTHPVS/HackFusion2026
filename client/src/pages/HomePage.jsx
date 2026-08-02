@@ -129,7 +129,12 @@ export function HomePage() {
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-stretch">
             <div className="max-w-3xl">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">IEEE RAS x IEEE CS</p>
-              <h1 className="mt-4 text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">2-Day Hackathon</h1>
+              <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-2">
+                <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">2-Day Hackathon</h1>
+                <Link to="/schedule" className="pb-2 text-sm font-bold text-cyan-700 underline decoration-cyan-300 decoration-2 underline-offset-4 transition hover:text-cyan-800">
+                  Know more
+                </Link>
+              </div>
               <p className="mt-4 text-lg font-semibold text-slate-700 sm:text-xl">Build. Innovate. Impact.</p>
 
               <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-sm">
