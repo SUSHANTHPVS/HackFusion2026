@@ -3,6 +3,7 @@ import { Team } from "../models/Team.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { getEventSettings } from "../services/eventSettingsService.js";
+import { countSuccessfulRegisteredParticipants } from "../services/registrationCapacityService.js";
 import { buildRegistrationSyncPayload, syncRegistrationToGoogle } from "../services/registrationSyncService.js";
 import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -98,15 +99,6 @@ function buildIncomingMemberSets(participantDetails, normalizedTeammates) {
   return { incomingRollNos, incomingNames };
 }
 
-function countParticipantSlots(team) {
-  return 1 + (team.teammates?.length || 0);
-}
-
-async function getRegisteredParticipantCount(existingTeamId) {
-  const teams = await Team.find(existingTeamId ? { _id: { $ne: existingTeamId } } : {}, { teammates: 1 }).lean();
-  return teams.reduce((total, team) => total + countParticipantSlots(team), 0);
-}
-
 async function validateNoDuplicateMembersAcrossRegistrations(participantDetails, normalizedTeammates, existingTeamId) {
   const { incomingRollNos, incomingNames } = buildIncomingMemberSets(participantDetails, normalizedTeammates);
 
@@ -189,12 +181,14 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     throw new AppError("Team participation must have 1 to 3 teammates (2 to 4 members including leader).", 400);
   }
 
+  const incomingTeamSlots = 1 + normalizedTeammates.length;
+
   const existingTeam = await Team.findOne({ leader: req.user._id });
 
   if (!existingTeam) {
-    const totalRegistrations = await getRegisteredParticipantCount();
+    const totalRegistrations = await countSuccessfulRegisteredParticipants();
 
-    if (eventSettings.registrationClosed || totalRegistrations >= registrationCapacity) {
+    if (eventSettings.registrationClosed || totalRegistrations + incomingTeamSlots > registrationCapacity) {
       throw new AppError("Registrations are full. Please contact the organizers.", 403);
     }
   }
@@ -379,7 +373,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
 export const getRegistrationStatus = asyncHandler(async (_req, res) => {
   const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
   const [totalRegistrations, eventSettings] = await Promise.all([
-    getRegisteredParticipantCount(),
+    countSuccessfulRegisteredParticipants(),
     getEventSettings()
   ]);
   const remaining = Math.max(registrationCapacity - totalRegistrations, 0);

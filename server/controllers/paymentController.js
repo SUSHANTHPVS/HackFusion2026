@@ -1,9 +1,11 @@
 import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
+import { countSuccessfulRegisteredParticipants, countTeamParticipantSlots } from "../services/registrationCapacityService.js";
 import { sendPaymentDisputeAlertEmail, sendRegistrationEmail } from "../services/emailService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { createOrder } from "../services/razorpayService.js";
+import { env } from "../config/env.js";
 import { generateQrDataUrl } from "../services/qrService.js";
 import { verifyPaymentSignature, verifyWebhookSignature } from "../services/razorpayService.js";
 import { AppError } from "../utils/AppError.js";
@@ -87,6 +89,29 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
     };
   }
 
+  const team = await Team.findById(payment.teamId).lean();
+  const teamSlots = countTeamParticipantSlots(team || { teammates: [] });
+  const successfulParticipants = await countSuccessfulRegisteredParticipants();
+
+  if (successfulParticipants + teamSlots > Number(env.REGISTRATION_CAPACITY || 125)) {
+    await logPaymentAudit({
+      paymentRef: payment._id,
+      orderId,
+      userId: payment.userId,
+      teamId: payment.teamId,
+      eventType: "VERIFY_FAILED",
+      source,
+      status: "failed",
+      message: "Registration capacity reached before payment could be confirmed",
+      payload: { paymentId, teamSlots, successfulParticipants }
+    });
+
+    return {
+      statusCode: 403,
+      payload: { message: "Registrations are full. Please contact the organizers." }
+    };
+  }
+
   // ALWAYS set paymentId and signature if provided
   payment.paymentId = paymentId;
   payment.signature = signature || paymentId; // Ensure signature is always set
@@ -97,7 +122,6 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
   console.log(`[markPaymentSuccess] Payment saved successfully - signature in DB: ${payment.signature ? "✅ Present" : "❌ Missing"}`);
 
   const user = await User.findById(payment.userId);
-  const team = await Team.findById(payment.teamId);
   if (!user || !team) {
     await logPaymentAudit({
       paymentRef: payment._id,
