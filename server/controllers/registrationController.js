@@ -98,6 +98,15 @@ function buildIncomingMemberSets(participantDetails, normalizedTeammates) {
   return { incomingRollNos, incomingNames };
 }
 
+function countParticipantSlots(team) {
+  return 1 + (team.teammates?.length || 0);
+}
+
+async function getRegisteredParticipantCount(existingTeamId) {
+  const teams = await Team.find(existingTeamId ? { _id: { $ne: existingTeamId } } : {}, { teammates: 1 }).lean();
+  return teams.reduce((total, team) => total + countParticipantSlots(team), 0);
+}
+
 async function validateNoDuplicateMembersAcrossRegistrations(participantDetails, normalizedTeammates, existingTeamId) {
   const { incomingRollNos, incomingNames } = buildIncomingMemberSets(participantDetails, normalizedTeammates);
 
@@ -183,7 +192,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const existingTeam = await Team.findOne({ leader: req.user._id });
 
   if (!existingTeam) {
-    const totalRegistrations = await Team.countDocuments();
+    const totalRegistrations = await getRegisteredParticipantCount();
 
     if (eventSettings.registrationClosed || totalRegistrations >= registrationCapacity) {
       throw new AppError("Registrations are full. Please contact the organizers.", 403);
@@ -370,7 +379,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
 export const getRegistrationStatus = asyncHandler(async (_req, res) => {
   const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
   const [totalRegistrations, eventSettings] = await Promise.all([
-    Team.countDocuments(),
+    getRegisteredParticipantCount(),
     getEventSettings()
   ]);
   const remaining = Math.max(registrationCapacity - totalRegistrations, 0);
