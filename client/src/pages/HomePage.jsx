@@ -111,14 +111,14 @@ export function HomePage() {
               <img
                 src="/logos/hackathon-id-card.jpg"
                 alt="Hackathon ID card"
-                className="mt-2 h-36 w-full rounded-lg border border-slate-200 object-cover"
+                className="mt-2 h-44 w-full rounded-lg border border-slate-200 bg-white object-contain p-1"
                 loading="lazy"
                 onError={(event) => {
                   event.currentTarget.onerror = null;
                   event.currentTarget.src = "/logos/hackathon-id-card.svg";
                 }}
               />
-              <p className="mt-2 text-xs font-semibold text-slate-700">Carry your ID card for check-in and entry.</p>
+              <p className="mt-2 text-xs font-semibold text-slate-700">ID Card Will Be Given At The Venue</p>
             </aside>
           </div>
         </div>
