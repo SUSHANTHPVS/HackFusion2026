@@ -106,12 +106,12 @@ export function HomePage() {
               </div>
             </div>
 
-            <aside className="w-full max-w-65 justify-self-end self-stretch rounded-2xl border border-cyan-200/80 bg-white/80 p-4 shadow-lg ring-1 ring-cyan-100 backdrop-blur-sm">
+            <aside className="flex h-full w-full max-w-65 flex-col justify-between justify-self-end self-stretch rounded-2xl border border-cyan-200/80 bg-white/80 p-4 shadow-lg ring-1 ring-cyan-100 backdrop-blur-sm">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-700">Event Access</p>
               <img
                 src="/logos/hackathon-id-card.jpg"
                 alt="Hackathon ID card"
-                className="mt-3 h-44 w-full rounded-lg border border-slate-200 bg-white object-contain p-1"
+                className="mt-3 min-h-44 w-full flex-1 rounded-lg border border-slate-200 bg-white object-contain p-1"
                 loading="lazy"
                 onError={(event) => {
                   event.currentTarget.onerror = null;
