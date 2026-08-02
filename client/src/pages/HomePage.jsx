@@ -9,11 +9,19 @@ import { PrizePoolSection } from "../components/PrizePoolSection";
 import { StatGrid } from "../components/StatGrid";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
+import { REGISTRATION_CAPACITY } from "../utils/constants";
 
 export function HomePage() {
   const { user } = useAuth();
   const [payment, setPayment] = useState(null);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState({
+    capacity: REGISTRATION_CAPACITY,
+    registered: 0,
+    remaining: REGISTRATION_CAPACITY,
+    registrationClosed: false
+  });
+  const [isCheckingRegistrationStatus, setIsCheckingRegistrationStatus] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,6 +57,45 @@ export function HomePage() {
       isMounted = false;
     };
   }, [user?.role]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadRegistrationStatus() {
+      setIsCheckingRegistrationStatus(true);
+
+      try {
+        const response = await api.get("/registration/status");
+
+        if (!isMounted) {
+          return;
+        }
+
+        setRegistrationStatus({
+          capacity: Number(response.data?.capacity || REGISTRATION_CAPACITY),
+          registered: Number(response.data?.registered || 0),
+          remaining: Number(response.data?.remaining ?? REGISTRATION_CAPACITY),
+          registrationClosed: Boolean(response.data?.registrationClosed)
+        });
+      } catch {
+        if (isMounted) {
+          setRegistrationStatus((current) => current);
+        }
+      } finally {
+        if (isMounted) {
+          setIsCheckingRegistrationStatus(false);
+        }
+      }
+    }
+
+    loadRegistrationStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const isRegistrationClosed = registrationStatus.registrationClosed || registrationStatus.remaining <= 0;
 
   return (
     <div className="space-y-8">
@@ -90,13 +137,19 @@ export function HomePage() {
                 <BrandLogoGroup className="mt-3 flex-wrap justify-center sm:justify-start" showNames />
               </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/hackathon-register"
-                  className="hero-primary-cta rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
-                >
-                  Register Now
-                </Link>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                {isRegistrationClosed ? (
+                  <span className="hero-primary-cta inline-flex items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
+                    Registrations Closed
+                  </span>
+                ) : (
+                  <Link
+                    to="/hackathon-register"
+                    className="hero-primary-cta rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
+                  >
+                    Register Now
+                  </Link>
+                )}
                 <Link
                   to="/theme"
                   className="hero-secondary-cta rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300"
@@ -104,6 +157,12 @@ export function HomePage() {
                   Explore Theme
                 </Link>
               </div>
+
+              <p className="mt-3 text-sm font-semibold text-slate-700">
+                {isCheckingRegistrationStatus
+                  ? "Checking remaining registrations..."
+                  : `Registrations left: ${registrationStatus.remaining}`}
+              </p>
             </div>
 
             <aside className="flex h-full w-full max-w-65 flex-col justify-between justify-self-end self-stretch rounded-2xl border border-cyan-200/80 bg-white/80 p-4 shadow-lg ring-1 ring-cyan-100 backdrop-blur-sm">

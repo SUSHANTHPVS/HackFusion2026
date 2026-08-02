@@ -1,5 +1,6 @@
 export const EVENT_NAME = "IEEE RAS x IEEE CS Hackathon";
 export const EVENT_DATE = "2026-08-19T10:00:00+05:30";
+export const REGISTRATION_CAPACITY = 140;
 export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4";
 function normalizeApiBaseUrl(value) {
   const baseUrl = String(value || "").trim().replace(/\/$/, "");
@@ -53,7 +54,7 @@ export const GENDER_OPTIONS = [
 ];
 
 export const PRIMARY_STATS = [
-  { label: "Target Capacity", value: "100+" },
+  { label: "Target Capacity", value: "140" },
   { label: "Expected Participants", value: "120" },
   { label: "Event Duration", value: "2 Days" },
   { label: "Prize Pool", value: "INR 4,500" }

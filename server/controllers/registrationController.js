@@ -135,6 +135,7 @@ async function validateNoDuplicateMembersAcrossRegistrations(participantDetails,
 
 export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const eventSettings = await getEventSettings();
+  const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
   const participationType = req.body.participationType;
   const normalizedTeammates = (req.body.teammates || []).map((item) => ({
     name: item.name.trim(),
@@ -180,6 +181,14 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   }
 
   const existingTeam = await Team.findOne({ leader: req.user._id });
+
+  if (!existingTeam) {
+    const totalRegistrations = await Team.countDocuments();
+
+    if (eventSettings.registrationClosed || totalRegistrations >= registrationCapacity) {
+      throw new AppError("Registrations are full. Please contact the organizers.", 403);
+    }
+  }
 
   validateNoDuplicateMembers(participantDetails, normalizedTeammates);
   await validateNoDuplicateMembersAcrossRegistrations(participantDetails, normalizedTeammates, existingTeam?._id);
@@ -356,4 +365,20 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   }
 
   res.status(responseStatus).json(responsePayload);
+});
+
+export const getRegistrationStatus = asyncHandler(async (_req, res) => {
+  const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
+  const [totalRegistrations, eventSettings] = await Promise.all([
+    Team.countDocuments(),
+    getEventSettings()
+  ]);
+  const remaining = Math.max(registrationCapacity - totalRegistrations, 0);
+
+  res.json({
+    capacity: registrationCapacity,
+    registered: totalRegistrations,
+    remaining,
+    registrationClosed: Boolean(eventSettings.registrationClosed) || remaining === 0
+  });
 });

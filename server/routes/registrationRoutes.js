@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { createTeamAndOrder } from "../controllers/registrationController.js";
+import { createTeamAndOrder, getRegistrationStatus } from "../controllers/registrationController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
@@ -138,6 +138,7 @@ const schema = z
     });
   });
 
+router.get("/status", getRegistrationStatus);
 router.post("/team", protect, authorize("participant"), validate(schema), createTeamAndOrder);
 
 export default router;
