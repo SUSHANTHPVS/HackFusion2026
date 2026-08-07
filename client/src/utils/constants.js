@@ -101,7 +101,7 @@ export const MANAGEMENT_TEAM = [
     role: "Member",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/nagabhushigari-deepthi-0a0382343/",
-    github: "NagabhushigariDeepthi (NAGABHUSHIGARI DEEPTHI) https://share.google/jPLQ96A0eiRtBNdpD"
+    github: "https://github.com/NagabhushigariDeepthi"
   },
   {
     name: "Syed Shainaj",
