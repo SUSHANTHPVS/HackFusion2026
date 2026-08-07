@@ -15,7 +15,7 @@ const sectionVariants = {
   })
 };
 
-const contactNumbers = ["7337017721", "9989585590", "9121373923"];
+const contactNumbers = ["7337017721", "9989585590", "9121373923","7801018925"];
 
 export function ContactPage() {
   const [copiedNumber, setCopiedNumber] = useState("");
