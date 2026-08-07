@@ -138,6 +138,7 @@ export function HomePage() {
                 </Link>
               </div>
               <p className="mt-4 text-lg font-semibold text-slate-700 sm:text-xl">Build. Innovate. Impact.</p>
+              <p className="mt-2 text-sm font-semibold text-slate-700 sm:text-base">Mohan Babu University,New Academic Block,Room No:4016</p>
 
               <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-sm">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-600">Powered By</p>
