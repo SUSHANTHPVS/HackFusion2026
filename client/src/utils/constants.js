@@ -122,20 +122,20 @@ export const MANAGEMENT_TEAM = [
     role: "Web Master",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/vamsieswar-aari-b54a65342?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    github: "https://github.com/username"
+    
   },
   {
     name: "A Dimpull",
     role: "Treasurer",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/dimpull-chowdary-2b8120325?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    github: "https://github.com/username"
+    
   },
   {
     name: "Mallikarjun",
     role: "Web Master",
     chapter: "IEEE RAS",
-    github: "https://github.com/username"
+    
   },
   {
     name: "Sushanth P V",
@@ -148,14 +148,14 @@ export const MANAGEMENT_TEAM = [
     name: "K Nava Chaitanya",
     role: "Chair",
     chapter: "IEEE CS",
-    github: "https://github.com/username"
+    
   },
   {
     name: "V Babitha",
     role: "Vice Chair",
     chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/babitha-v-a4b5893ab?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    github: "https://github.com/username"
+    
   },
   {
     name: "B Himaya Sree",
@@ -169,14 +169,14 @@ export const MANAGEMENT_TEAM = [
     role: "Web Master",
     chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/venkata-teja-kurra-16792b342?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    github: "https://github.com/username"
+    
   },
   {
     name: "B Satish",
     role: "Treasurer",
     chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/sathish-batthula/",
-    github: "https://github.com/username"
+    
   },
   {
     name: "K Keerthi",
