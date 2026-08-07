@@ -55,8 +55,8 @@ export const GENDER_OPTIONS = [
 ];
 
 export const PRIMARY_STATS = [
-  { label: "Target Capacity", value: "140" },
-  { label: "Expected Participants", value: "120" },
+  { label: "Target Capacity", value: "120" },
+  { label: "Expected Participants", value: "100" },
   { label: "Event Duration", value: "2 Days" },
   { label: "Prize Pool", value: "INR 4,500" }
 ];
