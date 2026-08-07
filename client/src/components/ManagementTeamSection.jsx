@@ -16,14 +16,26 @@ export function ManagementTeamSection() {
             <p className="mt-1 text-sm font-medium text-slate-600">{member.role}</p>
             <p className="mt-3 text-xs uppercase tracking-wider text-slate-500">IEEE Chapter</p>
             <p className="text-sm text-slate-700">{member.chapter}</p>
-            <a
-              href={member.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 inline-block text-sm font-semibold text-cyan-700 underline"
-            >
-              LinkedIn Profile
-            </a>
+            {member.linkedin && (
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 block text-sm font-semibold text-cyan-700 underline"
+              >
+                LinkedIn Profile
+              </a>
+            )}
+            {member.github && (
+              <a
+                href={member.github}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 block text-sm font-semibold text-cyan-700 underline"
+              >
+                GitHub Profile
+              </a>
+            )}
           </article>
         ))}
       </div>
