@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 const themes = [
@@ -358,6 +359,8 @@ const sectionVariants = {
 };
 
 export function ThemePage() {
+  const [expandedTheme, setExpandedTheme] = useState(themes[0].title);
+
   return (
     <section className="mx-auto max-w-6xl space-y-6">
       <motion.header
@@ -374,65 +377,103 @@ export function ThemePage() {
       </motion.header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {themes.map((theme, index) => (
-          <motion.article
-            key={theme.title}
-            className="glass-card rounded-2xl p-5"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={sectionVariants}
-            custom={0.06 * (index + 1)}
-          >
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-700">Theme {index + 1}</p>
-            <h2 className="mt-2 text-xl font-bold text-slate-900">{theme.emoji} {theme.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-700">{theme.description}</p>
+        {themes.map((theme, index) => {
+          const isExpanded = expandedTheme === theme.title;
 
-            <div className="mt-4 space-y-3 text-sm text-slate-700">
-              <div>
-                <p className="font-semibold text-slate-900">Challenge Statement</p>
-                <p className="mt-1 leading-6">{theme.challengeStatement}</p>
+          return (
+            <motion.article
+              key={theme.title}
+              className="glass-card rounded-2xl p-5"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={sectionVariants}
+              custom={0.06 * (index + 1)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-700">Theme {index + 1}</p>
+                  <h2 className="mt-2 text-xl font-bold text-slate-900">{theme.emoji} {theme.title}</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedTheme(isExpanded ? "" : theme.title)}
+                  className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100"
+                >
+                  {isExpanded ? "Hide details" : "View details"}
+                </button>
               </div>
 
-              <div>
-                <p className="font-semibold text-slate-900">Core Challenge</p>
-                <ul className="mt-1 list-disc space-y-1 pl-5 leading-6">
-                  {theme.coreChallenge.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-700">{theme.description}</p>
 
-              <div>
-                <p className="font-semibold text-slate-900">Advanced Requirements</p>
-                <ul className="mt-1 list-disc space-y-1 pl-5 leading-6">
-                  {theme.advancedRequirements.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
+              {isExpanded && (
+                <div className="mt-4 space-y-3 text-sm text-slate-700">
+                  <div>
+                    <p className="font-semibold text-slate-900">Challenge Statement</p>
+                    <p className="mt-1 leading-6">{theme.challengeStatement}</p>
+                  </div>
 
-              <div>
-                <p className="font-semibold text-slate-900">System Flow</p>
-                <ul className="mt-1 list-disc space-y-1 pl-5 leading-6">
-                  {theme.systemFlow.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
+                  <div>
+                    <p className="font-semibold text-slate-900">Core Challenge</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 leading-6">
+                      {theme.coreChallenge.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
 
-              <div>
-                <p className="font-semibold text-slate-900">Suggested Modules</p>
-                <p className="mt-1 leading-6">{theme.suggestedModules.join(" | ")}</p>
-              </div>
+                  <div>
+                    <p className="font-semibold text-slate-900">Advanced Requirements</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5 leading-6">
+                      {theme.advancedRequirements.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
 
-              <div>
-                <p className="font-semibold text-slate-900">Technologies</p>
-                <p className="mt-1 leading-6">{theme.technologies.join(" • ")}</p>
-              </div>
-            </div>
-          </motion.article>
-        ))}
+                  <div>
+                    <p className="font-semibold text-slate-900">System Flow</p>
+                    <div className="mt-2 space-y-2">
+                      {theme.systemFlow.map((item, flowIndex) => (
+                        <div
+                          key={`${theme.title}-${flowIndex}`}
+                          className="rounded-2xl border border-cyan-100 bg-cyan-50/70 p-3"
+                        >
+                          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">
+                            Step {flowIndex + 1}
+                          </div>
+                          <p className="mt-1 leading-6 text-slate-700">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold text-slate-900">Suggested Modules</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {theme.suggestedModules.map((module) => (
+                        <span key={module} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                          {module}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="font-semibold text-slate-900">Technologies</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {theme.technologies.map((tech) => (
+                        <span key={tech} className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.article>
+          );
+        })}
       </div>
 
       <motion.section
