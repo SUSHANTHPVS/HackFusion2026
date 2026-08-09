@@ -2,29 +2,44 @@ import { motion } from "framer-motion";
 
 const themes = [
   {
-    emoji: "🤖",
+    emoji: "🌌",
+    title: "Space Intelligence & Digital Exploration",
+    description: "Build intelligent platforms to aggregate space data, track objects, detect anomalies, and deliver actionable alerts."
+  },
+  {
+    emoji: "🪖",
+    title: "Defence, Security & Crisis Intelligence",
+    description: "Create secure crisis-response systems that classify incidents, prioritize threats, and coordinate resources."
+  },
+  {
+    emoji: "🏥",
+    title: "Healthcare Intelligence & Digital Health",
+    description: "Design decision-support solutions for patients, doctors, appointments, emergencies, and hospital resource planning."
+  },
+  {
+    emoji: "🏙️",
+    title: "Rural–Urban Transformation & Smart Communities",
+    description: "Connect communities with jobs, services, education, healthcare, transportation, and local opportunities."
+  },
+  {
+    emoji: "🎬",
+    title: "Cinema, Media & Entertainment Intelligence",
+    description: "Develop personalized content discovery and recommendation systems grounded in user behavior and trends."
+  },
+  {
+    emoji: "🧠",
     title: "AI for Smarter Living",
-    description: "Harness Artificial Intelligence to solve everyday challenges."
+    description: "Build intelligent assistants that understand goals, plan workflows, recommend actions, and automate tasks."
   },
   {
     emoji: "🌍",
     title: "Technology for Social Good",
-    description: "Build solutions that create a positive impact on society and improve quality of life."
+    description: "Create scalable platforms that connect communities, volunteers, organizations, and resources to solve social challenges."
   },
   {
-    emoji: "🌱",
-    title: "Smart & Sustainable Future",
-    description: "Develop technology that promotes environmental sustainability and efficient resource management."
-  },
-  {
-    emoji: "🏥",
-    title: "Future of Healthcare & Well-being",
-    description: "Reimagine healthcare through digital innovation and intelligent technologies."
-  },
-  {
-    emoji: "🚀",
-    title: "Smart Automation & Robotics Solutions",
-    description: "Design software solutions that support robotics, automation, and intelligent systems."
+    emoji: "🤖",
+    title: "Smart Automation & Digital Robotics",
+    description: "Design automation ecosystems with event-driven workflows, APIs, devices, analytics, and recovery mechanisms."
   }
 ];
 
