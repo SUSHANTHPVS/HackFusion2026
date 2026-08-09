@@ -148,8 +148,10 @@ export function HomePage() {
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm font-semibold text-slate-700 sm:text-base">Before Registering For The HackFusion Explore Themes</p>
+                <div className="flex flex-col items-start gap-2">
+                  <p className="max-w-[220px] text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
+                    Before Registering For The HackFusion Explore Themes
+                  </p>
                   {isRegistrationClosed ? (
                     <span className="hero-primary-cta inline-flex items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
                       Registrations Closed
