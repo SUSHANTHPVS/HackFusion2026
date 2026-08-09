@@ -148,8 +148,8 @@ export function HomePage() {
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-3">
-                <div className="flex w-full flex-col items-start justify-between gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm sm:max-w-[280px]">
-                  <p className="w-full text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
+                <div className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm sm:max-w-[280px]">
+                  <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
                   {isRegistrationClosed ? (
