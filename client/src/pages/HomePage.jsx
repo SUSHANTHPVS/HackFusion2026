@@ -147,8 +147,8 @@ export function HomePage() {
                 <BrandLogoGroup className="mt-3 flex-wrap justify-center sm:justify-start" showNames />
               </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="flex w-full flex-col items-start gap-2 sm:max-w-[260px]">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+                <div className="flex w-full flex-col items-start gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm sm:max-w-[270px]">
                   <p className="w-full text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
@@ -167,7 +167,7 @@ export function HomePage() {
                 </div>
                 <Link
                   to="/theme"
-                  className="hero-secondary-cta inline-flex w-full items-center justify-center rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300 sm:w-auto"
+                  className="hero-secondary-cta inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white/90 px-6 py-3 text-center font-bold text-slate-900 shadow-sm transition-all duration-300 sm:w-auto"
                 >
                   Explore Theme
                 </Link>
