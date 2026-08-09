@@ -148,18 +148,18 @@ export function HomePage() {
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div className="flex flex-col items-start gap-2">
-                  <p className="max-w-[220px] text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
+                <div className="flex w-full flex-col items-start gap-2 sm:max-w-[260px]">
+                  <p className="w-full text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
                   {isRegistrationClosed ? (
-                    <span className="hero-primary-cta inline-flex items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
+                    <span className="hero-primary-cta inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80 sm:w-auto">
                       Registrations Closed
                     </span>
                   ) : (
                     <Link
                       to="/hackathon-register"
-                      className="hero-primary-cta inline-flex items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
+                      className="hero-primary-cta inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300 sm:w-auto"
                     >
                       Register Now
                     </Link>
@@ -167,7 +167,7 @@ export function HomePage() {
                 </div>
                 <Link
                   to="/theme"
-                  className="hero-secondary-cta inline-flex items-center justify-center rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300"
+                  className="hero-secondary-cta inline-flex w-full items-center justify-center rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300 sm:w-auto"
                 >
                   Explore Theme
                 </Link>
