@@ -138,7 +138,6 @@ export function HomePage() {
                 </Link>
               </div>
               <p className="mt-4 text-lg font-semibold text-slate-700 sm:text-xl">Build. Innovate. Impact.</p>
-              <p className="mt-2 text-sm font-semibold text-slate-700 sm:text-base">Before Registering For The HackFusion Explore Themes</p>
               <p className="mt-2 inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-800 shadow-sm sm:text-base">
                 Mohan Babu University, New Academic Block, Room No: 4016
               </p>
@@ -149,18 +148,21 @@ export function HomePage() {
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                {isRegistrationClosed ? (
-                  <span className="hero-primary-cta inline-flex items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
-                    Registrations Closed
-                  </span>
-                ) : (
-                  <Link
-                    to="/hackathon-register"
-                    className="hero-primary-cta rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
-                  >
-                    Register Now
-                  </Link>
-                )}
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm font-semibold text-slate-700 sm:text-base">Before Registering For The HackFusion Explore Themes</p>
+                  {isRegistrationClosed ? (
+                    <span className="hero-primary-cta inline-flex items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
+                      Registrations Closed
+                    </span>
+                  ) : (
+                    <Link
+                      to="/hackathon-register"
+                      className="hero-primary-cta rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
+                    >
+                      Register Now
+                    </Link>
+                  )}
+                </div>
                 <Link
                   to="/theme"
                   className="hero-secondary-cta rounded-xl border px-6 py-3 text-center font-bold text-slate-900 transition-all duration-300"
