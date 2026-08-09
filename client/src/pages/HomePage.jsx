@@ -147,34 +147,50 @@ export function HomePage() {
                 <BrandLogoGroup className="mt-3 flex-wrap justify-center sm:justify-start" showNames />
               </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-3">
-                <div className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm sm:max-w-[280px]">
+              <div className="mt-8 grid grid-cols-1 gap-3 lg:grid-cols-3">
+                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
                   <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
                   {isRegistrationClosed ? (
-                    <span className="hero-primary-cta inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80 sm:w-auto">
+                    <span className="hero-primary-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
                       Registrations Closed
                     </span>
                   ) : (
                     <Link
                       to="/hackathon-register"
-                      className="hero-primary-cta inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300 sm:w-auto"
+                      className="hero-primary-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
                     >
                       Register Now
                     </Link>
                   )}
                 </div>
-                <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:items-center">
+
+                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
+                  <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
+                    Explore challenge themes
+                  </p>
                   <Link
                     to="/theme"
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-center font-bold text-cyan-800 shadow-sm transition-all duration-300 hover:bg-cyan-100 sm:w-auto"
+                    className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-center font-bold text-cyan-800 shadow-sm transition-all duration-300 hover:bg-cyan-100"
                   >
                     Explore Theme
                   </Link>
-                  <p className="max-w-[240px] rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-red-700 shadow-sm sm:ml-2 sm:text-left sm:text-[11px]">
+                  <p className="max-w-[240px] rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-red-700 shadow-sm sm:text-[11px]">
                     Every Application Should Be Deployed Either On Vercel And Render Or AWS
                   </p>
+                </div>
+
+                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
+                  <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
+                    Event schedule details
+                  </p>
+                  <Link
+                    to="/schedule"
+                    className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl border border-slate-300 bg-slate-50 px-6 py-3 text-center font-bold text-slate-800 shadow-sm transition-all duration-300 hover:bg-slate-100"
+                  >
+                    Know More
+                  </Link>
                 </div>
               </div>
 
