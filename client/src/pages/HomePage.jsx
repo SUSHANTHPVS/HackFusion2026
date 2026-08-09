@@ -167,7 +167,7 @@ export function HomePage() {
                 </div>
                 <Link
                   to="/theme"
-                  className="hero-secondary-cta inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white/90 px-6 py-3 text-center font-bold text-slate-900 shadow-sm transition-all duration-300 sm:w-auto"
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-center font-bold text-cyan-800 shadow-sm transition-all duration-300 hover:bg-cyan-100 sm:w-auto"
                 >
                   Explore Theme
                 </Link>

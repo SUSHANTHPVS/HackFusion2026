@@ -34,11 +34,14 @@ const schema = z
     branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT"]),
     section: z.string().regex(/^\d+$/, "Section must be a number."),
     themeTrack: z.enum([
+      "Space Intelligence & Digital Exploration",
+      "Defence, Security & Crisis Intelligence",
+      "Healthcare Intelligence & Digital Health",
+      "Rural–Urban Transformation & Smart Communities",
+      "Cinema, Media & Entertainment Intelligence",
       "AI for Smarter Living",
       "Technology for Social Good",
-      "Smart & Sustainable Future",
-      "Future of Healthcare & Well-being",
-      "Smart Automation & Robotics Solutions"
+      "Smart Automation & Digital Robotics"
     ]),
     teammates: z
       .array(

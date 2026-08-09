@@ -7,11 +7,14 @@ import { api } from "../services/api";
 import { BRANCH_OPTIONS, GENDER_OPTIONS, YEAR_OPTIONS, getSectionOptionsForBranch } from "../utils/constants";
 
 const tracks = [
+  "Space Intelligence & Digital Exploration",
+  "Defence, Security & Crisis Intelligence",
+  "Healthcare Intelligence & Digital Health",
+  "Rural–Urban Transformation & Smart Communities",
+  "Cinema, Media & Entertainment Intelligence",
   "AI for Smarter Living",
   "Technology for Social Good",
-  "Smart & Sustainable Future",
-  "Future of Healthcare & Well-being",
-  "Smart Automation & Robotics Solutions"
+  "Smart Automation & Digital Robotics"
 ];
 const PARTICIPATION_OPTIONS = {
   individual: {
