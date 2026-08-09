@@ -391,6 +391,9 @@ export function ThemePage() {
         <p className="mt-4 text-slate-700">
           Explore the official challenge tracks, their core requirements, system flows, modules, technologies, and the common expectations for every HackFusion 2026 solution.
         </p>
+        <p className="mt-3 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800">
+          There Are No Restrictions For Modules And Features
+        </p>
       </motion.header>
 
       <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-4 shadow-sm backdrop-blur-sm">
