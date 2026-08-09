@@ -361,6 +361,23 @@ const sectionVariants = {
 export function ThemePage() {
   const [expandedTheme, setExpandedTheme] = useState(themes[0].title);
 
+  const summaryIcons = {
+    "Space Intelligence & Digital Exploration": "🛰️",
+    "Defence, Security & Crisis Intelligence": "🛡️",
+    "Healthcare Intelligence & Digital Health": "🩺",
+    "Rural–Urban Transformation & Smart Communities": "🏘️",
+    "Cinema, Media & Entertainment Intelligence": "🎥",
+    "AI for Smarter Living": "🤖",
+    "Technology for Social Good": "🌍",
+    "Smart Automation & Digital Robotics": "⚙️"
+  };
+
+  const categoryGroups = [
+    { label: "AI & Intelligence", color: "from-cyan-500 to-blue-600", themes: ["Space Intelligence & Digital Exploration", "Defence, Security & Crisis Intelligence", "Healthcare Intelligence & Digital Health", "AI for Smarter Living"] },
+    { label: "Community & Impact", color: "from-emerald-500 to-green-600", themes: ["Rural–Urban Transformation & Smart Communities", "Technology for Social Good"] },
+    { label: "Media & Automation", color: "from-fuchsia-500 to-purple-600", themes: ["Cinema, Media & Entertainment Intelligence", "Smart Automation & Digital Robotics"] }
+  ];
+
   return (
     <section className="mx-auto max-w-6xl space-y-6">
       <motion.header
@@ -375,6 +392,16 @@ export function ThemePage() {
           Explore the official challenge tracks, their core requirements, system flows, modules, technologies, and the common expectations for every HackFusion 2026 solution.
         </p>
       </motion.header>
+
+      <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-4 shadow-sm backdrop-blur-sm">
+        <div className="flex flex-wrap gap-3">
+          {categoryGroups.map((group) => (
+            <div key={group.label} className={`rounded-full bg-gradient-to-r ${group.color} px-4 py-2 text-sm font-semibold text-white shadow-sm`}>
+              {group.label}
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {themes.map((theme, index) => {
@@ -406,7 +433,24 @@ export function ThemePage() {
 
               <p className="mt-3 text-sm leading-6 text-slate-700">{theme.description}</p>
 
-              {isExpanded && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                  {summaryIcons[theme.title]} Focus
+                </span>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                  {theme.suggestedModules.length} Modules
+                </span>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                  {theme.technologies.length} Tech Areas
+                </span>
+              </div>
+
+              <motion.div
+                initial={false}
+                animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
                 <div className="mt-4 space-y-3 text-sm text-slate-700">
                   <div>
                     <p className="font-semibold text-slate-900">Challenge Statement</p>
@@ -470,7 +514,7 @@ export function ThemePage() {
                     </div>
                   </div>
                 </div>
-              )}
+              </motion.div>
             </motion.article>
           );
         })}
