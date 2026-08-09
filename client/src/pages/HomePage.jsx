@@ -165,12 +165,17 @@ export function HomePage() {
                     </Link>
                   )}
                 </div>
-                <Link
-                  to="/theme"
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-center font-bold text-cyan-800 shadow-sm transition-all duration-300 hover:bg-cyan-100 sm:w-auto"
-                >
-                  Explore Theme
-                </Link>
+                <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row sm:items-center">
+                  <Link
+                    to="/theme"
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-cyan-200 bg-cyan-50 px-6 py-3 text-center font-bold text-cyan-800 shadow-sm transition-all duration-300 hover:bg-cyan-100 sm:w-auto"
+                  >
+                    Explore Theme
+                  </Link>
+                  <p className="max-w-[240px] rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-red-700 shadow-sm sm:ml-2 sm:text-left sm:text-[11px]">
+                    Every Application Should Be Deployed Either On Vercel And Render Or AWS
+                  </p>
+                </div>
               </div>
 
               <p className="mt-3 text-sm font-semibold text-slate-700">
