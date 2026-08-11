@@ -156,7 +156,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     branch: req.body.branch.trim(),
     section: req.body.section.trim().toUpperCase()
   };
-  const paymentAmount = participationType === "individual" ? eventSettings.individualFeeInr : eventSettings.teamFeeInr;
+  const paymentAmount = 200;
   const paymentAmountPaise = paymentAmount * 100;
   const triggerRegistrationSync = (team, paymentStatus) => {
     if (!team) {
@@ -173,12 +173,12 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     void syncRegistrationToGoogle(payload);
   };
 
-  if (participationType === "individual" && normalizedTeammates.length > 0) {
-    throw new AppError("Individual participation cannot include teammates.", 400);
+  if (participationType !== "team") {
+    throw new AppError("Only team registration is allowed.", 400);
   }
 
-  if (participationType === "team" && (normalizedTeammates.length < 1 || normalizedTeammates.length > 3)) {
-    throw new AppError("Team participation must have 1 to 3 teammates (2 to 4 members including leader).", 400);
+  if (normalizedTeammates.length < 2 || normalizedTeammates.length > 3) {
+    throw new AppError("Team registration must have 2 to 3 teammates (3 to 4 members including leader).", 400);
   }
 
   const incomingTeamSlots = 1 + normalizedTeammates.length;

@@ -16,18 +16,7 @@ const tracks = [
   "Technology for Social Good",
   "Smart Automation & Digital Robotics"
 ];
-const PARTICIPATION_OPTIONS = {
-  individual: {
-    label: "Individual Participation",
-    fee: 50,
-    subtitle: "Solo registration"
-  },
-  team: {
-    label: "Team Participation (2-4)",
-    fee: 200,
-    subtitle: "Leader + 1 to 3 teammates"
-  }
-};
+const TEAM_REGISTRATION_FEE = 200;
 const PAYMENT_MODE_OPTIONS = {
   upi_only: {
     label: "UPI Only",
@@ -118,7 +107,7 @@ function getInputClass(hasError) {
   return `rounded-lg border px-3 py-2 ${hasError ? "border-rose-500 focus:border-rose-500" : "border-slate-300"}`;
 }
 
-function createEmptyFieldErrors(teammateCount = 1) {
+function createEmptyFieldErrors(teammateCount = 2) {
   return {
     teamName: "",
     teamLeaderName: "",
@@ -168,7 +157,7 @@ function extractDuplicateFieldError(message, teammates) {
 
 export function HackathonRegistrationPage() {
   const { isAuthenticated, user } = useAuth();
-  const [participationType, setParticipationType] = useState("individual");
+  const participationType = "team";
   const [paymentMode, setPaymentMode] = useState("all_methods");
   const [teamName, setTeamName] = useState("");
   const [teamLeaderName, setTeamLeaderName] = useState(user?.name || "");
@@ -187,12 +176,21 @@ export function HackathonRegistrationPage() {
       year: YEAR_OPTIONS[0],
       branch: BRANCH_OPTIONS[0],
       section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
+    },
+    {
+      name: "",
+      gender: GENDER_OPTIONS[0].value,
+      rollNo: "",
+      mobile: "",
+      year: YEAR_OPTIONS[0],
+      branch: BRANCH_OPTIONS[0],
+      section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
     }
   ]);
   const [orderData, setOrderData] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
   const [requiresLogin, setRequiresLogin] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState(() => createEmptyFieldErrors(1));
+  const [fieldErrors, setFieldErrors] = useState(() => createEmptyFieldErrors(2));
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [successfulTeam, setSuccessfulTeam] = useState(null);
 
@@ -214,7 +212,7 @@ export function HackathonRegistrationPage() {
       setSuccessfulTeam({
         name: teamName.trim(),
         participationType,
-        teammates: participationType === "team" ? teammates : []
+        teammates
       });
     },
     onError: (error) => {
@@ -278,12 +276,8 @@ export function HackathonRegistrationPage() {
     [orderData, razorpayKeyId]
   );
   const paymentAlert = useMemo(() => getPaymentAlert(paymentMessage), [paymentMessage]);
-  const selectedFee = PARTICIPATION_OPTIONS[participationType].fee;
-  const totalMembers = 1 + (participationType === "team" ? teammates.length : 0);
-  const checkoutDescription =
-    participationType === "team"
-      ? `Team Participation (${totalMembers} members) - INR ${selectedFee}`
-      : `Individual Participation (1 member) - INR ${selectedFee}`;
+  const selectedFee = TEAM_REGISTRATION_FEE;
+  const totalMembers = 1 + teammates.length;
   const leaderSectionOptions = useMemo(() => getSectionOptionsForBranch(branch), [branch]);
 
   const resetFieldErrors = (teammateCount = teammates.length) => {
@@ -387,66 +381,64 @@ export function HackathonRegistrationPage() {
       return;
     }
 
-    if (participationType === "team") {
-      if (filledTeammates.length !== teammates.length) {
-        setPaymentMessage("Each teammate row must include name, mobile, roll no, year, branch, and section, or remove the row.");
-        return;
-      }
+    if (filledTeammates.length !== teammates.length) {
+      setPaymentMessage("Each teammate row must include name, mobile, roll no, year, branch, and section, or remove the row.");
+      return;
+    }
 
-      if (filledTeammates.length < 1 || filledTeammates.length > 3) {
-        setPaymentMessage("Team participation requires 1 to 3 teammates (2 to 4 total members including leader).");
-        return;
-      }
+    if (filledTeammates.length < 2 || filledTeammates.length > 3) {
+      setPaymentMessage("Team registration requires 2 to 3 teammates (3 to 4 total members including leader).");
+      return;
+    }
 
-      const leaderRollNo = rollNo.trim().toUpperCase();
-      const leaderNameNormalized = teamLeaderName.trim().toLowerCase();
-      const teammateRollNos = filledTeammates.map((item) => item.rollNo);
-      const teammateNames = filledTeammates.map((item) => item.name.toLowerCase());
+    const leaderRollNo = rollNo.trim().toUpperCase();
+    const leaderNameNormalized = teamLeaderName.trim().toLowerCase();
+    const teammateRollNos = filledTeammates.map((item) => item.rollNo);
+    const teammateNames = filledTeammates.map((item) => item.name.toLowerCase());
 
-      if (teammateRollNos.includes(leaderRollNo)) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          rollNo: "Team leader roll number cannot be used by a teammate."
-        }));
-        setPaymentMessage("Team leader roll number cannot be used by a teammate.");
-        return;
-      }
+    if (teammateRollNos.includes(leaderRollNo)) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        rollNo: "Team leader roll number cannot be used by a teammate."
+      }));
+      setPaymentMessage("Team leader roll number cannot be used by a teammate.");
+      return;
+    }
 
-      if (teammateNames.includes(leaderNameNormalized)) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          teamLeaderName: "Team leader name cannot be duplicated in teammate entries."
-        }));
-        setPaymentMessage("Team leader name cannot be duplicated in teammate entries.");
-        return;
-      }
+    if (teammateNames.includes(leaderNameNormalized)) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        teamLeaderName: "Team leader name cannot be duplicated in teammate entries."
+      }));
+      setPaymentMessage("Team leader name cannot be duplicated in teammate entries.");
+      return;
+    }
 
-      if (new Set(teammateRollNos).size !== teammateRollNos.length) {
-        setPaymentMessage("Duplicate teammate roll numbers are not allowed.");
-        return;
-      }
+    if (new Set(teammateRollNos).size !== teammateRollNos.length) {
+      setPaymentMessage("Duplicate teammate roll numbers are not allowed.");
+      return;
+    }
 
-      if (new Set(teammateNames).size !== teammateNames.length) {
-        setPaymentMessage("Duplicate teammate names are not allowed.");
-        return;
-      }
+    if (new Set(teammateNames).size !== teammateNames.length) {
+      setPaymentMessage("Duplicate teammate names are not allowed.");
+      return;
+    }
 
-      const invalidMobileIndex = filledTeammates.findIndex((item) => !/^\d{10}$/.test(item.mobile));
-      if (invalidMobileIndex >= 0) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          teammates: prev.teammates.map((item, idx) =>
-            idx === invalidMobileIndex ? { ...item, mobile: "Mobile number must be exactly 10 digits." } : item
-          )
-        }));
-        setPaymentMessage("Each teammate mobile number must contain exactly 10 digits.");
-        return;
-      }
+    const invalidMobileIndex = filledTeammates.findIndex((item) => !/^\d{10}$/.test(item.mobile));
+    if (invalidMobileIndex >= 0) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        teammates: prev.teammates.map((item, idx) =>
+          idx === invalidMobileIndex ? { ...item, mobile: "Mobile number must be exactly 10 digits." } : item
+        )
+      }));
+      setPaymentMessage("Each teammate mobile number must contain exactly 10 digits.");
+      return;
+    }
 
-      if (new Set(filledTeammates.map((item) => item.mobile)).size !== filledTeammates.length) {
-        setPaymentMessage("Duplicate teammate mobile numbers are not allowed.");
-        return;
-      }
+    if (new Set(filledTeammates.map((item) => item.mobile)).size !== filledTeammates.length) {
+      setPaymentMessage("Duplicate teammate mobile numbers are not allowed.");
+      return;
     }
 
     createOrderMutation.mutate({
@@ -459,7 +451,7 @@ export function HackathonRegistrationPage() {
       branch: branch.trim(),
       section: section.trim(),
       themeTrack,
-      teammates: participationType === "team" ? filledTeammates : []
+      teammates: filledTeammates
     });
   };
 
@@ -535,42 +527,10 @@ export function HackathonRegistrationPage() {
       <h1 className="text-3xl font-bold">Hackathon Registration & Payment</h1>
       <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete Razorpay payment.</p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {Object.entries(PARTICIPATION_OPTIONS).map(([type, option]) => {
-          const selected = participationType === type;
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => {
-                setParticipationType(type);
-                setPaymentMessage("");
-                setOrderData(null);
-                resetFieldErrors(type === "individual" ? 1 : teammates.length);
-                if (type === "individual") {
-                  setTeammates([
-                    {
-                      name: "",
-                      gender: GENDER_OPTIONS[0].value,
-                      rollNo: "",
-                      mobile: "",
-                      year: YEAR_OPTIONS[0],
-                      branch: BRANCH_OPTIONS[0],
-                      section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
-                    }
-                  ]);
-                }
-              }}
-              className={`rounded-xl border p-4 text-left transition ${
-                selected ? "border-cyan-600 bg-cyan-50" : "border-slate-200 bg-white"
-              }`}
-            >
-              <p className="text-sm font-bold uppercase tracking-wide text-slate-600">{option.label}</p>
-              <p className="mt-1 text-xs text-slate-500">{option.subtitle}</p>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900">INR {option.fee}</p>
-            </button>
-          );
-        })}
+      <div className="mt-5 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
+        <p className="text-sm font-bold uppercase tracking-wide text-cyan-800">Team Registration Only</p>
+        <p className="mt-1 text-xs text-cyan-700">Minimum 3 members and maximum 4 members (including leader).</p>
+        <p className="mt-2 text-2xl font-extrabold text-slate-900">INR {selectedFee}</p>
       </div>
 
       <form className="mt-6 grid gap-4" onSubmit={onCreateOrder}>
@@ -712,8 +672,7 @@ export function HackathonRegistrationPage() {
           </div>
         </div>
 
-        {participationType === "team" && (
-          <div className="rounded-lg border border-slate-200 p-4">
+        <div className="rounded-lg border border-slate-200 p-4">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Team Members</h2>
               <button
@@ -726,7 +685,7 @@ export function HackathonRegistrationPage() {
               </button>
             </div>
 
-            <p className="mb-3 text-xs text-slate-500">Add 1 to 3 teammates with full details. Maximum team size is 4 including leader.</p>
+            <p className="mb-3 text-xs text-slate-500">Add 2 to 3 teammates with full details. Team size must be 3 to 4 including leader.</p>
 
             <div className="grid gap-3">
               {teammates.map((item, index) => (
@@ -815,7 +774,7 @@ export function HackathonRegistrationPage() {
                   <button
                     type="button"
                     onClick={() => removeTeammate(index)}
-                    disabled={teammates.length === 1}
+                    disabled={teammates.length === 2}
                     className="justify-self-start rounded-md border border-rose-200 px-2 py-1 text-xs font-semibold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Remove
@@ -826,13 +785,6 @@ export function HackathonRegistrationPage() {
 
             <p className="mt-3 text-xs text-slate-600">Current team size: {totalMembers}/4</p>
           </div>
-        )}
-
-        {participationType === "individual" && (
-          <div className="rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">
-            Individual participation selected. You will register as a solo participant.
-          </div>
-        )}
 
         <button
           type="submit"
@@ -894,7 +846,7 @@ export function HackathonRegistrationPage() {
           team={successfulTeam || {
             name: teamName.trim(),
             participationType,
-            teammates: participationType === "team" ? teammates : []
+            teammates
           }}
         />
       ) : null}

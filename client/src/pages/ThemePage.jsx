@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { CountdownTimer } from "../components/CountdownTimer";
+import { useCountdown } from "../hooks/useCountdown";
+import { EVENT_DATE } from "../utils/constants";
 
 const themes = [
   {
@@ -360,6 +363,8 @@ const sectionVariants = {
 
 export function ThemePage() {
   const [expandedTheme, setExpandedTheme] = useState(themes[0].title);
+  const { days, hours, minutes, seconds } = useCountdown(EVENT_DATE);
+  const isCountdownComplete = days === 0 && hours === 0 && minutes === 0 && seconds === 0;
 
   const summaryIcons = {
     "Space Intelligence & Digital Exploration": "🛰️",
@@ -380,35 +385,51 @@ export function ThemePage() {
 
   return (
     <section className="mx-auto max-w-6xl space-y-6">
-      <motion.header
-        className="glass-card rounded-3xl p-6 shadow-lg md:p-10"
-        initial="hidden"
-        animate="visible"
-        variants={sectionVariants}
-      >
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">HackFusion 2026</p>
-        <h1 className="mt-3 text-4xl font-extrabold text-slate-900 md:text-5xl">Challenge Domains & Expectations</h1>
-        <p className="mt-4 text-slate-700">
-          Explore the official challenge tracks, their core requirements, system flows, modules, technologies, and the common expectations for every HackFusion 2026 solution.
-        </p>
-        <p className="mt-3 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800">
-          There Are No Restrictions For Modules And Features
-        </p>
-      </motion.header>
+      <CountdownTimer />
 
-      <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-4 shadow-sm backdrop-blur-sm">
-        <div className="flex flex-wrap gap-3">
-          {categoryGroups.map((group) => (
-            <div key={group.label} className={`rounded-full bg-gradient-to-r ${group.color} px-4 py-2 text-sm font-semibold text-white shadow-sm`}>
-              {group.label}
+      {!isCountdownComplete ? (
+        <motion.section
+          className="glass-card rounded-3xl p-6 text-center md:p-8"
+          initial="hidden"
+          animate="visible"
+          variants={sectionVariants}
+        >
+          <h2 className="text-2xl font-bold text-slate-900">Explore Themes Unlocks Soon</h2>
+          <p className="mt-2 text-slate-700">
+            Theme details will be visible after the countdown completes on 21 September 2026 at 6:00 AM.
+          </p>
+        </motion.section>
+      ) : (
+        <>
+          <motion.header
+            className="glass-card rounded-3xl p-6 shadow-lg md:p-10"
+            initial="hidden"
+            animate="visible"
+            variants={sectionVariants}
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">HackFusion 2026</p>
+            <h1 className="mt-3 text-4xl font-extrabold text-slate-900 md:text-5xl">Challenge Domains & Expectations</h1>
+            <p className="mt-4 text-slate-700">
+              Explore the official challenge tracks, their core requirements, system flows, modules, technologies, and the common expectations for every HackFusion 2026 solution.
+            </p>
+            <p className="mt-3 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800">
+              There Are No Restrictions For Modules And Features
+            </p>
+          </motion.header>
+
+          <div className="rounded-3xl border border-slate-200/80 bg-white/70 p-4 shadow-sm backdrop-blur-sm">
+            <div className="flex flex-wrap gap-3">
+              {categoryGroups.map((group) => (
+                <div key={group.label} className={`rounded-full bg-linear-to-r ${group.color} px-4 py-2 text-sm font-semibold text-white shadow-sm`}>
+                  {group.label}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {themes.map((theme, index) => {
-          const isExpanded = expandedTheme === theme.title;
+          <div className="grid gap-4 md:grid-cols-2">
+            {themes.map((theme, index) => {
+              const isExpanded = expandedTheme === theme.title;
 
           return (
             <motion.article
@@ -520,48 +541,50 @@ export function ThemePage() {
               </motion.div>
             </motion.article>
           );
-        })}
-      </div>
+            })}
+          </div>
 
-      <motion.section
-        className="glass-card rounded-3xl p-6 md:p-8"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={sectionVariants}
-        custom={0.2}
-      >
-        <h2 className="text-2xl font-bold text-slate-900">Common Expectations for All Challenges</h2>
-        <p className="mt-2 text-slate-700">
-          Every team should aim to demonstrate a complete, working software solution rather than a collection of isolated features.
-        </p>
-        <ul className="mt-4 space-y-3 text-sm text-slate-700">
-          {commonExpectations.map((item) => (
-            <li key={item} className="rounded-xl border border-slate-200 bg-white/70 px-4 py-3 leading-6">
-              {item}
-            </li>
-          ))}
-        </ul>
-      </motion.section>
+          <motion.section
+            className="glass-card rounded-3xl p-6 md:p-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={sectionVariants}
+            custom={0.2}
+          >
+            <h2 className="text-2xl font-bold text-slate-900">Common Expectations for All Challenges</h2>
+            <p className="mt-2 text-slate-700">
+              Every team should aim to demonstrate a complete, working software solution rather than a collection of isolated features.
+            </p>
+            <ul className="mt-4 space-y-3 text-sm text-slate-700">
+              {commonExpectations.map((item) => (
+                <li key={item} className="rounded-xl border border-slate-200 bg-white/70 px-4 py-3 leading-6">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </motion.section>
 
-      <motion.section
-        className="glass-card rounded-3xl p-6 md:p-8"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={sectionVariants}
-        custom={0.24}
-      >
-        <h2 className="text-2xl font-bold text-slate-900">Judging Focus</h2>
-        <p className="mt-2 text-slate-700">Projects will be evaluated based on:</p>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {judgingFocus.map((item) => (
-            <li key={item} className="rounded-xl border border-slate-200 bg-white/70 px-4 py-3 font-semibold text-slate-800">
-              {item}
-            </li>
-          ))}
-        </ul>
-      </motion.section>
+          <motion.section
+            className="glass-card rounded-3xl p-6 md:p-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={sectionVariants}
+            custom={0.24}
+          >
+            <h2 className="text-2xl font-bold text-slate-900">Judging Focus</h2>
+            <p className="mt-2 text-slate-700">Projects will be evaluated based on:</p>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              {judgingFocus.map((item) => (
+                <li key={item} className="rounded-xl border border-slate-200 bg-white/70 px-4 py-3 font-semibold text-slate-800">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </motion.section>
+        </>
+      )}
     </section>
   );
 }

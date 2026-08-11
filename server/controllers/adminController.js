@@ -440,8 +440,6 @@ export const updateAdminSettings = asyncHandler(async (req, res) => {
 
   // Keep runtime env values aligned with persisted settings for modules that still read env directly.
   env.REGISTRATION_CLOSED = settings.registrationClosed;
-  env.INDIVIDUAL_FEE_INR = settings.individualFeeInr;
-  env.TEAM_FEE_INR = settings.teamFeeInr;
 
   await EventSettingsAudit.create({
     action: "update",
@@ -462,8 +460,6 @@ export const resetAdminSettings = asyncHandler(async (req, res) => {
   const settings = await resetEventSettingsToDefaults();
 
   env.REGISTRATION_CLOSED = settings.registrationClosed;
-  env.INDIVIDUAL_FEE_INR = settings.individualFeeInr;
-  env.TEAM_FEE_INR = settings.teamFeeInr;
 
   await EventSettingsAudit.create({
     action: "reset",

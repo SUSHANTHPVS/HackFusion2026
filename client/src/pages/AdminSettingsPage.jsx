@@ -13,9 +13,7 @@ export function AdminSettingsPage() {
   const [message, setMessage] = useState("");
   const [history, setHistory] = useState([]);
   const [settings, setSettings] = useState({
-    registrationClosed: false,
-    individualFeeInr: 50,
-    teamFeeInr: 200
+    registrationClosed: false
   });
 
   const loadHistory = async () => {
@@ -34,9 +32,7 @@ export function AdminSettingsPage() {
     try {
       const response = await api.get("/admin/settings");
       setSettings({
-        registrationClosed: Boolean(response.data?.registrationClosed),
-        individualFeeInr: Number(response.data?.individualFeeInr || 0),
-        teamFeeInr: Number(response.data?.teamFeeInr || 0)
+        registrationClosed: Boolean(response.data?.registrationClosed)
       });
     } catch (err) {
       setError(getErrorMessage(err));
@@ -55,9 +51,7 @@ export function AdminSettingsPage() {
       const response = await api.patch("/admin/settings", settings);
       setMessage(response.data?.message || "Settings updated.");
       setSettings({
-        registrationClosed: Boolean(response.data?.registrationClosed),
-        individualFeeInr: Number(response.data?.individualFeeInr || 0),
-        teamFeeInr: Number(response.data?.teamFeeInr || 0)
+        registrationClosed: Boolean(response.data?.registrationClosed)
       });
     } catch (err) {
       setError(getErrorMessage(err, "Unable to update settings"));
@@ -75,9 +69,7 @@ export function AdminSettingsPage() {
       const response = await api.post("/admin/settings/reset");
       setMessage(response.data?.message || "Settings reset to defaults.");
       setSettings({
-        registrationClosed: Boolean(response.data?.registrationClosed),
-        individualFeeInr: Number(response.data?.individualFeeInr || 0),
-        teamFeeInr: Number(response.data?.teamFeeInr || 0)
+        registrationClosed: Boolean(response.data?.registrationClosed)
       });
       await loadHistory();
     } catch (err) {
@@ -97,7 +89,7 @@ export function AdminSettingsPage() {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Admin Settings</p>
         <h1 className="mt-3 text-3xl font-extrabold text-slate-900 md:text-4xl">Event Settings</h1>
         <p className="mt-3 text-slate-700">
-          Manage registration status and participation fees with persistent database-backed settings.
+          Manage registration status. Team registration fee is fixed at INR 200.
         </p>
       </div>
 
@@ -116,27 +108,9 @@ export function AdminSettingsPage() {
               Close new registrations
             </label>
 
-            <label className="text-sm font-semibold text-slate-700">
-              Individual Fee (INR)
-              <input
-                type="number"
-                min={0}
-                value={settings.individualFeeInr}
-                onChange={(event) => setSettings((prev) => ({ ...prev, individualFeeInr: Number(event.target.value || 0) }))}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-              />
-            </label>
-
-            <label className="text-sm font-semibold text-slate-700">
-              Team Fee (INR)
-              <input
-                type="number"
-                min={0}
-                value={settings.teamFeeInr}
-                onChange={(event) => setSettings((prev) => ({ ...prev, teamFeeInr: Number(event.target.value || 0) }))}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
-              />
-            </label>
+            <div className="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-semibold text-cyan-800">
+              Team Registration Fee: INR 200 (Fixed)
+            </div>
 
             <div className="flex flex-wrap gap-2">
               <button disabled={isSaving} className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">
@@ -173,10 +147,10 @@ export function AdminSettingsPage() {
                   </p>
                   <p className="mt-1 text-xs text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
                   <p className="mt-2 text-xs text-slate-600">
-                    From: Closed={String(item.before?.registrationClosed)}, Individual={item.before?.individualFeeInr}, Team={item.before?.teamFeeInr}
+                    From: Closed={String(item.before?.registrationClosed)}, Team={item.before?.teamFeeInr}
                   </p>
                   <p className="text-xs text-slate-600">
-                    To: Closed={String(item.after?.registrationClosed)}, Individual={item.after?.individualFeeInr}, Team={item.after?.teamFeeInr}
+                    To: Closed={String(item.after?.registrationClosed)}, Team={item.after?.teamFeeInr}
                   </p>
                 </div>
               ))}

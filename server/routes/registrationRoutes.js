@@ -25,7 +25,7 @@ function isValidSectionForBranch(branch, section) {
 
 const schema = z
   .object({
-    participationType: z.enum(["individual", "team"]),
+    participationType: z.literal("team"),
     teamName: z.string().min(2),
     teamLeaderName: z.string().min(2),
     leaderGender: z.enum(["male", "female"]),
@@ -49,32 +49,22 @@ const schema = z
           name: z.string().min(2),
           gender: z.enum(["male", "female"]),
           rollNo: z.string().min(2),
+          mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits."),
           year: z.enum(["3rd year", "4th year"]),
           branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT"]),
           section: z.string().regex(/^\d+$/, "Section must be a number.")
         })
       )
-      .max(3)
-      .optional()
+      .min(2)
+        .max(3)
   })
   .superRefine((data, ctx) => {
     const teammateCount = data.teammates?.length || 0;
 
-    if (data.participationType === "individual") {
-      if (teammateCount > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Individual participation cannot include teammates.",
-          path: ["teammates"]
-        });
-      }
-      return;
-    }
-
-    if (teammateCount < 1 || teammateCount > 3) {
+    if (teammateCount < 2 || teammateCount > 3) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Team participation must have 1 to 3 teammates (2 to 4 members including leader).",
+        message: "Team registration must have 2 to 3 teammates (3 to 4 members including leader).",
         path: ["teammates"]
       });
     }

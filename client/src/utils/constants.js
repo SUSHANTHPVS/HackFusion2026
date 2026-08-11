@@ -1,5 +1,5 @@
 export const EVENT_NAME = "IEEE RAS x IEEE CS Hackathon";
-export const EVENT_DATE = "2026-09-21T10:00:00+05:30";
+export const EVENT_DATE = "2026-09-21T06:00:00+05:30";
 export const REGISTRATION_CAPACITY = 140;
 export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4";
 

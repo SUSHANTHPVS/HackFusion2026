@@ -36,9 +36,7 @@ const upsertJudgeSchema = z.object({
 });
 
 const updateSettingsSchema = z.object({
-  registrationClosed: z.boolean().optional(),
-  individualFeeInr: z.number().min(0).optional(),
-  teamFeeInr: z.number().min(0).optional()
+  registrationClosed: z.boolean().optional()
 });
 
 router.get("/stats", protect, authorize("admin"), dashboardStats);
