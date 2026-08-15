@@ -139,14 +139,14 @@ export const MANAGEMENT_TEAM = [
   },
   {
     name: "Sushanth P V",
-    role: "Technical & Registration Lead",
+    role: "Registration Lead",
     chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/sushanth-p-v-67290a31b/",
     github: "https://github.com/SUSHANTHPVS"
   },
   {
     name: "M Divya",
-    role: "Technical & Registration Support",
+    role: "Registration Support",
     chapter: "Non IEEE Member",
     linkedin: "https://www.linkedin.com/in/divya-madhanambeti-799aa3423/",
     github: ""
