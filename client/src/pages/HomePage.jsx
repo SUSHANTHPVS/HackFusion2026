@@ -141,6 +141,10 @@ export function HomePage() {
               <p className="mt-2 inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-800 shadow-sm sm:text-base">
                 Mohan Babu University, New Academic Block, Room No: 4016
               </p>
+              <div className="mt-3 space-y-1 text-sm font-semibold text-slate-700 sm:text-base">
+                <p>Date: 21-22 September 2026</p>
+                <p>Inauguration Ceremony: 8:00 AM (Dasari Auditorium)</p>
+              </div>
 
               <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-sm">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-600">Powered By</p>
