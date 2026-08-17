@@ -19,8 +19,8 @@ const dayOneSchedule = [
   { time: "08:30 AM - 10:00 AM", activity: "Inaugural Ceremony & Welcome Address" },
   { time: "10:00 AM - 10:10 AM", activity: "Hackathon Route Plan Explanation" },
   { time: "10:10 AM - 10:20 AM", activity: "Venue Shift,ID Card Distribution & Team Formation" },
-  { time: "10:00 AM", activity: "Hackathon Officially Begins", highlight: true },
-  { time: "10:00 AM - 01:00 PM", activity: "Development Session I" },
+  { time: "10:30 AM", activity: "Hackathon Officially Begins", highlight: true },
+  { time: "10:30 AM - 01:00 PM", activity: "Development Session I" },
   { time: "01:00 PM - 02:00 PM", activity: "Lunch Break" },
   { time: "02:00 PM - 04:00 PM", activity: "Development Session II" },
   {
