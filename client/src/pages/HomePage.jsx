@@ -143,17 +143,16 @@ export function HomePage() {
               </p>
               <div className="mt-4 flex flex-col gap-3 text-sm font-semibold sm:text-base">
                 <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 px-4 py-2.5 shadow-sm ring-1 ring-amber-100">
-                  <span className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm">
-                    <span className="absolute left-1/2 top-1 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white" />
-                    <span className="absolute left-1.5 top-2 h-1.5 w-1.5 rounded-full bg-white/90" />
-                    <span className="absolute right-1.5 top-2 h-1.5 w-1.5 rounded-full bg-white/90" />
-                    <span className="absolute inset-x-2 bottom-2 h-2 rounded-b-md border-t border-white/80 bg-white/10" />
-                    <span className="absolute inset-x-0 bottom-1 text-[8px] font-black leading-none tracking-tight text-white">
+                  <span className="relative flex h-12 w-12 flex-col overflow-hidden rounded-xl border border-amber-300 bg-white shadow-sm">
+                    <span className="flex h-3.5 items-center justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-[7px] font-black uppercase tracking-[0.16em] text-white">
+                      Sep
+                    </span>
+                    <span className="flex flex-1 items-center justify-center bg-gradient-to-b from-amber-50 to-orange-50 text-xl font-black text-amber-800">
                       21
                     </span>
-                    <span className="absolute inset-x-0 bottom-0 text-[7px] font-bold leading-none tracking-[0.12em] text-white/90">
-                      SEP
-                    </span>
+                    <span className="absolute left-1.5 right-1.5 top-3 h-px bg-white/80" />
+                    <span className="absolute left-2 top-1.5 h-1.5 w-1.5 rounded-full bg-white/90" />
+                    <span className="absolute right-2 top-1.5 h-1.5 w-1.5 rounded-full bg-white/90" />
                   </span>
                   <span className="text-slate-700">
                     <span className="font-extrabold text-amber-700">Date:</span> 21-22 September 2026
