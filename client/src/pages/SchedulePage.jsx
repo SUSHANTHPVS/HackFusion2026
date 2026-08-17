@@ -97,6 +97,38 @@ export function SchedulePage() {
         </p>
       </motion.header>
 
+      <section className="glass-card rounded-3xl p-5 shadow-lg md:p-6">
+        <h2 className="mb-4 text-xl font-bold text-slate-900">Featured Moments</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/70 shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+            <div className="overflow-hidden">
+              <img
+                src="/logos/dasari.jpg"
+                alt="Dasari"
+                className="h-52 w-full object-cover object-center transition-transform duration-300 hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+            <div className="bg-white/80 p-3">
+              <p className="text-sm font-semibold text-slate-800">Dasari</p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/70 shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+            <div className="overflow-hidden">
+              <img
+                src="/logos/4016.jpeg"
+                alt="4016"
+                className="h-52 w-full object-cover object-center transition-transform duration-300 hover:scale-105"
+                loading="lazy"
+              />
+            </div>
+            <div className="bg-white/80 p-3">
+              <p className="text-sm font-semibold text-slate-800">4016</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="grid gap-5 lg:grid-cols-2">
         <motion.article
           className="glass-card rounded-3xl p-6"
