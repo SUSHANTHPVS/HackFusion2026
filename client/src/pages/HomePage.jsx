@@ -141,9 +141,19 @@ export function HomePage() {
               <p className="mt-2 inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-800 shadow-sm sm:text-base">
                 Mohan Babu University, New Academic Block, Room No: 4016
               </p>
-              <div className="mt-3 space-y-1 text-sm font-semibold text-slate-700 sm:text-base">
-                <p>Date: 21-22 September 2026</p>
-                <p>Inauguration Ceremony: 8:00 AM (Dasari Auditorium)</p>
+              <div className="mt-4 flex flex-col gap-3 text-sm font-semibold sm:text-base">
+                <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 px-4 py-2.5 shadow-sm ring-1 ring-amber-100">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-base text-white shadow-sm">📅</span>
+                  <span className="text-slate-700">
+                    <span className="font-extrabold text-amber-700">Date:</span> 21-22 September 2026
+                  </span>
+                </div>
+                <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-sky-50 to-blue-50 px-4 py-2.5 shadow-sm ring-1 ring-cyan-100">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-base text-white shadow-sm">🎤</span>
+                  <span className="text-slate-700">
+                    <span className="font-extrabold text-cyan-700">Inauguration Ceremony:</span> 8:00 AM <span className="font-medium text-slate-600">(Dasari Auditorium)</span>
+                  </span>
+                </div>
               </div>
 
               <div className="mt-6 rounded-2xl border border-slate-200/80 bg-white/70 p-4 backdrop-blur-sm">
