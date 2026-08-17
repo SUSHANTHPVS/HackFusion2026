@@ -200,9 +200,6 @@ export function HomePage() {
                   >
                     Explore Theme
                   </Link>
-                  <p className="max-w-[240px] rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-red-700 shadow-sm sm:text-[11px]">
-                    Every Application Should Be Deployed Either On Vercel And Render Or AWS
-                  </p>
                 </div>
 
                 <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
