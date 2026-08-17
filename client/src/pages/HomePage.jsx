@@ -143,7 +143,9 @@ export function HomePage() {
               </p>
               <div className="mt-4 flex flex-col gap-3 text-sm font-semibold sm:text-base">
                 <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 px-4 py-2.5 shadow-sm ring-1 ring-amber-100">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-base text-white shadow-sm">📅</span>
+                  <span className="inline-flex h-9 min-w-[3.25rem] items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 px-2 text-sm font-black tracking-tight text-white shadow-sm">
+                    21 Sep
+                  </span>
                   <span className="text-slate-700">
                     <span className="font-extrabold text-amber-700">Date:</span> 21-22 September 2026
                   </span>
