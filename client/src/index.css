@@ -14,6 +14,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {
@@ -27,11 +28,34 @@ body {
 
 #root {
   min-height: 100vh;
+  min-width: 0;
 }
 
 img,
 svg {
   max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+input,
+select,
+textarea,
+button {
+  min-width: 0;
+}
+
+p,
+li,
+a,
+button,
+label,
+input,
+select,
+textarea {
+  overflow-wrap: anywhere;
 }
 
 h1,
