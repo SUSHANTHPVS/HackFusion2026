@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const teammateSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
     gender: { type: String, enum: ["male", "female"], required: true },
     rollNo: { type: String, required: true, trim: true, uppercase: true },
     mobile: { type: String, required: true, trim: true },

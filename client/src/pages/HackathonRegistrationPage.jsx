@@ -112,7 +112,7 @@ function createEmptyFieldErrors(teammateCount = 2) {
     teamName: "",
     teamLeaderName: "",
     rollNo: "",
-    teammates: Array.from({ length: teammateCount }, () => ({ name: "", rollNo: "", mobile: "" }))
+    teammates: Array.from({ length: teammateCount }, () => ({ name: "", email: "", rollNo: "", mobile: "" }))
   };
 }
 
@@ -171,6 +171,7 @@ export function HackathonRegistrationPage() {
   const [teammates, setTeammates] = useState([
     {
       name: "",
+      email: "",
       gender: GENDER_OPTIONS[0].value,
       rollNo: "",
       mobile: "",
@@ -180,6 +181,7 @@ export function HackathonRegistrationPage() {
     },
     {
       name: "",
+      email: "",
       gender: GENDER_OPTIONS[0].value,
       rollNo: "",
       mobile: "",
@@ -296,7 +298,7 @@ export function HackathonRegistrationPage() {
   };
 
   const updateTeammate = (index, field, value) => {
-    if (field === "name" || field === "rollNo" || field === "mobile") {
+    if (field === "name" || field === "email" || field === "rollNo" || field === "mobile") {
       setFieldErrors((prev) => ({
         ...prev,
         teammates: prev.teammates.map((item, idx) =>
@@ -332,6 +334,7 @@ export function HackathonRegistrationPage() {
         ...prev,
         {
           name: "",
+          email: "",
           gender: GENDER_OPTIONS[0].value,
           rollNo: "",
           mobile: "",
@@ -363,6 +366,7 @@ export function HackathonRegistrationPage() {
 
     const normalizedTeammates = teammates.map((item) => ({
       name: item.name.trim(),
+      email: item.email.trim().toLowerCase(),
       gender: item.gender,
       rollNo: item.rollNo.trim().toUpperCase(),
       mobile: item.mobile.trim(),
@@ -372,7 +376,7 @@ export function HackathonRegistrationPage() {
     }));
 
     const filledTeammates = normalizedTeammates.filter(
-      (item) => item.name && item.rollNo && item.mobile && item.year && item.branch && item.section
+      (item) => item.name && item.email && item.rollNo && item.mobile && item.year && item.branch && item.section
     );
 
     if (!teamName.trim() || !teamLeaderName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim()) {
@@ -387,7 +391,7 @@ export function HackathonRegistrationPage() {
     }
 
     if (filledTeammates.length !== teammates.length) {
-      setPaymentMessage("Each teammate row must include name, mobile, roll no, year, branch, and section, or remove the row.");
+      setPaymentMessage("Each teammate row must include name, email, mobile, roll no, year, branch, and section, or remove the row.");
       return;
     }
 
@@ -444,6 +448,18 @@ export function HackathonRegistrationPage() {
         )
       }));
       setPaymentMessage("Each teammate mobile number must contain exactly 10 digits.");
+      return;
+    }
+
+    const invalidEmailIndex = filledTeammates.findIndex((item) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(item.email));
+    if (invalidEmailIndex >= 0) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        teammates: prev.teammates.map((item, idx) =>
+          idx === invalidEmailIndex ? { ...item, email: "Enter a valid email address." } : item
+        )
+      }));
+      setPaymentMessage("Each teammate must have a valid email address.");
       return;
     }
 
@@ -582,6 +598,14 @@ export function HackathonRegistrationPage() {
         />
         {fieldErrors.rollNo ? <p className="text-sm text-rose-600">{fieldErrors.rollNo}</p> : null}
 
+        <input
+          value={user?.email || ""}
+          className="rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-slate-700"
+          placeholder="Team Leader Email"
+          aria-label="Team Leader Email"
+          readOnly
+        />
+
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
           Gender
           <select
@@ -717,6 +741,16 @@ export function HackathonRegistrationPage() {
                     placeholder={`Member ${index + 1} Name`}
                   />
                   {fieldErrors.teammates[index]?.name ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].name}</p> : null}
+                  <input
+                    type="email"
+                    value={item.email}
+                    onChange={(event) => updateTeammate(index, "email", event.target.value)}
+                    className={getInputClass(Boolean(fieldErrors.teammates[index]?.email))}
+                    placeholder={`Member ${index + 1} Email`}
+                    autoComplete="email"
+                    required
+                  />
+                  {fieldErrors.teammates[index]?.email ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].email}</p> : null}
                   <label className="grid gap-1 text-sm font-semibold text-slate-700">
                     Gender
                     <select

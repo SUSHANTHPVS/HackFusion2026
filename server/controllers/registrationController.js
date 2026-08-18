@@ -41,7 +41,7 @@ function hasTeamCompositionChanged(existingTeam, participantDetails, participati
     .map((item) => `${normalizeName(item.name)}|${item.gender}|${normalizeRoll(item.rollNo)}|${String(item.mobile || "").trim()}`)
     .sort();
   const incomingTeammates = normalizedTeammates
-    .map((item) => `${normalizeName(item.name)}|${item.gender}|${normalizeRoll(item.rollNo)}|${String(item.mobile || "").trim()}`)
+    .map((item) => `${normalizeName(item.name)}|${String(item.email || "").trim().toLowerCase()}|${item.gender}|${normalizeRoll(item.rollNo)}|${String(item.mobile || "").trim()}`)
     .sort();
 
   if (currentTeammates.length !== incomingTeammates.length) {
@@ -140,6 +140,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const participationType = req.body.participationType;
   const normalizedTeammates = (req.body.teammates || []).map((item) => ({
     name: item.name.trim(),
+    email: item.email.trim().toLowerCase(),
     gender: item.gender,
     rollNo: item.rollNo.trim().toUpperCase(),
     mobile: String(item.mobile || "").trim(),

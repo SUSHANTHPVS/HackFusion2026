@@ -37,6 +37,7 @@ export function buildRegistrationSyncPayload({ team, user, paymentStatus, feeInr
     section: team.section,
     teammateDetails: (team.teammates || []).map((item) => ({
       name: item.name,
+      email: item.email,
       gender: item.gender,
       rollNo: item.rollNo,
       year: item.year,

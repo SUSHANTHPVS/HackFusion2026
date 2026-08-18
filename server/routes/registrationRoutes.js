@@ -49,6 +49,7 @@ const schema = z
       .array(
         z.object({
           name: z.string().min(2),
+          email: z.string().email(),
           gender: z.enum(["male", "female"]),
           rollNo: z.string().min(2),
           mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits."),
