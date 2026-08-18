@@ -183,8 +183,8 @@ export function HackathonRegistrationPage() {
       rollNo: "",
       mobile: "",
       year: YEAR_OPTIONS[0],
-      branch: BRANCH_OPTIONS[0],
-      section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
+      branch: "ECE",
+      section: getSectionOptionsForBranch("ECE")[0]
     }
   ]);
   const [orderData, setOrderData] = useState(null);
@@ -279,6 +279,7 @@ export function HackathonRegistrationPage() {
   const selectedFee = TEAM_REGISTRATION_FEE;
   const totalMembers = 1 + teammates.length;
   const leaderSectionOptions = useMemo(() => getSectionOptionsForBranch(branch), [branch]);
+  const thirdParticipantBranchOptions = ["ECE", "EEE"];
 
   const resetFieldErrors = (teammateCount = teammates.length) => {
     setFieldErrors(createEmptyFieldErrors(teammateCount));
@@ -756,7 +757,7 @@ export function HackathonRegistrationPage() {
                         onChange={(event) => updateTeammate(index, "branch", event.target.value)}
                         className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
                       >
-                        {BRANCH_OPTIONS.map((option) => (
+                        {(index === 1 ? thirdParticipantBranchOptions : BRANCH_OPTIONS).map((option) => (
                           <option key={option} value={option}>
                             {option}
                           </option>

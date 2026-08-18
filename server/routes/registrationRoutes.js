@@ -71,6 +71,14 @@ const schema = z
       });
     }
 
+    if (data.teammates?.[1] && !["ECE", "EEE"].includes(data.teammates[1].branch)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The third participant must be from ECE or EEE.",
+        path: ["teammates", 1, "branch"]
+      });
+    }
+
     const teamBranches = [data.branch, ...(data.teammates || []).map((member) => member.branch)];
     if (!teamBranches.some((branch) => branch === "ECE" || branch === "EEE")) {
       ctx.addIssue({
