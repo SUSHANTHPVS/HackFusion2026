@@ -71,6 +71,22 @@ const schema = z
       });
     }
 
+    if (["ECE", "EEE"].includes(data.branch)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The team leader cannot be from ECE or EEE.",
+        path: ["branch"]
+      });
+    }
+
+    if (data.teammates?.[0] && ["ECE", "EEE"].includes(data.teammates[0].branch)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The second participant cannot be from ECE or EEE.",
+        path: ["teammates", 0, "branch"]
+      });
+    }
+
     if (data.teammates?.[1] && !["ECE", "EEE"].includes(data.teammates[1].branch)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

@@ -279,6 +279,7 @@ export function HackathonRegistrationPage() {
   const selectedFee = TEAM_REGISTRATION_FEE;
   const totalMembers = 1 + teammates.length;
   const leaderSectionOptions = useMemo(() => getSectionOptionsForBranch(branch), [branch]);
+  const standardBranchOptions = BRANCH_OPTIONS.filter((branchOption) => branchOption !== "ECE" && branchOption !== "EEE");
   const thirdParticipantBranchOptions = ["ECE", "EEE"];
 
   const resetFieldErrors = (teammateCount = teammates.length) => {
@@ -618,12 +619,13 @@ export function HackathonRegistrationPage() {
               className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
               required
             >
-              {BRANCH_OPTIONS.map((item) => (
+              {standardBranchOptions.map((item) => (
                 <option key={item} value={item}>
                   {item}
                 </option>
               ))}
             </select>
+            <span className="text-xs font-normal text-slate-500">Team leader: all branches except ECE and EEE.</span>
           </label>
           <label className="grid gap-1 text-sm font-semibold text-slate-700">
             Section
@@ -698,6 +700,13 @@ export function HackathonRegistrationPage() {
             <div className="grid gap-3">
               {teammates.map((item, index) => (
                 <div key={index} className="grid gap-2 rounded-md border border-slate-100 p-3">
+                  <p className="text-xs font-medium text-cyan-700">
+                    {index === 0
+                      ? "Second participant: all branches except ECE and EEE."
+                      : index === 1
+                        ? "Third participant: ECE or EEE only."
+                        : "Fourth participant: all branches are allowed."}
+                  </p>
                   <input
                     value={item.name}
                     onChange={(event) => updateTeammate(index, "name", event.target.value)}
@@ -757,7 +766,7 @@ export function HackathonRegistrationPage() {
                         onChange={(event) => updateTeammate(index, "branch", event.target.value)}
                         className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
                       >
-                        {(index === 1 ? thirdParticipantBranchOptions : BRANCH_OPTIONS).map((option) => (
+                        {(index === 0 ? standardBranchOptions : index === 1 ? thirdParticipantBranchOptions : BRANCH_OPTIONS).map((option) => (
                           <option key={option} value={option}>
                             {option}
                           </option>
