@@ -31,14 +31,14 @@ const teamSchema = new mongoose.Schema(
     themeTrack: {
       type: String,
       enum: [
-        "Adaptive Robot Workforce",
-        "Self-Healing Autonomous Systems",
-        "Robot Swarms Under Communication Loss",
-        "Autonomous Construction Intelligence",
-        "Autonomous Energy Infrastructure Guardian",
-        "Autonomous Underground & Confined-Space Intelligence",
-        "Cyber-Physical Robot Security",
-        "Robot Intelligence Under Resource Constraints"
+        "Multi-Robot Task Negotiation Engine",
+        "Semantic SLAM Recovery & Map Reconstruction",
+        "Physics-Informed Drone Digital Twin",
+        "Robot Fleet Recovery Under Cascading Failures",
+        "Zero-Trust Agent Identity & Privilege Fabric",
+        "Software Supply-Chain Attack Graph Engine",
+        "Privacy-Preserving Threat Intelligence Network",
+        "Multi-Agent AI Reasoning & Verification Engine"
       ],
       required: true
     },

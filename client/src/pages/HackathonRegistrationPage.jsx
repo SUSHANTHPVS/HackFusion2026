@@ -7,14 +7,14 @@ import { api } from "../services/api";
 import { BRANCH_OPTIONS, GENDER_OPTIONS, YEAR_OPTIONS, getSectionOptionsForBranch } from "../utils/constants";
 
 const tracks = [
-  "Adaptive Robot Workforce",
-  "Self-Healing Autonomous Systems",
-  "Robot Swarms Under Communication Loss",
-  "Autonomous Construction Intelligence",
-  "Autonomous Energy Infrastructure Guardian",
-  "Autonomous Underground & Confined-Space Intelligence",
-  "Cyber-Physical Robot Security",
-  "Robot Intelligence Under Resource Constraints"
+  "Multi-Robot Task Negotiation Engine",
+  "Semantic SLAM Recovery & Map Reconstruction",
+  "Physics-Informed Drone Digital Twin",
+  "Robot Fleet Recovery Under Cascading Failures",
+  "Zero-Trust Agent Identity & Privilege Fabric",
+  "Software Supply-Chain Attack Graph Engine",
+  "Privacy-Preserving Threat Intelligence Network",
+  "Multi-Agent AI Reasoning & Verification Engine"
 ];
 const TEAM_REGISTRATION_FEE = 200;
 const PAYMENT_MODE_OPTIONS = {

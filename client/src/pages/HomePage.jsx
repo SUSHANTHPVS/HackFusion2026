@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BrandLogoGroup } from "../components/BrandLogoGroup";
 import { CountdownTimer } from "../components/CountdownTimer";
+import { GuestSpeakersSection } from "../components/GuestSpeakersSection";
 import { ManagementTeamSection } from "../components/ManagementTeamSection";
 import { ParticleField } from "../components/ParticleField";
 import { PrizePoolSection } from "../components/PrizePoolSection";
@@ -265,6 +266,8 @@ export function HomePage() {
       <StatGrid />
 
       <PrizePoolSection />
+
+      <GuestSpeakersSection />
 
       <ManagementTeamSection />
     </div>

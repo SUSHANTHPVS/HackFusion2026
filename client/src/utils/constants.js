@@ -203,3 +203,28 @@ export const MANAGEMENT_TEAM = [
     github: "https://github.com/saipriyanka1306"
   }
 ];
+
+export const GUEST_SPEAKERS = [
+  {
+    name: "Sathyaprabha Gunasekaran",
+    role: "Cybersecurity Professional | Security Manager, Fractal Analytics",
+    photo: "/guests/sathyaprabha-gunasekaran.jpg",
+    companyName: "Fractal Analytics",
+    companyLogo: "/logos/fractal-logo.png",
+    bio: "Cybersecurity professional with 7+ years of experience in cyber defense, incident response, threat intelligence, and SOC operations. Currently serving as Security Manager at Fractal Analytics, she has previously worked with EY GDS and L&T Smart World & Communications. An NCDRC Member and cybersecurity speaker, she actively contributes to cybersecurity awareness through technical sessions, workshops, and industry-focused knowledge sharing.",
+    expertise: ["Cyber Defense", "Threat Intelligence", "Incident Response", "SOC", "SIEM", "EDR", "SOAR"],
+    highlights: ["🏆 Cybersecurity Champion of the Year – 2026"],
+    linkedin: "https://www.linkedin.com/in/sathyaprabha-gunasekaran-cybersecurityprofessional-speaker/"
+  },
+  {
+    name: "N. Naresh Kumar",
+    role: "Senior Manager – Project & Program Management | L&T Infotech",
+    photo: "/guests/naresh-kumar.jpg",
+    companyName: "L&T Infotech",
+    companyLogo: "/logos/ltm-logo.png",
+    bio: "Accomplished Project & Program Management professional with 15+ years of experience in enterprise IT, technology operations, Agile delivery, DevOps, and service management. Currently serving as Senior Manager – Project & Program Management at L&T Infotech, he has led large cross-functional teams and enterprise-scale technology initiatives, with extensive experience in CitiBank projects, stakeholder management, vendor coordination, SLA/KPI management, risk management, and strategic delivery.",
+    expertise: ["Project & Program Management", "Agile & Scrum", "DevOps", "IT Service Management", "Stakeholder Management", "Risk & Vendor Management", "Enterprise Operations"],
+    highlights: ["🎓 MBA – Operations Management, Anna University", "🏢 15+ Years of Industry Experience", "💼 Enterprise Technology & Banking Experience"],
+    linkedin: "https://www.linkedin.com/in/naresh-kumar-cism-9a475838/"
+  }
+];
