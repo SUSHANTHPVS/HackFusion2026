@@ -36,7 +36,7 @@ const ruleSections = [
     title: "Team Formation",
     icon: Users,
     points: [
-      "Teams may consist of 1-4 members.",
+      "Teams may consist of 3-4 members.",
       "Once registrations close, team composition cannot be changed without organizer approval.",
       "Every team must nominate one member as the Team Leader for official communication."
     ]
@@ -45,7 +45,7 @@ const ruleSections = [
     title: "Hackathon Duration",
     icon: BookOpenCheck,
     points: [
-      "The hackathon officially begins at 10:00 AM on Day 1.",
+      "The hackathon officially begins at 10:30 AM on Day 1.",
       "Development on campus is permitted until 5:00 PM on Day 1.",
       "Teams may continue development remotely after leaving the venue.",
       "All development must be completed within the official 24-hour hackathon window."
@@ -76,7 +76,7 @@ const submissionRequirements = [
   "Project presentation (PPT or PDF)",
   "Project description",
   "Demo video (if requested)",
-  "Deployment link (if applicable)",
+  "Deployment link",
   "Late submissions may not be accepted."
 ];
 

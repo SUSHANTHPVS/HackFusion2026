@@ -28,16 +28,16 @@ const faqs = [
   },
   {
     question: "What is the team size?",
-    answer: "A team can have 1 to 4 members."
+    answer: "A team can have 3 to 4 members."
   },
   {
     question: "Is there a registration fee?",
-    answer: "Yes. Individual Registration: ₹50. Team Registration: ₹200.",
+    answer: "Yes. Team Registration: ₹200.",
     highlight: true
   },
   {
     question: "Can I participate individually?",
-    answer: "Yes. You may register individually or as part of a team."
+    answer: "No. You may register only as a team. Each team must consist of 3–4 members."
   },
   {
     question: "Do I need to stay on campus overnight?",
@@ -47,7 +47,7 @@ const faqs = [
   {
     question: "What should I bring?",
     answer:
-      "Please bring a valid college ID, laptop and charger, extension board (recommended), internet hotspot (optional), and any accessories required for software development."
+      "Please bring a valid college ID, laptop and charger"
   },
   {
     question: "Can we use open-source libraries or APIs?",
@@ -170,13 +170,7 @@ export function FaqPage() {
               <p className="mt-3 leading-relaxed text-slate-700">{item.answer}</p>
 
               {item.highlight ? (
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <div className="rounded-xl border border-cyan-200 bg-white px-3 py-2 text-sm font-medium text-slate-800">
-                    <span className="inline-flex items-center gap-1 text-cyan-700">
-                      <IndianRupee size={14} /> Individual
-                    </span>
-                    <div className="mt-1 text-base font-bold">₹50</div>
-                  </div>
+                <div className="mt-4">
                   <div className="rounded-xl border border-cyan-200 bg-white px-3 py-2 text-sm font-medium text-slate-800">
                     <span className="inline-flex items-center gap-1 text-cyan-700">
                       <IndianRupee size={14} /> Team
