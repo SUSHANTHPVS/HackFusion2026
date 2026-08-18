@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CountdownTimer } from "../components/CountdownTimer";
 import { useCountdown } from "../hooks/useCountdown";
-import { EVENT_DATE } from "../utils/constants";
+import { THEME_REVEAL_DATE } from "../utils/constants";
 
 const themes = [
   {
@@ -104,7 +104,7 @@ const sectionVariants = {
 
 export function ThemePage() {
   const [expandedTheme, setExpandedTheme] = useState(themes[0].title);
-  const { days, hours, minutes, seconds } = useCountdown(EVENT_DATE);
+  const { days, hours, minutes, seconds } = useCountdown(THEME_REVEAL_DATE);
   const isCountdownComplete = days === 0 && hours === 0 && minutes === 0 && seconds === 0;
 
   const summaryIcons = {
