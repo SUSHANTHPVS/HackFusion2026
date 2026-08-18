@@ -148,20 +148,14 @@ export function HomePage() {
                       Sep
                     </span>
                     <span className="flex flex-1 items-center justify-center bg-gradient-to-b from-amber-50 to-orange-50 text-xl font-black text-amber-800">
-                      21
+                      25
                     </span>
                     <span className="absolute left-1.5 right-1.5 top-3 h-px bg-white/80" />
                     <span className="absolute left-2 top-1.5 h-1.5 w-1.5 rounded-full bg-white/90" />
                     <span className="absolute right-2 top-1.5 h-1.5 w-1.5 rounded-full bg-white/90" />
                   </span>
                   <span className="text-slate-700">
-                    <span className="font-extrabold text-amber-700">Date:</span> 21-22 September 2026
-                  </span>
-                </div>
-                <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-sky-50 to-blue-50 px-4 py-2.5 shadow-sm ring-1 ring-cyan-100">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-base text-white shadow-sm">🎤</span>
-                  <span className="text-slate-700">
-                    <span className="font-extrabold text-cyan-700">Inauguration Ceremony:</span> 8:00 AM <span className="font-medium text-slate-600">(Dasari Auditorium)</span>
+                    <span className="font-extrabold text-amber-700">Date:</span> 25-26 September 2026
                   </span>
                 </div>
               </div>

@@ -391,6 +391,12 @@ export function HackathonRegistrationPage() {
       return;
     }
 
+    const teamBranches = [branch.trim(), ...filledTeammates.map((item) => item.branch)];
+    if (!teamBranches.some((memberBranch) => memberBranch === "ECE" || memberBranch === "EEE")) {
+      setPaymentMessage("Each team must include at least one participant from ECE or EEE.");
+      return;
+    }
+
     const leaderRollNo = rollNo.trim().toUpperCase();
     const leaderNameNormalized = teamLeaderName.trim().toLowerCase();
     const teammateRollNos = filledTeammates.map((item) => item.rollNo);
@@ -530,6 +536,7 @@ export function HackathonRegistrationPage() {
       <div className="mt-5 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
         <p className="text-sm font-bold uppercase tracking-wide text-cyan-800">Team Registration Only</p>
         <p className="mt-1 text-xs text-cyan-700">Minimum 3 members and maximum 4 members (including leader).</p>
+        <p className="mt-1 text-xs text-cyan-700">Each team must include at least one participant from ECE or EEE.</p>
         <p className="mt-2 text-2xl font-extrabold text-slate-900">INR {selectedFee}</p>
       </div>
 

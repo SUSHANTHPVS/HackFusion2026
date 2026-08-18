@@ -1,5 +1,5 @@
 export const EVENT_NAME = "IEEE RAS x IEEE CS Hackathon";
-export const EVENT_DATE = "2026-09-21T06:00:00+05:30";
+export const EVENT_DATE = "2026-09-25T06:00:00+05:30";
 export const REGISTRATION_CAPACITY = 140;
 export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4";
 
@@ -34,14 +34,16 @@ export const ORGANIZER_LOGOS = [
   }
 ];
 
-export const BRANCH_OPTIONS = ["CSE", "CSE-DS", "CSE-CS", "AIML", "IT"];
+export const BRANCH_OPTIONS = ["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"];
 export const YEAR_OPTIONS = ["3rd year", "4th year"];
 export const BRANCH_SECTION_LIMITS = {
   CSE: 20,
   AIML: 15,
   "CSE-DS": 5,
   "CSE-CS": 5,
-  IT: 3
+  IT: 3,
+  ECE: 8,
+  EEE: 8
 };
 
 export function getSectionOptionsForBranch(branch) {

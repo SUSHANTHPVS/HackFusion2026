@@ -443,7 +443,7 @@ export function ThemePage() {
           >
             <h2 className="text-2xl font-bold text-slate-900">Full Reveal After Countdown</h2>
             <p className="mt-2 text-slate-700">
-              All themes, full challenge statements, system flows, and judging sections will become visible automatically on 21 September 2026 at 6:00 AM.
+              All themes, full challenge statements, system flows, and judging sections will become visible automatically on 25 September 2026 at 6:00 AM.
             </p>
           </motion.section>
         </>
