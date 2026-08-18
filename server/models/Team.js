@@ -30,14 +30,14 @@ const teamSchema = new mongoose.Schema(
     themeTrack: {
       type: String,
       enum: [
-        "Space Intelligence & Digital Exploration",
-        "Defence, Security & Crisis Intelligence",
-        "Healthcare Intelligence & Digital Health",
-        "Rural–Urban Transformation & Smart Communities",
-        "Cinema, Media & Entertainment Intelligence",
-        "AI for Smarter Living",
-        "Technology for Social Good",
-        "Smart Automation & Digital Robotics"
+        "Adaptive Robot Workforce",
+        "Self-Healing Autonomous Systems",
+        "Robot Swarms Under Communication Loss",
+        "Autonomous Construction Intelligence",
+        "Autonomous Energy Infrastructure Guardian",
+        "Autonomous Underground & Confined-Space Intelligence",
+        "Cyber-Physical Robot Security",
+        "Robot Intelligence Under Resource Constraints"
       ],
       required: true
     },

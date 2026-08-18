@@ -10,7 +10,8 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "migrate:theme-tracks": "node scripts/migrateThemeTracks.js",
-    "migrate:theme-tracks:commit": "node scripts/migrateThemeTracks.js --commit"
+    "migrate:theme-tracks:commit": "node scripts/migrateThemeTracks.js --commit",
+    "reset:registrations": "node scripts/resetRegistrations.js --confirm"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
