@@ -22,7 +22,7 @@ const schema = z.object({
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(1),
   INDIVIDUAL_FEE_INR: z.coerce.number().default(50),
   TEAM_FEE_INR: z.coerce.number().default(200),
-  REGISTRATION_CAPACITY: z.coerce.number().int().positive().default(140),
+  REGISTRATION_CAPACITY: z.coerce.number().int().positive().default(100),
   REGISTRATION_CLOSED: z.coerce.boolean().default(false),
   RAZORPAY_KEY_ID: z.string().min(1).optional(),
   RAZORPAY_KEY_SECRET: z.string().min(1).optional(),
