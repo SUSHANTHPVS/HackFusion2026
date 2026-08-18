@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
@@ -157,6 +157,7 @@ function extractDuplicateFieldError(message, teammates) {
 
 export function HackathonRegistrationPage() {
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const participationType = "team";
   const [paymentMode, setPaymentMode] = useState("all_methods");
   const [teamName, setTeamName] = useState("");
@@ -214,6 +215,7 @@ export function HackathonRegistrationPage() {
         participationType,
         teammates
       });
+      navigate("/participant/my-team", { replace: true });
     },
     onError: (error) => {
       setPaymentMessage(error?.response?.data?.message || "Payment verification failed.");
@@ -230,6 +232,7 @@ export function HackathonRegistrationPage() {
 
       if (data.paymentStatus === "success") {
         setPaymentMessage("Registration already completed for your account.");
+        navigate("/participant/my-team", { replace: true });
       } else {
         setPaymentMessage("Team registered. Proceed to Razorpay payment.");
       }
