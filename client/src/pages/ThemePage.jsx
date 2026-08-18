@@ -6,329 +6,68 @@ import { EVENT_DATE } from "../utils/constants";
 
 const themes = [
   {
-    emoji: "🌌",
-    title: "Space Intelligence & Digital Exploration",
-    description: "Build an intelligent platform that aggregates space data, tracks space objects, visualizes movement, detects anomalies, and generates risk-based alerts.",
-    challengeStatement:
-      "Develop an intelligent web/mobile platform that aggregates space-related information from multiple data sources and transforms it into actionable intelligence for researchers, students, organizations, and space enthusiasts.",
-    coreChallenge: [
-      "Integrate multiple external APIs and data sources",
-      "Track satellites and space objects",
-      "Visualize object movement",
-      "Maintain historical records",
-      "Detect anomalies or unusual patterns",
-      "Provide intelligent search and filtering",
-      "Generate risk-based alerts",
-      "Deliver personalized dashboards",
-      "Compare historical and current information",
-      "Support multiple user roles"
-    ],
-    advancedRequirements: [
-      "Object → Location → Movement → Historical Pattern → Risk → User Preference → Alert Priority"
-    ],
-    systemFlow: [
-      "External Space Data Sources → API/Data Ingestion Layer",
-      "Data Validation & Normalization → Space Data Repository",
-      "Processing & Analytics Engine → Anomaly/Risk Detection, Historical Analysis, Prediction Engine",
-      "Alert Priority Engine → Notification Service",
-      "Space Visualization Engine → Interactive Web/Mobile Dashboard"
-    ],
-    suggestedModules: [
-      "User Management",
-      "Space Dashboard",
-      "Satellite Tracking",
-      "Data Analytics",
-      "Risk Engine",
-      "Alert System",
-      "Historical Analysis",
-      "Admin Panel",
-      "API Management"
-    ],
-    technologies: ["Web/Mobile", "REST APIs", "AI/ML", "Data Visualization", "Maps/GIS", "Cloud", "SQL/NoSQL", "Notifications"]
+    emoji: "🧠", title: "Adaptive Robot Workforce", description: "Teach a simulated robotic workforce new jobs when products, tools, layouts, and procedures change.",
+    challengeStatement: "Develop an adaptive robot-learning framework that enables robots to learn previously unseen tasks without redesigning the entire system.",
+    coreChallenge: ["New products and task sequences", "Changed workspaces, tools, and priorities", "Previously unseen objects", "Continuous on-site learning and optimization"],
+    advancedRequirements: ["Never-seen task → Task decomposition → Skill selection → Plan → Execute → Learn"],
+    systemFlow: ["Factory change detected → Context and object understanding", "Task decomposition → Skill library / LLM planning", "Simulation or safe execution → Outcome evaluation", "Learning update → Reusable robot capability"],
+    suggestedModules: ["Task Planner", "Skill Library", "Simulation", "Learning Engine", "Robot Dashboard", "Knowledge Graph"], technologies: ["Physical AI", "LLM Planning", "Reinforcement Learning", "Imitation Learning", "Computer Vision", "Simulation"]
   },
   {
-    emoji: "🪖",
-    title: "Defence, Security & Crisis Intelligence",
-    description: "Create a secure crisis-response system that classifies incidents, prioritizes threats, and coordinates resources in real time.",
-    challengeStatement:
-      "Develop a secure crisis-intelligence platform capable of collecting incident information from multiple sources, identifying and prioritizing critical situations, coordinating response teams, managing limited resources, and providing real-time situational awareness.",
-    coreChallenge: [
-      "Handle multiple simultaneous incidents",
-      "Differentiate severity levels",
-      "Work with geographic locations",
-      "Manage limited response resources",
-      "Adapt to changing incident conditions",
-      "Resolve conflicting reports",
-      "Deliver emergency notifications",
-      "Support role-based access",
-      "Maintain incident history",
-      "Preserve audit trails"
-    ],
-    advancedRequirements: [
-      "Severity + Urgency + Location + Population Impact + Available Resources + Escalation Risk"
-    ],
-    systemFlow: [
-      "Incident Reports / Sensor/API/External Data / Field User Reports → Data Collection Layer",
-      "Validation & Verification → Incident Database",
-      "AI/Rule-Based Classification → Severity Assessment → Priority Engine",
-      "Critical Incident? → Emergency Escalation or Normal Response Queue",
-      "Resource Allocation Engine → Response Team Dashboard → Task Assignment → Real-Time Status Updates"
-    ],
-    suggestedModules: [
-      "Incident Management",
-      "Crisis Dashboard",
-      "Resource Management",
-      "Team Coordination",
-      "Location Intelligence",
-      "Alert System",
-      "Analytics",
-      "Audit Logs",
-      "Admin Panel"
-    ],
-    technologies: ["Web/Mobile", "AI/ML", "GIS", "Real-Time APIs", "Cybersecurity", "Cloud", "Data Analytics", "Notifications"]
+    emoji: "🔄", title: "Self-Healing Autonomous Systems", description: "Keep a critical robotic mission operating when robots, sensors, batteries, navigation, or communications fail.",
+    challengeStatement: "Build a simulated multi-robot system that detects faults, diagnoses their impact, reorganizes resources, and continues the mission autonomously.",
+    coreChallenge: ["Sensor failure", "Communication loss", "Battery degradation", "Navigation failure", "Unseen fault scenarios"],
+    advancedRequirements: ["Detect failure → Diagnose → Reassign task → Re-plan → Continue mission"],
+    systemFlow: ["Telemetry monitoring → Failure detection", "Diagnosis and impact assessment → Trustworthy recovery plan", "Task and resource reassignment → Mission continuation", "Recovery analytics → Resilience improvement"],
+    suggestedModules: ["Health Monitor", "Fault Diagnoser", "Task Allocator", "Mission Planner", "Recovery Engine", "Operations Dashboard"], technologies: ["Autonomous Systems", "Anomaly Detection", "Planning", "Multi-Agent Systems", "Simulation", "Analytics"]
   },
   {
-    emoji: "🏥",
-    title: "Healthcare Intelligence & Digital Health",
-    description: "Design a decision-support ecosystem for patients, doctors, appointments, emergencies, beds, departments, and hospital resources.",
-    challengeStatement:
-      "Develop an intelligent healthcare management ecosystem capable of coordinating patients, doctors, appointments, hospital resources, emergency cases, and healthcare information.",
-    coreChallenge: [
-      "Coordinate patients, doctors, appointments, beds, departments, emergency cases, and resources",
-      "Support patient prioritization",
-      "Optimize appointments",
-      "Allocate resources intelligently",
-      "Monitor doctor availability",
-      "Escalate emergencies",
-      "Classify patient risk",
-      "Analyze waiting times",
-      "Track hospital capacity",
-      "Deliver personalized notifications"
-    ],
-    advancedRequirements: [
-      "Patient Priority Score → Resource Allocation → Emergency or Standard Care Workflow"
-    ],
-    systemFlow: [
-      "Patient Registration → Patient Profile → Medical/Service Information → Secure Healthcare Database",
-      "Risk & Priority Engine → Patient Priority Score",
-      "Doctor Availability / Hospital Capacity / Appointment Requests → Resource Engine",
-      "Appointment/Resource Allocation → Emergency Escalation or Standard Care Workflow",
-      "Doctor Dashboard → Patient Status Updates → Analytics Engine → Hospital Intelligence Dashboard"
-    ],
-    suggestedModules: [
-      "Patient Portal",
-      "Doctor Portal",
-      "Appointment Engine",
-      "Resource Management",
-      "Emergency Module",
-      "Risk Analytics",
-      "Notifications",
-      "Hospital Dashboard",
-      "Admin Panel"
-    ],
-    technologies: ["Web/Mobile", "AI/ML", "Secure APIs", "SQL/NoSQL", "Analytics", "Cloud", "Notifications"]
+    emoji: "📡", title: "Robot Swarms Under Communication Loss", description: "Design decentralized robot intelligence that remains effective when communication, GPS, or central control disappears.",
+    challengeStatement: "Coordinate a simulated swarm of 20-50 robots to complete a mission despite delayed messages, isolation, GPS loss, and unreachable central services.",
+    coreChallenge: ["Unreliable and delayed communication", "Isolated robot groups", "GPS unavailability", "Central server outage", "Local decisions with incomplete information"],
+    advancedRequirements: ["Local state → Distributed decision → Coordination → Consensus → Mission recovery"],
+    systemFlow: ["Mission allocation → Local sensing and planning", "Connectivity disruption → Communication prioritization", "Distributed coordination → Consensus and conflict resolution", "Network recovery → Global state reconciliation"],
+    suggestedModules: ["Swarm Simulator", "Local Planner", "Consensus Engine", "Communication Manager", "Mission Recovery", "Swarm Dashboard"], technologies: ["Swarm Robotics", "Distributed Systems", "Consensus", "Path Planning", "Simulation", "Networking"]
   },
   {
-    emoji: "🏙️",
-    title: "Rural–Urban Transformation & Smart Communities",
-    description: "Connect rural communities with urban opportunities, services, employment, healthcare, education, markets, transportation, and resources.",
-    challengeStatement:
-      "Develop a digital ecosystem that intelligently connects rural communities with urban opportunities, services, employment, healthcare, education, markets, transportation, and resources.",
-    coreChallenge: [
-      "Match people, skills, jobs, services, resources, and locations",
-      "Support rural employment marketplace",
-      "Enable education and healthcare access",
-      "Facilitate farmer-to-market systems",
-      "Coordinate transportation",
-      "Support local service discovery",
-      "Enable community problem reporting",
-      "Deliver skill matching",
-      "Provide government and service information",
-      "Offer multilingual and location-based recommendations"
-    ],
-    advancedRequirements: [
-      "Distance Analysis + Skill Matching + Need/Urgency Analysis → Recommendation Engine"
-    ],
-    systemFlow: [
-      "Community User → Registration & Profile → Skills/Needs/Location → Community Data Repository",
-      "Jobs/Services/Resources → Resource Database → Availability & Location Analysis",
-      "Intelligent Matching Engine → Distance Analysis / Skill Matching / Need/Urgency Analysis",
-      "Recommendation Engine → Personalized Opportunities → User Acceptance/Request",
-      "Service Provider → Transaction/Service Completion → Feedback & Impact Data → Community Analytics Dashboard"
-    ],
-    suggestedModules: [
-      "Community Portal",
-      "Employment",
-      "Education",
-      "Healthcare",
-      "Marketplace",
-      "Transportation",
-      "Resource Matching",
-      "Location Services",
-      "Analytics",
-      "Admin"
-    ],
-    technologies: ["Web/Mobile", "AI/ML", "GIS", "Recommendation Systems", "APIs", "NLP", "Cloud", "Analytics"]
+    emoji: "🏗️", title: "Autonomous Construction Intelligence", description: "Coordinate construction robots as the site, resources, safety conditions, and priorities continuously change.",
+    challengeStatement: "Create a simulated construction intelligence system that schedules and assigns robotic work while preserving safety, task dependencies, and resource efficiency.",
+    coreChallenge: ["Material shortage", "Equipment failure", "Weather interruption", "Worker movement", "Blocked access", "Changed project priorities"],
+    advancedRequirements: ["Site state + Safety zones + Dependencies + Resources → Schedule → Robot assignment → Re-plan"],
+    systemFlow: ["Site map and plan ingestion → Dependency and safety analysis", "Robot capability matching → Work scheduling", "Disruption detected → Re-planning and reassignment", "Progress tracking → Construction operations dashboard"],
+    suggestedModules: ["Site Digital Twin", "Safety Manager", "Scheduler", "Resource Tracker", "Robot Coordinator", "Progress Dashboard"], technologies: ["Robotics", "Optimization", "Digital Twins", "Computer Vision", "Scheduling", "Simulation"]
   },
   {
-    emoji: "🎬",
-    title: "Cinema, Media & Entertainment Intelligence",
-    description: "Develop a platform that understands user behavior, analyzes content, predicts preferences, and creates personalized experiences.",
-    challengeStatement:
-      "Develop an intelligent entertainment platform that understands users, analyzes content, predicts preferences, and creates personalized experiences across movies, series, short-form content, and digital media.",
-    coreChallenge: [
-      "Connect user behavior, content understanding, preference modeling, recommendation, feedback, and continuous learning",
-      "Analyze watch history and ratings",
-      "Track search behavior and genre preferences",
-      "Use content similarity and popularity signals",
-      "Incorporate reviews, sentiment, and context",
-      "Personalize recommendations",
-      "Continuously learn from user interactions"
-    ],
-    advancedRequirements: [
-      "Watch History + Ratings + Search Behavior + Genre Preferences + Content Similarity + Popularity + Context"
-    ],
-    systemFlow: [
-      "User Registration → User Profile → Preference Initialization",
-      "Movie/Media Data → Content Processing → Content Feature Extraction",
-      "User Interactions → Behavior Analysis → User Preference Model",
-      "Recommendation Engine + Popularity/Trends + Contextual Signals → Personalized Recommendations",
-      "Sentiment/Review Analysis → Content Intelligence Dashboard → Content Performance Insights"
-    ],
-    suggestedModules: [
-      "User Portal",
-      "Content Discovery",
-      "Recommendation Engine",
-      "Reviews",
-      "Sentiment Analysis",
-      "Creator Dashboard",
-      "Analytics",
-      "Search",
-      "Personalized Notifications"
-    ],
-    technologies: ["Web/Mobile", "AI/ML", "NLP", "Recommendation Systems", "Sentiment Analysis", "APIs", "Data Analytics"]
+    emoji: "⚡", title: "Autonomous Energy Infrastructure Guardian", description: "Prioritize inspection and maintenance for a simulated energy network with limited robotic time and battery capacity.",
+    challengeStatement: "Build an autonomous system that detects risks, predicts failures, prioritizes assets, and optimizes inspection missions across energy infrastructure.",
+    coreChallenge: ["Solar installations, transformers, power lines, batteries, and substations", "Thermal, visual, sensor, weather, load, and historical data", "Only three inspection robots and limited operation time"],
+    advancedRequirements: ["Evidence → Failure prediction → Risk priority → Robot assignment → Battery/time-constrained mission"],
+    systemFlow: ["Asset data ingestion → Condition and anomaly analysis", "Failure prediction → Risk scoring and priority queue", "Inspection mission optimization → Robot dispatch", "Inspection result → Asset health dashboard"],
+    suggestedModules: ["Asset Registry", "Risk Engine", "Failure Predictor", "Mission Optimizer", "Robot Fleet Manager", "Energy Dashboard"], technologies: ["Predictive Maintenance", "Computer Vision", "Optimization", "IoT", "AI/ML", "Data Visualization"]
   },
   {
-    emoji: "🧠",
-    title: "AI for Smarter Living",
-    description: "Create an intelligent assistant that understands objectives, plans tasks, recommends actions, and automates workflows.",
-    challengeStatement:
-      "Develop an intelligent digital assistant platform capable of understanding high-level user objectives, breaking them into actionable tasks, analyzing contextual information, making personalized recommendations, and assisting users in completing those tasks.",
-    coreChallenge: [
-      "Understand user objectives",
-      "Analyze context",
-      "Plan and decompose tasks",
-      "Recommend actions",
-      "Execute and verify results",
-      "Learn from feedback",
-      "Support natural-language interaction",
-      "Use personalized recommendations",
-      "Integrate external APIs",
-      "Deliver notifications and decision support"
-    ],
-    advancedRequirements: [
-      "Understand → Analyze → Plan → Recommend → Execute → Verify → Learn"
-    ],
-    systemFlow: [
-      "User Objective → Natural Language Interface → Intent & Context Analysis",
-      "Task Decomposition → Priority & Constraint Analysis → Planning Engine → Recommendation Engine",
-      "User Approval Required? → User Review or Automated Execution",
-      "External APIs/Services → Task Execution → Result Verification",
-      "Feedback & Learning → Personalized Dashboard"
-    ],
-    suggestedModules: [
-      "AI Assistant",
-      "Task Manager",
-      "Planner",
-      "Recommendation Engine",
-      "Automation",
-      "API Integrations",
-      "Notifications",
-      "User Profile",
-      "Analytics"
-    ],
-    technologies: ["AI/ML", "NLP", "LLM APIs", "Web/Mobile", "Automation", "REST APIs", "Cloud", "Databases"]
+    emoji: "🕳️", title: "Autonomous Underground & Confined-Space Intelligence", description: "Navigate, map, inspect, and return safely from underground environments where GPS and sensors are unreliable.",
+    challengeStatement: "Develop a simulated autonomous inspection robot for tunnels, mines, sewers, pipelines, or utility corridors with noisy and contradictory sensor evidence.",
+    coreChallenge: ["No reliable GPS", "Localization and mapping", "Communication loss", "Noisy or conflicting sensor readings", "Safe route planning and return"],
+    advancedRequirements: ["Sensor fusion → Localization / SLAM → Abnormality detection → Risk estimate → Safe route"],
+    systemFlow: ["Multi-sensor input → Evidence fusion", "SLAM and local map update → Anomaly detection", "Risk-aware path planning → Inspection execution", "Return planning → Underground mission dashboard"],
+    suggestedModules: ["Sensor Fusion", "SLAM Engine", "Anomaly Detector", "Risk Mapper", "Route Planner", "Digital Twin"], technologies: ["SLAM", "Sensor Fusion", "Computer Vision", "Acoustic Analysis", "Robotics", "Digital Twins"]
   },
   {
-    emoji: "🌍",
-    title: "Technology for Social Good",
-    description: "Build a scalable platform that connects communities, volunteers, organizations, resources, and beneficiaries to solve social problems.",
-    challengeStatement:
-      "Develop a scalable digital platform capable of solving a major social or environmental problem by intelligently connecting communities, volunteers, organizations, resources, and beneficiaries.",
-    coreChallenge: [
-      "Convert problem reports into verified, prioritized action",
-      "Support community reporting",
-      "Manage beneficiary profiles",
-      "Coordinate volunteers and organizations",
-      "Track resource inventory",
-      "Use location intelligence",
-      "Prioritize emergencies",
-      "Support matching algorithms",
-      "Improve accessibility",
-      "Deliver multilingual and impact-based analytics"
-    ],
-    advancedRequirements: [
-      "Problem → Verification → Priority → Resource Matching → Action → Impact Measurement"
-    ],
-    systemFlow: [
-      "Community Problem Report → Verification Layer → Social Impact Database",
-      "Problem Classification → Urgency Assessment → Impact Scoring",
-      "Volunteer Availability / Organization Resources / Available Services → Resource Repository",
-      "Intelligent Matching Engine → Location Matching / Skill Matching / Resource Matching",
-      "Recommended Response → Volunteer/Organization Assignment → Action Execution → Beneficiary Confirmation → Impact Measurement"
-    ],
-    suggestedModules: [
-      "Community Portal",
-      "Problem Reporting",
-      "Volunteer Management",
-      "Organization Portal",
-      "Resource Management",
-      "Matching Engine",
-      "Notifications",
-      "Impact Dashboard"
-    ],
-    technologies: ["Web/Mobile", "AI/ML", "GIS", "Recommendation Systems", "Cloud", "APIs", "Analytics", "Accessibility"]
+    emoji: "🛡️", title: "Cyber-Physical Robot Security", description: "Secure an autonomous robotic facility against spoofed sensors, fake commands, compromised identities, and malicious task injection.",
+    challengeStatement: "Build a simulated robot security platform that identifies abnormal behavior, isolates compromised robots, and keeps the remaining mission operational.",
+    coreChallenge: ["False sensor readings", "Spoofed location", "Fake or replayed commands", "Compromised identities", "Malicious task injection"],
+    advancedRequirements: ["Authenticate → Monitor → Trust score → Detect attack → Isolate → Recover mission"],
+    systemFlow: ["Robot identity and telemetry → Authentication and integrity checks", "Behavior analysis → Anomaly and attack detection", "Trust scoring → Secure task allocation", "Compromise containment → Mission recovery"],
+    suggestedModules: ["Identity Manager", "Trust Engine", "Attack Detector", "Secure Task Allocator", "Incident Response", "Security Dashboard"], technologies: ["Cybersecurity", "Anomaly Detection", "Zero Trust", "Digital Forensics", "Robotics", "Secure Networking"]
   },
   {
-    emoji: "🤖",
-    title: "Smart Automation & Digital Robotics",
-    description: "Design an automation ecosystem with workflows, event triggers, conditions, actions, verification, recovery, and analytics.",
-    challengeStatement:
-      "Develop a web/mobile-based intelligent automation platform capable of connecting users, devices, APIs, data sources, workflows, and AI services into a unified automation ecosystem.",
-    coreChallenge: [
-      "Create workflow-based automation",
-      "Handle event triggers and conditions",
-      "Support scheduled tasks",
-      "Integrate APIs and device events",
-      "Perform automated actions",
-      "Detect failures",
-      "Implement retry mechanisms",
-      "Escalate issues",
-      "Track workflow history",
-      "Provide analytics and role-based access"
-    ],
-    advancedRequirements: [
-      "Event → Detection → Condition → Decision → Action → Verification → Recovery"
-    ],
-    systemFlow: [
-      "Event Source → Event Ingestion → Event Validation",
-      "Workflow Engine → Condition Evaluation → Decision Engine → Action Selection",
-      "API/Device/Service → Action Execution → Execution Verification",
-      "Successful? → Update Workflow Status or Retry/Recovery",
-      "Retry limit reached? → Escalation/Human Intervention → Analytics & Logs"
-    ],
-    suggestedModules: [
-      "Workflow Builder",
-      "Automation Engine",
-      "Event Manager",
-      "API Integration",
-      "Device Integration",
-      "Monitoring",
-      "Failure Recovery",
-      "Analytics",
-      "Admin Panel"
-    ],
-    technologies: ["Web/Mobile", "AI/ML", "IoT", "APIs", "Automation", "Cloud", "Real-Time Systems", "Databases"]
+    emoji: "🧩", title: "Robot Intelligence Under Resource Constraints", description: "Make a simulated robot allocate limited compute, memory, battery, bandwidth, and time to a complex mission.",
+    challengeStatement: "Create an adaptive inference and decision system that decides what to compute, ignore, communicate, or offload under strict resource limits.",
+    coreChallenge: ["CPU and memory limits", "Battery and bandwidth limits", "Latency limits", "High-accuracy versus lightweight inference", "Only a few dangerous objects among many"],
+    advancedRequirements: ["Mission context → Resource budget → Inference selection → Edge/cloud decision → Action"],
+    systemFlow: ["Mission input → Resource monitoring", "Object triage → Model and compute selection", "Edge inference / server offload decision → Action", "Outcome and resource reporting → Adaptive policy update"],
+    suggestedModules: ["Resource Monitor", "Object Triage", "Inference Router", "Edge-Cloud Manager", "Policy Engine", "Performance Dashboard"], technologies: ["Edge AI", "Adaptive Inference", "Resource Allocation", "Robotics", "Optimization", "Simulation"]
   }
 ];
 
@@ -369,20 +108,20 @@ export function ThemePage() {
   const isCountdownComplete = days === 0 && hours === 0 && minutes === 0 && seconds === 0;
 
   const summaryIcons = {
-    "Space Intelligence & Digital Exploration": "🛰️",
-    "Defence, Security & Crisis Intelligence": "🛡️",
-    "Healthcare Intelligence & Digital Health": "🩺",
-    "Rural–Urban Transformation & Smart Communities": "🏘️",
-    "Cinema, Media & Entertainment Intelligence": "🎥",
-    "AI for Smarter Living": "🤖",
-    "Technology for Social Good": "🌍",
-    "Smart Automation & Digital Robotics": "⚙️"
+    "Adaptive Robot Workforce": "🧠",
+    "Self-Healing Autonomous Systems": "🔄",
+    "Robot Swarms Under Communication Loss": "📡",
+    "Autonomous Construction Intelligence": "🏗️",
+    "Autonomous Energy Infrastructure Guardian": "⚡",
+    "Autonomous Underground & Confined-Space Intelligence": "🕳️",
+    "Cyber-Physical Robot Security": "🛡️",
+    "Robot Intelligence Under Resource Constraints": "🧩"
   };
 
   const categoryGroups = [
-    { label: "AI & Intelligence", color: "from-cyan-500 to-blue-600", themes: ["Space Intelligence & Digital Exploration", "Defence, Security & Crisis Intelligence", "Healthcare Intelligence & Digital Health", "AI for Smarter Living"] },
-    { label: "Community & Impact", color: "from-emerald-500 to-green-600", themes: ["Rural–Urban Transformation & Smart Communities", "Technology for Social Good"] },
-    { label: "Media & Automation", color: "from-fuchsia-500 to-purple-600", themes: ["Cinema, Media & Entertainment Intelligence", "Smart Automation & Digital Robotics"] }
+    { label: "Adaptive & Resilient Robotics", color: "from-cyan-500 to-blue-600", themes: ["Adaptive Robot Workforce", "Self-Healing Autonomous Systems", "Robot Swarms Under Communication Loss"] },
+    { label: "Autonomous Operations", color: "from-emerald-500 to-green-600", themes: ["Autonomous Construction Intelligence", "Autonomous Energy Infrastructure Guardian", "Autonomous Underground & Confined-Space Intelligence"] },
+    { label: "Secure & Efficient AI", color: "from-fuchsia-500 to-purple-600", themes: ["Cyber-Physical Robot Security", "Robot Intelligence Under Resource Constraints"] }
   ];
 
   return (
