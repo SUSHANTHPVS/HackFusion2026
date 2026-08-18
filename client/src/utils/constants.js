@@ -208,7 +208,7 @@ export const GUEST_SPEAKERS = [
   {
     name: "Sathyaprabha Gunasekaran",
     role: "Cybersecurity Professional | Security Manager, Fractal Analytics",
-    photo: "/guests/sathyaprabha-gunasekaran.jpg",
+    photo: "/guests/sathyaprabha-gunasekaran.jpg.png",
     companyName: "Fractal Analytics",
     companyLogo: "/logos/fractal-logo.png",
     bio: "Cybersecurity professional with 7+ years of experience in cyber defense, incident response, threat intelligence, and SOC operations. Currently serving as Security Manager at Fractal Analytics, she has previously worked with EY GDS and L&T Smart World & Communications. An NCDRC Member and cybersecurity speaker, she actively contributes to cybersecurity awareness through technical sessions, workshops, and industry-focused knowledge sharing.",
