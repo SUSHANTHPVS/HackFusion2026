@@ -249,7 +249,7 @@ export function ProfilePage() {
               <label className="space-y-1 md:col-span-2">
                 <span className="text-sm font-semibold text-slate-700">Mobile Number</span>
                 <div className="flex overflow-hidden rounded-xl border border-slate-300 bg-white transition focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-100 has-disabled:bg-slate-100">
-                  <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700" aria-hidden="true">
+                  <span className="flex shrink-0 items-center whitespace-nowrap border-r border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700" aria-hidden="true">
                     +91
                   </span>
                   <input
