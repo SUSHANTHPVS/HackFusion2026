@@ -18,3 +18,20 @@ export const checkInByParticipantId = asyncHandler(async (req, res) => {
     checkedIn
   });
 });
+
+export const bulkCheckIn = asyncHandler(async (req, res) => {
+  const checkedIn = req.body.checkedIn ?? true;
+  const participantIds = req.body.participantIds || [];
+
+  const result = await User.updateMany(
+    { _id: { $in: participantIds } },
+    { $set: { checkedIn } }
+  );
+
+  res.json({
+    message: checkedIn ? "Attendance marked for selected participants" : "Attendance removed for selected participants",
+    matchedCount: result.matchedCount,
+    modifiedCount: result.modifiedCount,
+    checkedIn
+  });
+});

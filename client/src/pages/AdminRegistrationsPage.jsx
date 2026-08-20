@@ -219,7 +219,7 @@ function ParticipantDetailModal({ item, isMarking, onTogglePresence, onClose }) 
   );
 }
 
-function RegistrationCard({ item, isMarking, onTogglePresence, onViewDetails }) {
+function RegistrationCard({ item, isMarking, isSelected, isSelectable, onTogglePresence, onViewDetails, onToggleSelect }) {
   const memberSummary = getAllMembers(item)
     .map((member) => `${member.role}: ${member.name} (${member.rollNo}, ${member.branch}, ${member.section})`)
     .join(" • ");
@@ -227,7 +227,16 @@ function RegistrationCard({ item, isMarking, onTogglePresence, onViewDetails }) 
   return (
     <article className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:hidden">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            disabled={!isSelectable}
+            onChange={() => onToggleSelect(item.leaderId)}
+            className="mt-1 h-4 w-4 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label={`Select ${item.teamName}`}
+          />
+          <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{item.teamName}</p>
 
       <div className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
@@ -235,6 +244,7 @@ function RegistrationCard({ item, isMarking, onTogglePresence, onViewDetails }) 
         <p className="mt-1 leading-5">{memberSummary}</p>
       </div>
           <h3 className="mt-1 text-base font-bold text-slate-900">{item.teamLeaderName}</h3>
+          </div>
         </div>
         <span
           className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -288,11 +298,18 @@ export function AdminRegistrationsPage() {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [isBulkMarking, setIsBulkMarking] = useState(false);
   const [checkinLoadingId, setCheckinLoadingId] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
 
   const exportRows = useMemo(() => buildExportRows(rows), [rows]);
   const participantExportRows = useMemo(() => buildParticipantExportRows(rows), [rows]);
+  const selectableIds = useMemo(
+    () => rows.filter((row) => row.leaderId && row.paymentStatus === "success").map((row) => row.leaderId),
+    [rows]
+  );
+  const isAllSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
 
   const downloadExcel = () => {
     if (exportRows.length === 0) {
@@ -364,6 +381,53 @@ export function AdminRegistrationsPage() {
     }
   };
 
+  const toggleSelect = (participantId) => {
+    if (!participantId) {
+      return;
+    }
+
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(participantId)) {
+        next.delete(participantId);
+      } else {
+        next.add(participantId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      const allSelected = selectableIds.length > 0 && selectableIds.every((id) => prev.has(id));
+      return allSelected ? new Set() : new Set(selectableIds);
+    });
+  };
+
+  const bulkMarkPresence = async (checkedIn) => {
+    if (selectedIds.size === 0) {
+      return;
+    }
+
+    setActionMessage("");
+    setError("");
+    setIsBulkMarking(true);
+
+    try {
+      await api.post("/checkin/bulk-scan", {
+        participantIds: Array.from(selectedIds),
+        checkedIn
+      });
+      setActionMessage(checkedIn ? "Presence marked for all selected participants." : "Presence removed for all selected participants.");
+      setSelectedIds(new Set());
+      await loadRegistrations({ refreshing: true });
+    } catch (err) {
+      setError(getErrorMessage(err, checkedIn ? "Failed to mark presence" : "Failed to remove presence"));
+    } finally {
+      setIsBulkMarking(false);
+    }
+  };
+
   useEffect(() => {
     loadRegistrations();
   }, []);
@@ -414,13 +478,39 @@ export function AdminRegistrationsPage() {
           </div>
         </div>
 
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => loadRegistrations({ refreshing: true })}
             className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
           >
             Apply Search
+          </button>
+          <label className="ml-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              disabled={selectableIds.length === 0}
+              onChange={toggleSelectAll}
+              className="h-4 w-4 disabled:cursor-not-allowed disabled:opacity-40"
+            />
+            Select All ({selectedIds.size}/{selectableIds.length})
+          </label>
+          <button
+            type="button"
+            onClick={() => bulkMarkPresence(true)}
+            disabled={selectedIds.size === 0 || isBulkMarking}
+            className="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isBulkMarking ? "Updating..." : "Mark Selected Present"}
+          </button>
+          <button
+            type="button"
+            onClick={() => bulkMarkPresence(false)}
+            disabled={selectedIds.size === 0 || isBulkMarking}
+            className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isBulkMarking ? "Updating..." : "Remove Selected Presence"}
           </button>
         </div>
 
@@ -445,8 +535,11 @@ export function AdminRegistrationsPage() {
                     key={item.teamId}
                     item={item}
                     isMarking={isMarking}
+                    isSelected={Boolean(item.leaderId) && selectedIds.has(item.leaderId)}
+                    isSelectable={Boolean(item.leaderId) && item.paymentStatus === "success"}
                     onTogglePresence={togglePresence}
                     onViewDetails={setSelectedItem}
+                    onToggleSelect={toggleSelect}
                   />
                 );
               })}
@@ -457,6 +550,16 @@ export function AdminRegistrationsPage() {
               <table className="min-w-full divide-y divide-slate-200 text-sm">
                 <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                   <tr>
+                    <th className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        disabled={selectableIds.length === 0}
+                        onChange={toggleSelectAll}
+                        className="h-4 w-4 disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label="Select all"
+                      />
+                    </th>
                     <th className="px-3 py-2">Team</th>
                     <th className="px-3 py-2">Leader</th>
                     <th className="px-3 py-2">Email</th>
@@ -468,9 +571,20 @@ export function AdminRegistrationsPage() {
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {rows.map((item) => {
                     const isMarking = checkinLoadingId === item.leaderId;
+                    const isSelectable = Boolean(item.leaderId) && item.paymentStatus === "success";
 
                     return (
                       <tr key={item.teamId} className="hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedItem(item)}>
+                          <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={Boolean(item.leaderId) && selectedIds.has(item.leaderId)}
+                              disabled={!isSelectable}
+                              onChange={() => toggleSelect(item.leaderId)}
+                              className="h-4 w-4 disabled:cursor-not-allowed disabled:opacity-40"
+                              aria-label={`Select ${item.teamName}`}
+                            />
+                          </td>
                           <td className="px-3 py-2 font-semibold text-slate-900">
                             <div>{item.teamName}</div>
                             <div className="mt-1 text-xs font-normal text-slate-600">
