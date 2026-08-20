@@ -9,7 +9,8 @@ const teammateSchema = new mongoose.Schema(
     mobile: { type: String, required: true, trim: true },
     year: { type: String, required: true, trim: true },
     branch: { type: String, required: true, trim: true },
-    section: { type: String, required: true, trim: true, uppercase: true }
+    section: { type: String, required: true, trim: true, uppercase: true },
+    checkedIn: { type: Boolean, default: false }
   },
   { _id: false }
 );

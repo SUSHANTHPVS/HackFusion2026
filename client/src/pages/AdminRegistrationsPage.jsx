@@ -61,8 +61,62 @@ function buildParticipantExportRows(rows) {
 }
 
 // Detailed participant information modal
-function ParticipantDetailModal({ item, isMarking, onTogglePresence, onClose }) {
+function getTeamMembersWithKeys(item) {
+  return [
+    {
+      key: "leader",
+      label: "Team Leader",
+      name: item.teamLeaderName || item.leaderName || "N/A",
+      rollNo: item.rollNo || "N/A",
+      checkedIn: Boolean(item.checkedIn)
+    },
+    ...(item.teammates || []).map((member, index) => ({
+      key: `teammate-${index}`,
+      label: `Teammate ${index + 1}`,
+      name: member.name || "N/A",
+      rollNo: member.rollNo || "N/A",
+      checkedIn: Boolean(member.checkedIn)
+    }))
+  ];
+}
+
+function ParticipantDetailModal({ item, isMarking, onTogglePresence, onBulkTogglePresence, onClose }) {
+  const [selectedKeys, setSelectedKeys] = useState(() => new Set());
+
+  useEffect(() => {
+    setSelectedKeys(new Set());
+  }, [item?.teamId]);
+
   if (!item) return null;
+
+  const members = getTeamMembersWithKeys(item);
+  const isAllMembersSelected = members.length > 0 && members.every((member) => selectedKeys.has(member.key));
+
+  const toggleMemberKey = (key) => {
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAllMembers = () => {
+    setSelectedKeys((prev) => {
+      const allSelected = members.length > 0 && members.every((member) => prev.has(member.key));
+      return allSelected ? new Set() : new Set(members.map((member) => member.key));
+    });
+  };
+
+  const handleBulkMembers = (checkedIn) => {
+    if (selectedKeys.size === 0) {
+      return;
+    }
+    onBulkTogglePresence(item.teamId, Array.from(selectedKeys), checkedIn);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -97,6 +151,74 @@ function ParticipantDetailModal({ item, isMarking, onTogglePresence, onClose }) 
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Theme Track</p>
               <p className="mt-1 text-sm font-bold text-slate-900">{item.themeTrack || "N/A"}</p>
+            </div>
+          </div>
+
+          {/* Team Members Presence - checkboxes with select-all */}
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold uppercase tracking-wide text-slate-800">
+                Mark Presence ({members.length} member{members.length === 1 ? "" : "s"})
+              </p>
+              <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={isAllMembersSelected}
+                  disabled={item.paymentStatus !== "success"}
+                  onChange={toggleSelectAllMembers}
+                  className="h-4 w-4 disabled:cursor-not-allowed disabled:opacity-40"
+                />
+                Select All
+              </label>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              {members.map((member) => (
+                <label
+                  key={member.key}
+                  className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedKeys.has(member.key)}
+                    disabled={item.paymentStatus !== "success"}
+                    onChange={() => toggleMemberKey(member.key)}
+                    className="h-4 w-4 disabled:cursor-not-allowed disabled:opacity-40"
+                  />
+                  <span className="flex-1">
+                    <span className="block font-semibold text-slate-900">{member.name}</span>
+                    <span className="block text-xs text-slate-500">
+                      {member.label} • {member.rollNo}
+                    </span>
+                  </span>
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      member.checkedIn ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {member.checkedIn ? "Present" : "Pending"}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleBulkMembers(true)}
+                disabled={selectedKeys.size === 0 || isMarking}
+                className="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isMarking ? "Updating..." : "Mark Selected Present"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkMembers(false)}
+                disabled={selectedKeys.size === 0 || isMarking}
+                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isMarking ? "Updating..." : "Remove Selected Presence"}
+              </button>
             </div>
           </div>
 
@@ -301,10 +423,15 @@ export function AdminRegistrationsPage() {
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [isBulkMarking, setIsBulkMarking] = useState(false);
   const [checkinLoadingId, setCheckinLoadingId] = useState("");
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [isTeamBulkMarking, setIsTeamBulkMarking] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
 
   const exportRows = useMemo(() => buildExportRows(rows), [rows]);
   const participantExportRows = useMemo(() => buildParticipantExportRows(rows), [rows]);
+  const selectedItem = useMemo(
+    () => rows.find((row) => row.teamId === selectedTeamId) || null,
+    [rows, selectedTeamId]
+  );
   const selectableIds = useMemo(
     () => rows.filter((row) => row.leaderId && row.paymentStatus === "success").map((row) => row.leaderId),
     [rows]
@@ -372,7 +499,7 @@ export function AdminRegistrationsPage() {
     try {
       await api.post("/checkin/scan", { participantId, checkedIn });
       setActionMessage(checkedIn ? "Presence marked successfully." : "Presence removed successfully.");
-      setSelectedItem(null);
+      setSelectedTeamId(null);
       await loadRegistrations({ refreshing: true });
     } catch (err) {
       setError(getErrorMessage(err, checkedIn ? "Failed to mark presence" : "Failed to remove presence"));
@@ -425,6 +552,26 @@ export function AdminRegistrationsPage() {
       setError(getErrorMessage(err, checkedIn ? "Failed to mark presence" : "Failed to remove presence"));
     } finally {
       setIsBulkMarking(false);
+    }
+  };
+
+  const bulkToggleTeamMembers = async (teamId, memberKeys, checkedIn) => {
+    if (!teamId || memberKeys.length === 0) {
+      return;
+    }
+
+    setActionMessage("");
+    setError("");
+    setIsTeamBulkMarking(true);
+
+    try {
+      await api.post("/checkin/team-bulk-scan", { teamId, memberKeys, checkedIn });
+      setActionMessage(checkedIn ? "Presence marked for selected team members." : "Presence removed for selected team members.");
+      await loadRegistrations({ refreshing: true });
+    } catch (err) {
+      setError(getErrorMessage(err, checkedIn ? "Failed to mark presence" : "Failed to remove presence"));
+    } finally {
+      setIsTeamBulkMarking(false);
     }
   };
 
@@ -538,7 +685,7 @@ export function AdminRegistrationsPage() {
                     isSelected={Boolean(item.leaderId) && selectedIds.has(item.leaderId)}
                     isSelectable={Boolean(item.leaderId) && item.paymentStatus === "success"}
                     onTogglePresence={togglePresence}
-                    onViewDetails={setSelectedItem}
+                    onViewDetails={(item) => setSelectedTeamId(item.teamId)}
                     onToggleSelect={toggleSelect}
                   />
                 );
@@ -574,7 +721,7 @@ export function AdminRegistrationsPage() {
                     const isSelectable = Boolean(item.leaderId) && item.paymentStatus === "success";
 
                     return (
-                      <tr key={item.teamId} className="hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedItem(item)}>
+                      <tr key={item.teamId} className="hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedTeamId(item.teamId)}>
                           <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
@@ -632,9 +779,10 @@ export function AdminRegistrationsPage() {
       {selectedItem && (
         <ParticipantDetailModal
           item={selectedItem}
-          isMarking={checkinLoadingId === selectedItem.leaderId}
+          isMarking={checkinLoadingId === selectedItem.leaderId || isTeamBulkMarking}
           onTogglePresence={togglePresence}
-          onClose={() => setSelectedItem(null)}
+          onBulkTogglePresence={bulkToggleTeamMembers}
+          onClose={() => setSelectedTeamId(null)}
         />
       )}
     </section>

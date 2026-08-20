@@ -290,7 +290,8 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
         rollNo: member.rollNo,
         year: member.year,
         branch: member.branch,
-        section: member.section
+        section: member.section,
+        checkedIn: Boolean(member.checkedIn)
       })),
       accountName: team.leader?.name || "",
       leaderId: team.leader?._id || null,
