@@ -267,7 +267,7 @@ export function ProfilePage() {
                 </div>
               </label>
 
-              <label className="space-y-1 md:col-span-2">
+              <label className="space-y-1 md:col-span-2"> i 
                 <span className="text-sm font-semibold text-slate-700">Gender</span>
                 <select
                   name="gender"
