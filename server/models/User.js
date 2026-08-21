@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
     department: { type: String, required: true, trim: true },
     gender: { type: String, enum: ["male", "female"], default: "male" },
     ieeeMember: { type: Boolean, default: false },
+    ieeeMemberId: { type: String, trim: true },
     checkedIn: { type: Boolean, default: false },
     qrCode: { type: String }
   },

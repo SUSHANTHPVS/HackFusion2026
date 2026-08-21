@@ -4,29 +4,43 @@ import { Eye, EyeOff } from "lucide-react";
 import { useCallback } from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { GoogleAuthButton } from "../components/GoogleAuthButton";
 import { useAuth } from "../context/AuthContext";
 import { authService } from "../services/authService";
 
-const schema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-  department: z.string().min(2),
-  ieeeMember: z.boolean().optional()
-});
+const schema = z
+  .object({
+    name: z.string().min(2),
+    email: z.string().email(),
+    password: z.string().min(8),
+    department: z.string().min(2),
+    ieeeMember: z.boolean().optional(),
+    ieeeMemberId: z.string().trim().optional()
+  })
+  .superRefine((data, ctx) => {
+    if (!data.ieeeMember) return;
+    if (!/^\d{7,9}$/.test(data.ieeeMemberId || "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["ieeeMemberId"],
+        message: "Enter a valid IEEE Member ID (7-9 digits)"
+      });
+    }
+  });
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { ieeeMember: false }
+    defaultValues: { ieeeMember: false, ieeeMemberId: "" }
   });
+
+  const isIeeeMember = watch("ieeeMember");
 
   const mutation = useMutation({
     mutationFn: authService.register,
@@ -87,12 +101,26 @@ export function RegisterPage() {
         <label className="flex items-center gap-2 text-sm text-slate-700">
           <input type="checkbox" {...register("ieeeMember")} /> I am an IEEE member
         </label>
+        {isIeeeMember && (
+          <div className="grid gap-1">
+            <input
+              {...register("ieeeMemberId")}
+              inputMode="numeric"
+              className="rounded-lg border border-slate-300 px-3 py-2"
+              placeholder="Enter Your IEEE Member ID"
+            />
+            {errors.ieeeMemberId && <p className="text-sm text-rose-600">{errors.ieeeMemberId.message}</p>}
+          </div>
+        )}
         <button disabled={mutation.isPending} className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white">
           {mutation.isPending ? "Submitting..." : "Create Account"}
         </button>
         {mutation.isError && <p className="text-sm text-rose-600">Registration failed. Try again.</p>}
         {mutation.isSuccess && <p className="text-sm text-emerald-600">Registration successful. You can now login.</p>}
       </form>
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Already have an account? <Link to="/login" className="font-semibold text-cyan-700">Go to login page</Link>
+      </p>
     </section>
   );
 }

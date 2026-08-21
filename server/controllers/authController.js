@@ -49,9 +49,13 @@ export const register = asyncHandler(async (req, res) => {
   const exists = await User.findOne({ email: normalizedEmail });
   if (exists) throw new AppError("Email already exists", 409);
 
+  const isIeeeMember = Boolean(req.body.ieeeMember);
+
   const user = await User.create({
     ...req.body,
     email: normalizedEmail,
+    ieeeMember: isIeeeMember,
+    ieeeMemberId: isIeeeMember ? String(req.body.ieeeMemberId || "").trim() : undefined,
     role: "participant",
     authProvider: "local"
   });

@@ -94,7 +94,16 @@ export function LoginPage() {
           <p className="text-sm text-rose-600">{mutation.error?.response?.data?.message || "Invalid credentials."}</p>
         )}
       </form>
-      <p className="mt-5 text-center text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-slate-600">
+        Don&apos;t have an account?{" "}
+        <Link
+          to={redirectPath ? `/register?redirect=${encodeURIComponent(redirectPath)}` : "/register"}
+          className="font-semibold text-cyan-700"
+        >
+          Register an account
+        </Link>
+      </p>
+      <p className="mt-2 text-center text-sm text-slate-600">
         Admin access? <Link to="/admin/login" className="font-semibold text-cyan-700">Use admin login</Link>
       </p>
     </section>
