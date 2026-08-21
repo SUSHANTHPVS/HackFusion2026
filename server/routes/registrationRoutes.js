@@ -47,16 +47,28 @@ const schema = z
     ]),
     teammates: z
       .array(
-        z.object({
-          name: z.string().min(2),
-          email: z.string().email(),
-          gender: z.enum(["male", "female"]),
-          rollNo: z.string().min(2),
-          mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits."),
-          year: z.enum(["3rd year", "4th year"]),
-          branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"]),
-          section: z.string().regex(/^\d+$/, "Section must be a number.")
-        })
+        z
+          .object({
+            name: z.string().min(2),
+            email: z.string().email(),
+            gender: z.enum(["male", "female"]),
+            rollNo: z.string().min(2),
+            mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits."),
+            year: z.enum(["3rd year", "4th year"]),
+            branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"]),
+            section: z.string().regex(/^\d+$/, "Section must be a number."),
+            ieeeMember: z.boolean().optional(),
+            ieeeMemberId: z
+              .string()
+              .trim()
+              .regex(/^\d{7,9}$/, "IEEE Member ID must be 7-9 digits.")
+              .optional()
+              .or(z.literal(""))
+          })
+          .refine((member) => !member.ieeeMember || Boolean(member.ieeeMemberId), {
+            message: "IEEE Member ID is required for IEEE members.",
+            path: ["ieeeMemberId"]
+          })
       )
       .min(2)
         .max(3)

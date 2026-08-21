@@ -112,7 +112,7 @@ function createEmptyFieldErrors(teammateCount = 2) {
     teamName: "",
     teamLeaderName: "",
     rollNo: "",
-    teammates: Array.from({ length: teammateCount }, () => ({ name: "", email: "", rollNo: "", mobile: "" }))
+    teammates: Array.from({ length: teammateCount }, () => ({ name: "", email: "", rollNo: "", mobile: "", ieeeMemberId: "" }))
   };
 }
 
@@ -177,7 +177,9 @@ export function HackathonRegistrationPage() {
       mobile: "",
       year: YEAR_OPTIONS[0],
       branch: BRANCH_OPTIONS[0],
-      section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
+      section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0],
+      ieeeMember: false,
+      ieeeMemberId: ""
     },
     {
       name: "",
@@ -187,7 +189,9 @@ export function HackathonRegistrationPage() {
       mobile: "",
       year: YEAR_OPTIONS[0],
       branch: "ECE",
-      section: getSectionOptionsForBranch("ECE")[0]
+      section: getSectionOptionsForBranch("ECE")[0],
+      ieeeMember: false,
+      ieeeMemberId: ""
     }
   ]);
   const [orderData, setOrderData] = useState(null);
@@ -296,7 +300,7 @@ export function HackathonRegistrationPage() {
   };
 
   const updateTeammate = (index, field, value) => {
-    if (field === "name" || field === "email" || field === "rollNo" || field === "mobile") {
+    if (field === "name" || field === "email" || field === "rollNo" || field === "mobile" || field === "ieeeMemberId") {
       setFieldErrors((prev) => ({
         ...prev,
         teammates: prev.teammates.map((item, idx) =>
@@ -320,6 +324,10 @@ export function HackathonRegistrationPage() {
           };
         }
 
+        if (field === "ieeeMember" && !value) {
+          return { ...item, ieeeMember: false, ieeeMemberId: "" };
+        }
+
         return { ...item, [field]: value };
       })
     );
@@ -338,7 +346,9 @@ export function HackathonRegistrationPage() {
           mobile: "",
           year: YEAR_OPTIONS[0],
           branch: BRANCH_OPTIONS[0],
-          section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]
+          section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0],
+          ieeeMember: false,
+          ieeeMemberId: ""
         }
       ];
       resetFieldErrors(next.length);
@@ -370,7 +380,9 @@ export function HackathonRegistrationPage() {
       mobile: item.mobile.trim(),
       year: item.year.trim(),
       branch: item.branch.trim(),
-      section: item.section.trim()
+      section: item.section.trim(),
+      ieeeMember: Boolean(item.ieeeMember),
+      ieeeMemberId: item.ieeeMember ? item.ieeeMemberId.trim() : ""
     }));
 
     const filledTeammates = normalizedTeammates.filter(
@@ -457,6 +469,20 @@ export function HackathonRegistrationPage() {
 
     if (new Set(filledTeammates.map((item) => item.mobile)).size !== filledTeammates.length) {
       setPaymentMessage("Duplicate teammate mobile numbers are not allowed.");
+      return;
+    }
+
+    const invalidIeeeIndex = filledTeammates.findIndex(
+      (item) => item.ieeeMember && !/^\d{7,9}$/.test(item.ieeeMemberId)
+    );
+    if (invalidIeeeIndex >= 0) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        teammates: prev.teammates.map((item, idx) =>
+          idx === invalidIeeeIndex ? { ...item, ieeeMemberId: "Enter a valid IEEE Member ID (7-9 digits)." } : item
+        )
+      }));
+      setPaymentMessage("Enter a valid IEEE Member ID for each teammate marked as an IEEE member.");
       return;
     }
 
@@ -808,6 +834,29 @@ export function HackathonRegistrationPage() {
                       </select>
                     </label>
                   </div>
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(item.ieeeMember)}
+                      onChange={(event) => updateTeammate(index, "ieeeMember", event.target.checked)}
+                    />
+                    I am an IEEE member
+                  </label>
+                  {item.ieeeMember ? (
+                    <>
+                      <input
+                        value={item.ieeeMemberId}
+                        onChange={(event) => updateTeammate(index, "ieeeMemberId", event.target.value.replace(/\D/g, ""))}
+                        className={getInputClass(Boolean(fieldErrors.teammates[index]?.ieeeMemberId))}
+                        placeholder="Enter Your IEEE Member ID"
+                        inputMode="numeric"
+                        maxLength={9}
+                      />
+                      {fieldErrors.teammates[index]?.ieeeMemberId ? (
+                        <p className="text-sm text-rose-600">{fieldErrors.teammates[index].ieeeMemberId}</p>
+                      ) : null}
+                    </>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => removeTeammate(index)}

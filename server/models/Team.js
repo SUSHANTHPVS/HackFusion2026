@@ -10,6 +10,8 @@ const teammateSchema = new mongoose.Schema(
     year: { type: String, required: true, trim: true },
     branch: { type: String, required: true, trim: true },
     section: { type: String, required: true, trim: true, uppercase: true },
+    ieeeMember: { type: Boolean, default: false },
+    ieeeMemberId: { type: String, trim: true },
     checkedIn: { type: Boolean, default: false }
   },
   { _id: false }

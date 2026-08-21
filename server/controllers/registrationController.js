@@ -146,7 +146,9 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
     mobile: String(item.mobile || "").trim(),
     year: item.year.trim(),
     branch: item.branch.trim(),
-    section: item.section.trim().toUpperCase()
+    section: item.section.trim().toUpperCase(),
+    ieeeMember: Boolean(item.ieeeMember),
+    ieeeMemberId: item.ieeeMember ? String(item.ieeeMemberId || "").trim() : ""
   }));
   const participantDetails = {
     teamName: req.body.teamName.trim(),
