@@ -245,7 +245,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   const teams = await Team.find(teamFilter)
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate("leader", "name email mobile checkedIn")
+    .populate("leader", "name email mobile checkedIn ieeeMember ieeeMemberId")
     .lean();
 
   const teamIds = teams.map((item) => item._id);
@@ -285,12 +285,16 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       year: team.year,
       branch: team.branch,
       section: team.section,
+      ieeeMember: Boolean(team.leader?.ieeeMember),
+      ieeeMemberId: team.leader?.ieeeMemberId || "",
       teammates: (team.teammates || []).map((member) => ({
         name: member.name,
         rollNo: member.rollNo,
         year: member.year,
         branch: member.branch,
         section: member.section,
+        ieeeMember: Boolean(member.ieeeMember),
+        ieeeMemberId: member.ieeeMemberId || "",
         checkedIn: Boolean(member.checkedIn)
       })),
       accountName: team.leader?.name || "",

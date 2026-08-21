@@ -7,7 +7,7 @@ function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
 }
 
-const EXPORT_HEADERS = ["TeamName", "Team Mates Names", "Roll Number", "Branch", "Section"];
+const EXPORT_HEADERS = ["TeamName", "Team Mates Names", "Roll Number", "Branch", "Section", "IEEE Member ID"];
 
 function getAllMembers(item) {
   return [
@@ -16,14 +16,16 @@ function getAllMembers(item) {
       name: item.teamLeaderName || item.leaderName || "N/A",
       rollNo: item.rollNo || "N/A",
       branch: item.branch || "N/A",
-      section: item.section || "N/A"
+      section: item.section || "N/A",
+      ieeeMemberId: item.ieeeMemberId || ""
     },
     ...(item.teammates || []).map((member, index) => ({
       role: `Teammate ${index + 1}`,
       name: member.name || "N/A",
       rollNo: member.rollNo || "N/A",
       branch: member.branch || "N/A",
-      section: member.section || "N/A"
+      section: member.section || "N/A",
+      ieeeMemberId: member.ieeeMemberId || ""
     }))
   ];
 }
@@ -41,7 +43,8 @@ function buildExportRows(rows) {
       "Team Mates Names": buildCsvValue(members.map((member) => member.name || "N/A")),
       "Roll Number": buildCsvValue(members.map((member) => member.rollNo || "N/A")),
       Branch: buildCsvValue(members.map((member) => member.branch || "N/A")),
-      Section: buildCsvValue(members.map((member) => member.section || "N/A"))
+      Section: buildCsvValue(members.map((member) => member.section || "N/A")),
+      "IEEE Member ID": buildCsvValue(members.map((member) => member.ieeeMemberId || "N/A"))
     };
   });
 }
@@ -55,7 +58,8 @@ function buildParticipantExportRows(rows) {
       "Team Mates Names": member.name || "N/A",
       "Roll Number": member.rollNo || "N/A",
       Branch: member.branch || "N/A",
-      Section: member.section || "N/A"
+      Section: member.section || "N/A",
+      "IEEE Member ID": member.ieeeMemberId || "N/A"
     }));
   });
 }
