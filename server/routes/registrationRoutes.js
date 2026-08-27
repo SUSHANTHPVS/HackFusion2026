@@ -32,7 +32,7 @@ const schema = z
     teamLeaderName: z.string().min(2),
     leaderGender: z.enum(["male", "female"]),
     rollNo: z.string().min(2),
-    year: z.enum(["3rd year", "4th year"]),
+    year: z.enum(["2nd year","3rd year", "4th year"]),
     branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"]),
     section: z.string().regex(/^\d+$/, "Section must be a number."),
     themeTrack: z.enum([
@@ -54,7 +54,7 @@ const schema = z
             gender: z.enum(["male", "female"]),
             rollNo: z.string().min(2),
             mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits."),
-            year: z.enum(["3rd year", "4th year"]),
+            year: z.enum(["2nd year","3rd year", "4th year"]),
             branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"]),
             section: z.string().regex(/^\d+$/, "Section must be a number."),
             ieeeMember: z.boolean().optional(),
