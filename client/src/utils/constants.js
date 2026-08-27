@@ -36,7 +36,7 @@ export const ORGANIZER_LOGOS = [
 ];
 
 export const BRANCH_OPTIONS = ["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"];
-export const YEAR_OPTIONS = ["3rd year", "4th year"];
+export const YEAR_OPTIONS = ["2nd year", "3rd year", "4th year"];
 export const BRANCH_SECTION_LIMITS = {
   CSE: 20,
   AIML: 15,

@@ -572,6 +572,11 @@ export function HackathonRegistrationPage() {
       <h1 className="text-3xl font-bold">Hackathon Registration & Payment</h1>
       <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete Razorpay payment.</p>
 
+      <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-cyan-300 bg-cyan-100 px-3 py-1.5 text-sm font-semibold text-cyan-900 shadow-sm">
+        <span className="rounded-full bg-cyan-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">Eligible Years</span>
+        <span>2nd / 3rd / 4th year</span>
+      </div>
+
       <div className="mt-5 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
         <p className="text-sm font-bold uppercase tracking-wide text-cyan-800">Team Registration Only</p>
         <p className="mt-1 text-xs text-cyan-700">Minimum 3 members and maximum 4 members (including leader).</p>
