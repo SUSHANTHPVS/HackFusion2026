@@ -92,6 +92,9 @@ app.use(
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
+// Serve uploaded files (payment proofs, etc.)
+app.use("/uploads", express.static("uploads"));
+
 app.use("/api/auth", authRoutes);
 app.use("/api", paymentRoutes);
 app.use("/api/registration", registrationRoutes);

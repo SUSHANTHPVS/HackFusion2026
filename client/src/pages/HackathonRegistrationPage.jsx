@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { BankDetailsForm } from "../components/BankDetailsForm";
@@ -210,6 +210,9 @@ export function HackathonRegistrationPage() {
     }
   });
   const [bankDetailsErrors, setBankDetailsErrors] = useState("");
+  const [existingTeam, setExistingTeam] = useState(null);
+  const [existingPayment, setExistingPayment] = useState(null);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(true);
 
   const isUnauthorizedError = (error) => {
     if (error?.response?.status !== 401) {
@@ -297,6 +300,44 @@ export function HackathonRegistrationPage() {
       setPaymentMessage(serverMessage);
     }
   });
+
+  // Load existing team and payment data on mount
+  useEffect(() => {
+    const loadExistingData = async () => {
+      try {
+        setIsLoadingExisting(true);
+        const response = await api.get("/participant/dashboard");
+        
+        if (response.data?.team) {
+          setExistingTeam(response.data.team);
+          
+          const latestPayment = response.data.payment;
+          setExistingPayment(latestPayment);
+          
+          // If payment was rejected, show message
+          if (latestPayment?.status === "failed") {
+            setPaymentMessage(`Your payment was rejected: ${latestPayment.rejectionReason || "Payment proof did not meet verification criteria"}. Please upload a new payment proof below.`);
+            // Also populate bank details form if it's the same team
+            if (latestPayment.bankDetails) {
+              setFormData((prev) => ({
+                ...prev,
+                bankDetails: latestPayment.bankDetails
+              }));
+            }
+          }
+        }
+      } catch (error) {
+        // Silently fail - user doesn't have team yet
+        console.log("No existing team found");
+      } finally {
+        setIsLoadingExisting(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadExistingData();
+    }
+  }, [isAuthenticated]);
 
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || orderData?.keyId || "";
   const canPay = useMemo(
@@ -930,6 +971,33 @@ export function HackathonRegistrationPage() {
               }}
             />
           )}
+        </>
+      )}
+
+      {/* Show upload form for rejected payments (resubmission) */}
+      {existingPayment?.status === "failed" && existingTeam && (
+        <>
+          {orderData?.bankDetails ? null : (
+            <CollegePaymentDetailsCard bankDetails={existingPayment.bankDetails || orderData?.bankDetails} />
+          )}
+          <div className="mt-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
+            <p className="text-sm font-bold uppercase tracking-wide text-amber-800">⚠️ Resubmit Payment Proof</p>
+            <p className="mt-2 text-sm text-amber-700">
+              Your previous payment proof was rejected. Please review the reason above and submit a corrected proof.
+            </p>
+          </div>
+          <PaymentProofUploadForm
+            teamId={existingTeam._id}
+            paymentAmount={existingPayment.amount || selectedFee}
+            isResubmission={true}
+            onSuccess={() => {
+              setPaymentMessage("Payment proof resubmitted successfully! Waiting for admin verification...");
+              setExistingPayment((prev) => ({ ...prev, status: "pending_verification" }));
+            }}
+            onError={(error) => {
+              setPaymentMessage(error?.response?.data?.message || "Failed to upload payment proof");
+            }}
+          />
         </>
       )}
 

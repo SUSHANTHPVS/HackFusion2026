@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Upload, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { api } from "../services/api";
 
-export function PaymentProofUploadForm({ teamId, paymentAmount, onSuccess, onError }) {
+export function PaymentProofUploadForm({ teamId, paymentAmount, onSuccess, onError, isResubmission = false }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [utrNumber, setUtrNumber] = useState("");
@@ -91,9 +91,13 @@ export function PaymentProofUploadForm({ teamId, paymentAmount, onSuccess, onErr
   return (
     <div className="mt-6 rounded-xl border-2 border-blue-300 bg-blue-50 p-5">
       <div className="mb-4">
-        <p className="text-sm font-bold uppercase tracking-wide text-blue-800">Step 2: Upload Payment Proof</p>
+        <p className="text-sm font-bold uppercase tracking-wide text-blue-800">
+          {isResubmission ? "📤 Resubmit Payment Proof" : "Step 2: Upload Payment Proof"}
+        </p>
         <p className="mt-1 text-xs text-blue-700">
-          Upload a screenshot of your payment receipt (transfer confirmation)
+          {isResubmission 
+            ? "Upload a corrected screenshot of your payment receipt. Make sure it's clear and shows the complete transfer details."
+            : "Upload a screenshot of your payment receipt (transfer confirmation)"}
         </p>
       </div>
 
