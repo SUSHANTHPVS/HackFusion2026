@@ -162,13 +162,6 @@ export const MANAGEMENT_TEAM = [
     github: "https://github.com/SUSHANTHPVS"
   },
   {
-    name: "M Divya",
-    role: "Registration Support",
-    chapter: "Non IEEE Member",
-    linkedin: "https://www.linkedin.com/in/divya-madhanambeti-799aa3423/",
-    github: ""
-  },
-  {
     name: "K Nava Chaitanya",
     role: "Chair",
     chapter: "IEEE CS",

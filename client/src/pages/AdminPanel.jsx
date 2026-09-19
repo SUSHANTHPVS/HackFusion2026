@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { PageIntro } from "../components/PageIntro";
+import { ManualWhatsAppGroupLinkSender } from "../components/ManualWhatsAppGroupLinkSender";
 import { api } from "../services/api";
 
 function formatCurrency(value) {
@@ -132,6 +133,7 @@ export function AdminPanel() {
           <Link to="/admin/teams" className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             Teams
           </Link>
+          <ManualWhatsAppGroupLinkSender />
         </div>
       </div>
     </div>
