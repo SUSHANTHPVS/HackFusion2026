@@ -70,7 +70,15 @@ export function ManualWhatsAppGroupLinkSender() {
     setSuccess("");
 
     try {
-      const recipientMobiles = Array.from(selectedRecipients);
+      // Filter out participants without mobile numbers
+      const recipientMobiles = Array.from(selectedRecipients).filter(mobile => mobile !== "NOT PROVIDED");
+      
+      if (recipientMobiles.length === 0) {
+        setError("No valid mobile numbers selected");
+        setIsSending(false);
+        return;
+      }
+
       const response = await api.post("/admin/whatsapp/send-link-manual", {
         recipientMobiles
       });
@@ -97,7 +105,15 @@ export function ManualWhatsAppGroupLinkSender() {
     setSuccess("");
 
     try {
-      const recipientMobiles = Array.from(selectedRecipients);
+      // Filter out participants without mobile numbers
+      const recipientMobiles = Array.from(selectedRecipients).filter(mobile => mobile !== "NOT PROVIDED");
+      
+      if (recipientMobiles.length === 0) {
+        setError("No valid mobile numbers selected");
+        setIsSending(false);
+        return;
+      }
+
       const response = await api.post("/admin/whatsapp/send-link-manual", {
         recipientMobiles
       });
@@ -271,26 +287,47 @@ export function ManualWhatsAppGroupLinkSender() {
 
                   {/* Participant List */}
                   <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-lg p-3">
-                    {participants.map((participant) => (
-                      <label
-                        key={participant.mobile}
-                        className="flex items-start gap-3 rounded-lg p-3 hover:bg-slate-50 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedRecipients.has(participant.mobile)}
-                          onChange={() => toggleRecipient(participant.mobile)}
-                          className="mt-1"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-900">{participant.name}</p>
-                          <p className="text-xs text-slate-600">{participant.mobile}</p>
-                          {participant.teamName && (
-                            <p className="text-xs text-slate-500">Team: {participant.teamName}</p>
-                          )}
-                        </div>
-                      </label>
-                    ))}
+                    {participants.map((participant) => {
+                      const hasMobile = participant.hasMobile !== false && participant.mobile !== "NOT PROVIDED";
+                      return (
+                        <label
+                          key={`${participant.mobile}-${participant.name}`}
+                          className={`flex items-start gap-3 rounded-lg p-3 cursor-pointer ${
+                            hasMobile 
+                              ? "hover:bg-slate-50" 
+                              : "bg-slate-50 opacity-60"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedRecipients.has(participant.mobile)}
+                            onChange={() => {
+                              if (hasMobile) {
+                                toggleRecipient(participant.mobile);
+                              }
+                            }}
+                            disabled={!hasMobile}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-slate-900">{participant.name}</p>
+                              {!hasMobile && (
+                                <span className="inline-block px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                                  No Mobile
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-xs ${hasMobile ? "text-slate-600" : "text-slate-400"}`}>
+                              {hasMobile ? participant.mobile : "Mobile number not provided"}
+                            </p>
+                            {participant.teamName && (
+                              <p className="text-xs text-slate-500">Team: {participant.teamName}</p>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
                   </div>
 
                   {/* Info Box */}

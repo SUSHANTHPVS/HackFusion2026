@@ -720,43 +720,47 @@ export const getParticipantsForWhatsApp = asyncHandler(async (req, res) => {
     .populate("userId", "name email mobile");
 
   const participants = [];
+  const missingMobileCount = { leaders: 0, teammates: 0 };
 
   for (const payment of approvedPayments) {
     if (!payment.teamId || !payment.userId) continue;
 
-    // Add team leader
-    if (payment.userId.mobile) {
-      participants.push({
-        name: payment.userId.name,
-        mobile: payment.userId.mobile,
-        email: payment.userId.email,
-        teamName: payment.teamId.name,
-        participationType: payment.teamId.participationType,
-        isTeamLeader: true
-      });
-    }
+    // Add team leader (include even if mobile is missing)
+    participants.push({
+      name: payment.userId.name,
+      mobile: payment.userId.mobile || "NOT PROVIDED",
+      email: payment.userId.email,
+      teamName: payment.teamId.name,
+      participationType: payment.teamId.participationType,
+      isTeamLeader: true,
+      hasMobile: !!payment.userId.mobile
+    });
+    if (!payment.userId.mobile) missingMobileCount.leaders++;
 
     // Add teammates if team
     if (payment.teamId.participationType === "team" && payment.teamId.teammates) {
       for (const teammate of payment.teamId.teammates) {
-        if (teammate.mobile) {
-          participants.push({
-            name: teammate.name,
-            mobile: teammate.mobile,
-            email: teammate.email || "",
-            teamName: payment.teamId.name,
-            participationType: "team",
-            isTeamLeader: false
-          });
-        }
+        participants.push({
+          name: teammate.name,
+          mobile: teammate.mobile || "NOT PROVIDED",
+          email: teammate.email || "",
+          teamName: payment.teamId.name,
+          participationType: "team",
+          isTeamLeader: false,
+          hasMobile: !!teammate.mobile
+        });
+        if (!teammate.mobile) missingMobileCount.teammates++;
       }
     }
   }
 
   res.status(200).json({
     total: participants.length,
+    total_with_mobile: participants.filter(p => p.hasMobile).length,
+    total_missing_mobile: missingMobileCount.leaders + missingMobileCount.teammates,
     message: "List of participants to send WhatsApp messages to",
-    participants: participants.sort((a, b) => a.name.localeCompare(b.name))
+    participants: participants.sort((a, b) => a.name.localeCompare(b.name)),
+    note: `${missingMobileCount.leaders} leaders and ${missingMobileCount.teammates} teammates missing mobile numbers`
   });
 });
 
@@ -891,6 +895,152 @@ export const sendWhatsAppGroupLinkManual = asyncHandler(async (req, res) => {
       recipients: recipientMobiles
     });
   }
+});
+
+/**
+ * Get participants for email sending (similar to WhatsApp but shows all with email availability)
+ */
+export const getParticipantsForEmail = asyncHandler(async (req, res) => {
+  // Get all teams with approved payments
+  const approvedPayments = await Payment.find({ status: "success" })
+    .populate("teamId", "name leaderName participationType teammates")
+    .populate("userId", "name email mobile");
+
+  const participants = [];
+  const missingEmailCount = { leaders: 0, teammates: 0 };
+
+  for (const payment of approvedPayments) {
+    if (!payment.teamId || !payment.userId) continue;
+
+    // Add team leader (include even if email is missing)
+    participants.push({
+      name: payment.userId.name,
+      email: payment.userId.email || "NOT PROVIDED",
+      mobile: payment.userId.mobile || "",
+      teamName: payment.teamId.name,
+      participationType: payment.teamId.participationType,
+      isTeamLeader: true,
+      hasEmail: !!payment.userId.email
+    });
+    if (!payment.userId.email) missingEmailCount.leaders++;
+
+    // Add teammates if team
+    if (payment.teamId.participationType === "team" && payment.teamId.teammates) {
+      for (const teammate of payment.teamId.teammates) {
+        participants.push({
+          name: teammate.name,
+          email: teammate.email || "NOT PROVIDED",
+          mobile: teammate.mobile || "",
+          teamName: payment.teamId.name,
+          participationType: "team",
+          isTeamLeader: false,
+          hasEmail: !!teammate.email
+        });
+        if (!teammate.email) missingEmailCount.teammates++;
+      }
+    }
+  }
+
+  res.status(200).json({
+    total: participants.length,
+    total_with_email: participants.filter(p => p.hasEmail).length,
+    total_missing_email: missingEmailCount.leaders + missingEmailCount.teammates,
+    message: "List of participants to send registration emails to",
+    participants: participants.sort((a, b) => a.name.localeCompare(b.name)),
+    note: `${missingEmailCount.leaders} leaders and ${missingEmailCount.teammates} teammates missing email addresses`
+  });
+});
+
+/**
+ * Send registration and WhatsApp group link email to selected participants
+ */
+export const sendRegistrationEmails = asyncHandler(async (req, res) => {
+  const { recipientEmails } = req.body;
+
+  if (!recipientEmails || !Array.isArray(recipientEmails) || recipientEmails.length === 0) {
+    throw new AppError("recipientEmails array is required with at least one email address", 400);
+  }
+
+  // Filter out invalid emails
+  const validEmails = recipientEmails.filter(email => email && email !== "NOT PROVIDED" && email.includes("@"));
+  
+  if (validEmails.length === 0) {
+    throw new AppError("No valid email addresses provided", 400);
+  }
+
+  if (!env.WHATSAPP_GROUP_LINK) {
+    throw new AppError("WhatsApp group link not configured in environment", 400);
+  }
+
+  // Get participant details for each email
+  const results = {
+    successful: 0,
+    failed: 0,
+    errors: [],
+    sentTo: []
+  };
+
+  // Find all approved payments to get participant details
+  const approvedPayments = await Payment.find({ status: "success" })
+    .populate("teamId", "name leaderName")
+    .populate("userId", "name email");
+
+  // Create a map of email to participant details
+  const emailToParticipant = {};
+  for (const payment of approvedPayments) {
+    if (payment.userId?.email) {
+      emailToParticipant[payment.userId.email] = {
+        name: payment.userId.name,
+        teamName: payment.teamId?.name || "Individual"
+      };
+    }
+    // Also check teammates
+    if (payment.teamId?.teammates) {
+      for (const teammate of payment.teamId.teammates) {
+        if (teammate.email) {
+          emailToParticipant[teammate.email] = {
+            name: teammate.name,
+            teamName: payment.teamId?.name || "Individual"
+          };
+        }
+      }
+    }
+  }
+
+  // Send emails to each recipient
+  for (const email of validEmails) {
+    try {
+      const participant = emailToParticipant[email] || { name: "Participant", teamName: "Hackathon" };
+      
+      await sendPaymentApprovalEmail({
+        to: email,
+        name: participant.name,
+        teamName: participant.teamName,
+        amount: 200, // Standard registration fee
+        whatsappLink: env.WHATSAPP_GROUP_LINK
+      });
+
+      results.successful++;
+      results.sentTo.push(email);
+    } catch (error) {
+      results.failed++;
+      results.errors.push({
+        email,
+        error: error.message
+      });
+      console.error(`Failed to send email to ${email}:`, error.message);
+    }
+  }
+
+  res.status(200).json({
+    message: "Registration emails sent",
+    successful: results.successful,
+    failed: results.failed,
+    totalRequests: validEmails.length,
+    sentTo: results.sentTo,
+    errors: results.errors.length > 0 ? results.errors : undefined,
+    whatsappGroupLink: env.WHATSAPP_GROUP_LINK
+  });
 });
 
 
