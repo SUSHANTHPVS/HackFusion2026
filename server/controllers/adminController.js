@@ -837,4 +837,60 @@ export const checkWhatsAppBusinessCredentials = asyncHandler(async (_req, res) =
   }
 });
 
+/**
+ * Send WhatsApp group link manually to participants
+ * Works with or without WhatsApp Business API
+ */
+export const sendWhatsAppGroupLinkManual = asyncHandler(async (req, res) => {
+  const { recipientMobiles } = req.body;
+
+  if (!recipientMobiles || !Array.isArray(recipientMobiles) || recipientMobiles.length === 0) {
+    throw new AppError("recipientMobiles array is required with at least one phone number", 400);
+  }
+
+  if (!env.WHATSAPP_GROUP_LINK) {
+    throw new AppError("WhatsApp group link not configured in environment", 400);
+  }
+
+  // Create the message with the group link
+  const groupLinkMessage = `🎉 Join the IEEE Hackathon 2026 WhatsApp Group!\n\n${env.WHATSAPP_GROUP_LINK}\n\n📱 Get updates, announcements, and connect with other participants.\nSee you at the hackathon! 🚀`;
+
+  // If Business API is enabled, use it
+  if (env.ENABLE_WHATSAPP_BUSINESS_API) {
+    try {
+      const credentialCheck = await verifyWhatsAppCredentials();
+      if (!credentialCheck.valid) {
+        throw new AppError(`WhatsApp credential verification failed: ${credentialCheck.error}`, 400);
+      }
+
+      const results = await sendBulkWhatsAppMessages(recipientMobiles, groupLinkMessage);
+
+      return res.status(200).json({
+        method: "whatsapp_business_api",
+        message: "WhatsApp group link sent via Business API",
+        totalRequests: results.totalRequests,
+        successful: results.successful,
+        failed: results.failed,
+        summary: results.summary,
+        results: results.results,
+        groupLink: env.WHATSAPP_GROUP_LINK
+      });
+    } catch (error) {
+      console.error("Error sending via WhatsApp Business API:", error);
+      throw new AppError(error.message || "Failed to send WhatsApp messages", 500);
+    }
+  } else {
+    // Without API, return a simpler response with manual sending instructions
+    return res.status(200).json({
+      method: "manual",
+      message: "WhatsApp group link prepared for manual sending",
+      groupLink: env.WHATSAPP_GROUP_LINK,
+      recipientCount: recipientMobiles.length,
+      messageToSend: groupLinkMessage,
+      instructions: "Copy the message above and send it to participants manually via WhatsApp",
+      recipients: recipientMobiles
+    });
+  }
+});
+
 

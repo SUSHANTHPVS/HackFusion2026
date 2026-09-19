@@ -21,7 +21,8 @@ import {
   getWhatsAppGroupLink,
   getParticipantsForWhatsApp,
   sendWhatsAppToParticipants,
-  checkWhatsAppBusinessCredentials
+  checkWhatsAppBusinessCredentials,
+  sendWhatsAppGroupLinkManual
 } from "../controllers/adminController.js";
 import { authorize, protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
@@ -70,6 +71,7 @@ router.get("/whatsapp/group-link", protect, authorize("admin"), getWhatsAppGroup
 // WhatsApp Business API routes
 router.get("/whatsapp/participants", protect, authorize("admin"), getParticipantsForWhatsApp);
 router.post("/whatsapp/send", protect, authorize("admin"), sendWhatsAppToParticipants);
+router.post("/whatsapp/send-link-manual", protect, authorize("admin"), sendWhatsAppGroupLinkManual);
 router.get("/whatsapp/check-credentials", protect, authorize("admin"), checkWhatsAppBusinessCredentials);
 
 export default router;
