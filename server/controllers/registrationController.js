@@ -138,27 +138,41 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const eventSettings = await getEventSettings();
   const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
   const participationType = req.body.participationType;
-  const normalizedTeammates = (req.body.teammates || []).map((item) => ({
-    name: item.name.trim(),
-    email: item.email.trim().toLowerCase(),
-    gender: item.gender,
-    rollNo: item.rollNo.trim().toUpperCase(),
-    mobile: String(item.mobile || "").trim(),
-    year: item.year.trim(),
-    branch: item.branch.trim(),
-    section: item.section.trim().toUpperCase(),
-    ieeeMember: Boolean(item.ieeeMember),
-    ieeeMemberId: item.ieeeMember ? String(item.ieeeMemberId || "").trim() : ""
-  }));
+
+  // Validate all required fields exist before processing
+  const requiredFields = ['teamName', 'teamLeaderName', 'collegeName', 'leaderGender', 'rollNo', 'year', 'branch', 'section', 'themeTrack', 'teammates'];
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      throw new AppError(`Missing required field: ${field}`, 400);
+    }
+  }
+
+  const normalizedTeammates = (req.body.teammates || []).map((item) => {
+    if (!item.name || !item.email || !item.rollNo || !item.year || !item.branch || !item.section) {
+      throw new AppError("All teammate fields must be filled: name, email, rollNo, year, branch, section", 400);
+    }
+    return {
+      name: String(item.name).trim(),
+      email: String(item.email).trim().toLowerCase(),
+      gender: item.gender || "",
+      rollNo: String(item.rollNo).trim().toUpperCase(),
+      mobile: String(item.mobile || "").trim(),
+      year: String(item.year).trim(),
+      branch: String(item.branch).trim(),
+      section: String(item.section).trim().toUpperCase(),
+      ieeeMember: Boolean(item.ieeeMember),
+      ieeeMemberId: item.ieeeMember ? String(item.ieeeMemberId || "").trim() : ""
+    };
+  });
   const participantDetails = {
-    teamName: req.body.teamName.trim(),
-    teamLeaderName: req.body.teamLeaderName.trim(),
-    collegeName: req.body.collegeName.trim(),
+    teamName: String(req.body.teamName).trim(),
+    teamLeaderName: String(req.body.teamLeaderName).trim(),
+    collegeName: String(req.body.collegeName).trim(),
     leaderGender: req.body.leaderGender,
-    rollNo: req.body.rollNo.trim().toUpperCase(),
-    year: req.body.year.trim(),
-    branch: req.body.branch.trim(),
-    section: req.body.section.trim().toUpperCase()
+    rollNo: String(req.body.rollNo).trim().toUpperCase(),
+    year: String(req.body.year).trim(),
+    branch: String(req.body.branch).trim(),
+    section: String(req.body.section).trim().toUpperCase()
   };
   const paymentAmount = 200;
   const paymentAmountPaise = paymentAmount * 100;

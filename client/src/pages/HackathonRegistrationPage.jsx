@@ -7,7 +7,7 @@ import { CollegePaymentDetailsCard } from "../components/CollegePaymentDetailsCa
 import { PaymentProofUploadForm } from "../components/PaymentProofUploadForm";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
-import { BRANCH_OPTIONS, GENDER_OPTIONS, YEAR_OPTIONS, getSectionOptionsForBranch } from "../utils/constants";
+import { GENDER_OPTIONS, YEAR_OPTIONS } from "../utils/constants";
 
 const tracks = [
   "Multi-Robot Task Negotiation Engine",
@@ -333,8 +333,8 @@ export function HackathonRegistrationPage() {
           rollNo: "",
           mobile: "",
           year: YEAR_OPTIONS[0],
-          branch: BRANCH_OPTIONS[0],
-          section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0],
+          branch: "",
+          section: "",
           ieeeMember: false,
           ieeeMemberId: ""
         }
@@ -718,6 +718,7 @@ export function HackathonRegistrationPage() {
                     onChange={(event) => updateTeammate(index, "name", event.target.value)}
                     className={getInputClass(Boolean(fieldErrors.teammates[index]?.name))}
                     placeholder={`Member ${index + 1} Name`}
+                    required
                   />
                   {fieldErrors.teammates[index]?.name ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].name}</p> : null}
                   <input
@@ -749,6 +750,7 @@ export function HackathonRegistrationPage() {
                     onChange={(event) => updateTeammate(index, "rollNo", event.target.value)}
                     className={getInputClass(Boolean(fieldErrors.teammates[index]?.rollNo))}
                     placeholder="Roll No"
+                    required
                   />
                   {fieldErrors.teammates[index]?.rollNo ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].rollNo}</p> : null}
                   <input
@@ -758,6 +760,7 @@ export function HackathonRegistrationPage() {
                     placeholder="Mobile Number"
                     inputMode="numeric"
                     maxLength={10}
+                    required
                   />
                   {fieldErrors.teammates[index]?.mobile ? <p className="text-sm text-rose-600">{fieldErrors.teammates[index].mobile}</p> : null}
                   <div className="grid gap-2 sm:grid-cols-3">
@@ -767,6 +770,7 @@ export function HackathonRegistrationPage() {
                         value={item.year}
                         onChange={(event) => updateTeammate(index, "year", event.target.value)}
                         className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                        required
                       >
                         {YEAR_OPTIONS.map((option) => (
                           <option key={option} value={option}>
@@ -782,6 +786,7 @@ export function HackathonRegistrationPage() {
                         onChange={(event) => updateTeammate(index, "branch", event.target.value)}
                         className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
                         placeholder="e.g., CSE, ECE, ME"
+                        required
                       />
                     </label>
                     <label className="grid gap-1 text-sm font-semibold text-slate-700">
@@ -791,6 +796,7 @@ export function HackathonRegistrationPage() {
                         onChange={(event) => updateTeammate(index, "section", event.target.value)}
                         className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
                         placeholder="e.g., A, B, C"
+                        required
                       />
                     </label>
                   </div>
