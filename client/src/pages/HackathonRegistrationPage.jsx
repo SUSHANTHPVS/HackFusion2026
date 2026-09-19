@@ -20,16 +20,6 @@ const tracks = [
   "Multi-Agent AI Reasoning & Verification Engine"
 ];
 const TEAM_REGISTRATION_FEE = 200;
-const PAYMENT_MODE_OPTIONS = {
-  upi_only: {
-    label: "UPI Only",
-    subtitle: "Pay via UPI"
-  },
-  all_methods: {
-    label: "All Methods",
-    subtitle: "UPI, Card, NetBanking, Wallet"
-  }
-};
 
 function loadRazorpayScript() {
   return new Promise((resolve) => {
@@ -163,7 +153,6 @@ export function HackathonRegistrationPage() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const participationType = "team";
-  const [paymentMode, setPaymentMode] = useState("all_methods");
   const [teamName, setTeamName] = useState("");
   const [teamLeaderName, setTeamLeaderName] = useState(user?.name || "");
   const [collegeName, setCollegeName] = useState("");
@@ -515,7 +504,6 @@ export function HackathonRegistrationPage() {
       order_id: orderData.order.id,
       amount: orderData.order.amount,
       currency: orderData.order.currency,
-      method: paymentMode === "upi_only" ? { upi: true, netbanking: false, card: false, wallet: false } : undefined,
       handler: (response) => {
         verifyMutation.mutate(response);
       },
@@ -670,20 +658,26 @@ export function HackathonRegistrationPage() {
               ))}
             </select>
           </label>
-          <input
-            value={branch}
-            onChange={(event) => setBranch(event.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            placeholder="Branch (e.g., CSE, ECE, ME)"
-            required
-          />
-          <input
-            value={section}
-            onChange={(event) => setSection(event.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            placeholder="Section"
-            required
-          />
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">
+            Branch
+            <input
+              value={branch}
+              onChange={(event) => setBranch(event.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+              placeholder="e.g., CSE, ECE, ME"
+              required
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">
+            Section
+            <input
+              value={section}
+              onChange={(event) => setSection(event.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+              placeholder="e.g., A, B, C"
+              required
+            />
+          </label>
         </div>
 
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
@@ -700,29 +694,6 @@ export function HackathonRegistrationPage() {
             ))}
           </select>
         </label>
-
-        <div className="rounded-lg border border-slate-200 p-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Payment Method</h2>
-          <p className="mt-1 text-xs text-slate-500">UPI is enabled. You can keep UPI-only or allow all methods.</p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {Object.entries(PAYMENT_MODE_OPTIONS).map(([mode, option]) => {
-              const selected = paymentMode === mode;
-              return (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setPaymentMode(mode)}
-                  className={`rounded-lg border p-3 text-left transition ${
-                    selected ? "border-cyan-600 bg-cyan-50" : "border-slate-200 bg-white"
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-slate-800">{option.label}</p>
-                  <p className="mt-1 text-xs text-slate-500">{option.subtitle}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         <div className="rounded-lg border border-slate-200 p-4">
             <div className="mb-3 flex items-center justify-between">
@@ -804,18 +775,24 @@ export function HackathonRegistrationPage() {
                         ))}
                       </select>
                     </label>
-                    <input
-                      value={item.branch}
-                      onChange={(event) => updateTeammate(index, "branch", event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                      placeholder="Branch (e.g., CSE, ECE, ME)"
-                    />
-                    <input
-                      value={item.section}
-                      onChange={(event) => updateTeammate(index, "section", event.target.value)}
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                      placeholder="Section"
-                    />
+                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                      Branch
+                      <input
+                        value={item.branch}
+                        onChange={(event) => updateTeammate(index, "branch", event.target.value)}
+                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                        placeholder="e.g., CSE, ECE, ME"
+                      />
+                    </label>
+                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
+                      Section
+                      <input
+                        value={item.section}
+                        onChange={(event) => updateTeammate(index, "section", event.target.value)}
+                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                        placeholder="e.g., A, B, C"
+                      />
+                    </label>
                   </div>
                   <label className="flex items-center gap-2 text-sm text-slate-700">
                     <input
