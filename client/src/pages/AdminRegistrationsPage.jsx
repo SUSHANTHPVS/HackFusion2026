@@ -588,13 +588,34 @@ export function AdminRegistrationsPage() {
   useEffect(() => {
     loadRegistrations();
 
-    // Set up automatic refetch every 30 seconds to catch newly approved payments
+    // Set up automatic refetch every 15 seconds to catch newly approved payments
     const interval = setInterval(() => {
       loadRegistrations({ refreshing: true });
-    }, 30000); // 30 seconds
+    }, 15000); // 15 seconds (reduced from 30 for faster updates)
 
-    return () => clearInterval(interval);
+    // Refresh when page becomes visible (user switches back to this tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        loadRegistrations({ refreshing: true });
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
+
+  // Reload when search query changes
+  useEffect(() => {
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        loadRegistrations();
+      }, 300); // Debounce 300ms for search input
+      return () => clearTimeout(timer);
+    }
+  }, [query]);
 
   return (
     <section className="space-y-5">

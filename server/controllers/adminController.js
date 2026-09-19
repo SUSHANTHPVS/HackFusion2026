@@ -134,8 +134,10 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   const paymentStatusFilter = String(req.query.paymentStatus || "").trim().toLowerCase();
   const limit = Math.min(Math.max(Number(req.query.limit || 100), 1), 300);
 
-  // When filtering by payment status, get teams with verified payments only
-  // A payment is considered verified when it has both paymentId AND signature
+  // When filtering by payment status, get teams with verified payments
+  // A payment is considered verified if:
+  // 1. Razorpay: has both paymentId AND signature
+  // 2. Manual: has paymentApprovedAt set (admin approved)
   let allowedTeamIds = null;
   if (paymentStatusFilter) {
     const verifiedPayments = await Payment.aggregate([
@@ -146,19 +148,24 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
           status: { $first: "$status" },
           paymentId: { $first: "$paymentId" },
           signature: { $first: "$signature" },
+          paymentApprovedAt: { $first: "$paymentApprovedAt" },
           orderId: { $first: "$orderId" }
         }
       },
-      // Only include payments that have been verified (have both paymentId and signature)
+      // Include payments that match the status AND are verified by either method:
+      // 1. Razorpay: has both paymentId and signature
+      // 2. Manual: has paymentApprovedAt (admin approval timestamp)
       { $match: { 
         status: paymentStatusFilter,
-        paymentId: { $exists: true, $ne: null },
-        signature: { $exists: true, $ne: null }
+        $or: [
+          { paymentId: { $exists: true, $ne: null }, signature: { $exists: true, $ne: null } },
+          { paymentApprovedAt: { $exists: true, $ne: null } }
+        ]
       } }
     ]);
     
     allowedTeamIds = verifiedPayments.map((item) => item._id);
-    console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with verified payments (signature + paymentId)`);
+    console.log(`[searchRegistrations] PaymentStatusFilter: ${paymentStatusFilter}, Found ${allowedTeamIds.length} teams with verified payments (Razorpay + Manual)`);
     console.log(`[searchRegistrations] Verified Team IDs:`, allowedTeamIds.map(id => id.toString()));
   }
 
