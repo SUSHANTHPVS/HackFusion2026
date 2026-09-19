@@ -11,6 +11,7 @@ const AdminPanel = lazy(() => import("./pages/AdminPanel").then((module) => ({ d
 const AdminAnalyticsPage = lazy(() => import("./pages/AdminAnalyticsPage").then((module) => ({ default: module.AdminAnalyticsPage })));
 const AdminCertificatesPage = lazy(() => import("./pages/AdminCertificatesPage").then((module) => ({ default: module.AdminCertificatesPage })));
 const AdminJudgesPage = lazy(() => import("./pages/AdminJudgesPage").then((module) => ({ default: module.AdminJudgesPage })));
+const AdminPaymentVerificationPage = lazy(() => import("./pages/AdminPaymentVerificationPage").then((module) => ({ default: module.AdminPaymentVerificationPage })));
 const AdminPaymentsPage = lazy(() => import("./pages/AdminPaymentsPage").then((module) => ({ default: module.AdminPaymentsPage })));
 const AdminRegistrationsPage = lazy(() => import("./pages/AdminRegistrationsPage").then((module) => ({ default: module.AdminRegistrationsPage })));
 const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage").then((module) => ({ default: module.AdminLoginPage })));
@@ -49,6 +50,7 @@ const participantNav = [
 const adminNav = [
   { to: "/admin", label: "Dashboard" },
   { to: "/admin/registrations", label: "Registrations" },
+  { to: "/admin/payment-verification", label: "Payment Verification" },
   { to: "/admin/payments", label: "Payments" },
   { to: "/admin/teams", label: "Teams" },
   { to: "/admin/judges", label: "Judges" },
@@ -116,6 +118,7 @@ function App() {
             >
               <Route index element={<AdminPanel />} />
               <Route path="registrations" element={<AdminRegistrationsPage />} />
+              <Route path="payment-verification" element={<AdminPaymentVerificationPage />} />
               <Route path="payments" element={<AdminPaymentsPage />} />
               <Route path="teams" element={<AdminTeamsPage />} />
               <Route path="judges" element={<AdminJudgesPage />} />

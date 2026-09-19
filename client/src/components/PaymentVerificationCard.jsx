@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle, XCircle, Loader } from "lucide-react";
+import { CheckCircle, XCircle, Loader, AlertCircle, Mail } from "lucide-react";
 import { api } from "../services/api";
 
 export function PaymentVerificationCard({ payment, teamName, onVerified, onRejected }) {
   const [adminNotes, setAdminNotes] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const verifyMutation = useMutation({
     mutationFn: ({ paymentId, verificationStatus }) =>
@@ -17,7 +18,11 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
         .then((res) => res.data),
     onSuccess: (data, variables) => {
       if (variables.verificationStatus === "approved") {
-        onVerified?.();
+        setSuccessMessage(data.notification?.message || "Payment approved successfully!");
+        setTimeout(() => {
+          setSuccessMessage("");
+          onVerified?.();
+        }, 3000);
       } else {
         onRejected?.();
       }
@@ -34,6 +39,21 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
 
   return (
     <div className="mt-6 rounded-lg border-2 border-blue-300 bg-blue-50 p-4">
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mb-4 flex gap-3 rounded-lg border border-emerald-300 bg-emerald-50 p-4">
+          <CheckCircle size={20} className="shrink-0 text-emerald-600" />
+          <div>
+            <p className="font-semibold text-emerald-900">✅ Success!</p>
+            <p className="text-sm text-emerald-800">{successMessage}</p>
+            <div className="mt-2 flex items-center gap-2 text-xs text-emerald-700">
+              <Mail size={14} />
+              <span>Confirmation email sent to participant</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4">
         <h3 className="text-sm font-bold uppercase tracking-wide text-blue-800">Manual Payment Verification</h3>
         <p className="mt-1 text-xs text-blue-700">Team: {teamName}</p>

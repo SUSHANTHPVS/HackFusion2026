@@ -3,13 +3,16 @@ import { PaymentAudit } from "../models/PaymentAudit.js";
 import { Score } from "../models/Score.js";
 import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
+import { EventSettings } from "../models/EventSettings.js";
 import { EventSettingsAudit } from "../models/EventSettingsAudit.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
+import { sendPaymentApprovalEmail, sendPaymentRejectionEmail } from "../services/emailService.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { AppError } from "../utils/AppError.js";
 
 function buildReceipt(prefix, id) {
   const compactPrefix = String(prefix || "RP").replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "RP";
@@ -485,69 +488,59 @@ export const resetAdminSettings = asyncHandler(async (req, res) => {
 });
 
 export const getPaymentVerificationStatus = asyncHandler(async (req, res) => {
-  const allPayments = await Payment.aggregate([
-    { $sort: { createdAt: -1 } },
-    {
-      $group: {
-        _id: "$teamId",
-        status: { $first: "$status" },
-        paymentId: { $first: "$paymentId" },
-        signature: { $first: "$signature" },
-        orderId: { $first: "$orderId" },
-        userId: { $first: "$userId" },
-        createdAt: { $first: "$createdAt" }
-      }
-    },
-    { $sort: { createdAt: -1 } }
-  ]);
+  const { status, search } = req.query;
 
-  const verified = [];
-  const unverified = [];
-  const created = [];
-  const failed = [];
-
-  for (const payment of allPayments) {
-    const user = await User.findById(payment.userId).select("name email");
-    const team = await Team.findById(payment._id).select("name");
-    
-    const entry = {
-      teamId: payment._id,
-      orderId: payment.orderId,
-      status: payment.status,
-      hasPaymentId: !!payment.paymentId,
-      hasSignature: !!payment.signature,
-      userName: user?.name || "Unknown",
-      userEmail: user?.email || "Unknown",
-      teamName: team?.name || "Unknown",
-      createdAt: payment.createdAt
-    };
-
-    if (payment.status === "success" && payment.paymentId && payment.signature) {
-      verified.push(entry);
-    } else if (payment.status === "success" && (!payment.paymentId || !payment.signature)) {
-      unverified.push({
-        ...entry,
-        reason: !payment.paymentId ? "Missing paymentId" : "Missing signature"
-      });
-    } else if (payment.status === "created") {
-      created.push(entry);
-    } else if (payment.status === "failed") {
-      failed.push(entry);
-    }
+  // Build query
+  let query = {};
+  
+  // Filter by status if provided
+  if (status) {
+    query.status = status;
   }
 
+  // Get payments with populated user and team details
+  let paymentQuery = Payment.find(query)
+    .populate("userId", "name email mobile")
+    .populate("teamId", "name leaderName")
+    .sort({ createdAt: -1 });
+
+  let payments = await paymentQuery.lean();
+
+  // Filter by search query if provided (search by team name or user name)
+  if (search) {
+    const searchLower = search.toLowerCase();
+    payments = payments.filter((p) => {
+      const teamName = p.teamId?.name?.toLowerCase() || "";
+      const userName = p.userId?.name?.toLowerCase() || "";
+      const leaderName = p.teamId?.leaderName?.toLowerCase() || "";
+      
+      return (
+        teamName.includes(searchLower) ||
+        userName.includes(searchLower) ||
+        leaderName.includes(searchLower)
+      );
+    });
+  }
+
+  // Format response
+  const formattedPayments = payments.map((payment) => ({
+    _id: payment._id,
+    status: payment.status,
+    amount: payment.amount,
+    createdAt: payment.createdAt,
+    paymentProofFile: payment.paymentProofFile,
+    paymentApprovedAt: payment.paymentApprovedAt,
+    paymentApprovedBy: payment.paymentApprovedBy,
+    rejectionReason: payment.rejectionReason,
+    userId: payment.userId,
+    teamId: payment.teamId,
+    paymentMethod: payment.paymentMethod,
+    utrNumber: payment.utrNumber
+  }));
+
   res.json({
-    total: allPayments.length,
-    verified: verified.length,
-    unverified: unverified.length,
-    created: created.length,
-    failed: failed.length,
-    details: {
-      verified,
-      unverified,
-      created,
-      failed
-    }
+    total: formattedPayments.length,
+    payments: formattedPayments
   });
 });
 
@@ -598,7 +591,7 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
     throw new AppError("Verification status must be 'approved' or 'rejected'", 400);
   }
 
-  const payment = await Payment.findById(paymentId);
+  const payment = await Payment.findById(paymentId).populate("userId", "name email").populate("teamId", "name");
   if (!payment) {
     throw new AppError("Payment not found", 404);
   }
@@ -621,8 +614,8 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
   await logPaymentAudit({
     paymentRef: payment._id,
     orderId: payment.orderId,
-    userId: payment.userId,
-    teamId: payment.teamId,
+    userId: payment.userId._id,
+    teamId: payment.teamId._id,
     eventType: `MANUAL_PAYMENT_${verificationStatus.toUpperCase()}`,
     source: "admin",
     status: verificationStatus === "approved" ? "success" : "failed",
@@ -634,11 +627,31 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
     }
   });
 
-  // Get team for response
-  const team = await Team.findById(payment.teamId).select("name");
-  
-  // If approved, team is now eligible (payment.status === "success" indicates confirmation)
-  // Registration system will check payment.status === "success" for capacity and registration
+  // Send notification email to participant
+  try {
+    if (verificationStatus === "approved") {
+      // Payment approved - send confirmation with WhatsApp link
+      const whatsappLink = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4"; // From constants
+      await sendPaymentApprovalEmail({
+        to: payment.userId.email,
+        name: payment.userId.name,
+        teamName: payment.teamId.name,
+        amount: payment.amount,
+        whatsappLink
+      });
+    } else {
+      // Payment rejected - send rejection notice
+      await sendPaymentRejectionEmail({
+        to: payment.userId.email,
+        name: payment.userId.name,
+        teamName: payment.teamId.name,
+        reason: adminNotes || "Payment proof did not meet verification criteria"
+      });
+    }
+  } catch (emailError) {
+    // Log email error but don't fail the payment verification
+    console.error("Failed to send payment verification email:", emailError.message);
+  }
 
   res.status(200).json({
     message: `Payment ${verificationStatus} successfully`,
@@ -648,8 +661,16 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
       paymentApprovedAt: payment.paymentApprovedAt
     },
     team: {
-      _id: team._id,
-      name: team.name
+      _id: payment.teamId._id,
+      name: payment.teamId.name
+    },
+    notification: {
+      type: verificationStatus === "approved" ? "success" : "failed",
+      title: verificationStatus === "approved" ? "Payment Approved ✅" : "Payment Rejected ❌",
+      message: verificationStatus === "approved" 
+        ? "Participant has been notified via email and can now access the WhatsApp group"
+        : "Participant has been notified of rejection and can resubmit",
+      emailSent: true
     }
   });
 });

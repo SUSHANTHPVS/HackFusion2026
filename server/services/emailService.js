@@ -20,6 +20,120 @@ export async function sendRegistrationEmail({ to, name, teamName }) {
   });
 }
 
+export async function sendPaymentApprovalEmail({ to, name, teamName, amount, whatsappLink }) {
+  const amountFormatted = typeof amount === "number" ? `₹${amount.toFixed(2)}` : `₹${amount}`;
+  
+  await transporter.sendMail({
+    from: env.SMTP_FROM,
+    to,
+    subject: "🎉 Payment Approved - Join the Hackathon WhatsApp Group",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 8px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px;">✅ Payment Approved!</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Your hackathon registration is confirmed</p>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
+          <p style="margin-top: 0; font-size: 16px; color: #333;">
+            Hello <strong>${name}</strong>,
+          </p>
+
+          <p style="color: #666; line-height: 1.6;">
+            Great news! Your payment of <strong style="color: #667eea;">${amountFormatted}</strong> has been verified and approved by our admin team.
+          </p>
+
+          <p style="color: #666; line-height: 1.6;">
+            Your team registration <strong>${teamName}</strong> is now <strong style="color: #28a745;">CONFIRMED</strong>. 🎊
+          </p>
+
+          <div style="background: white; border-left: 4px solid #667eea; padding: 20px; margin: 20px 0; border-radius: 4px;">
+            <h3 style="margin-top: 0; color: #667eea;">🔗 Join the Hackathon WhatsApp Group</h3>
+            <p style="color: #666; margin: 10px 0;">
+              You can now access the exclusive WhatsApp group where we'll share updates, discussions, and last-minute announcements.
+            </p>
+            <a href="${whatsappLink}" style="display: inline-block; background: #25d366; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 10px 0; font-size: 16px;">
+              👥 Join WhatsApp Group
+            </a>
+          </div>
+
+          <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+              <strong>📝 Tip:</strong> Share the WhatsApp group link with your teammates. You'll need to invite them individually.
+            </p>
+          </div>
+
+          <p style="color: #999; font-size: 14px; margin-top: 30px;">
+            If you have any questions, please reply to this email or contact our support team.
+          </p>
+
+          <p style="color: #666; margin-top: 20px;">
+            See you at the hackathon! 🚀
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            IEEE RAS x IEEE CS Hackathon
+          </p>
+        </div>
+      </div>
+    `
+  });
+}
+
+export async function sendPaymentRejectionEmail({ to, name, teamName, reason }) {
+  await transporter.sendMail({
+    from: env.SMTP_FROM,
+    to,
+    subject: "⚠️ Payment Verification Failed - Action Required",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; border-radius: 8px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 28px;">❌ Payment Verification Failed</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Action required from your side</p>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
+          <p style="margin-top: 0; font-size: 16px; color: #333;">
+            Hello <strong>${name}</strong>,
+          </p>
+
+          <p style="color: #666; line-height: 1.6;">
+            Unfortunately, your payment verification for team <strong>${teamName}</strong> has been rejected.
+          </p>
+
+          ${reason ? `
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0;">
+              <p style="margin: 0; color: #856404;">
+                <strong>Reason:</strong> ${reason}
+              </p>
+            </div>
+          ` : ''}
+
+          <p style="color: #666; line-height: 1.6; margin-top: 20px;">
+            <strong>What you can do:</strong>
+          </p>
+          <ul style="color: #666; line-height: 1.8;">
+            <li>Review the rejection reason above</li>
+            <li>Submit a new payment proof if needed</li>
+            <li>Contact our support team for assistance</li>
+            <li>Pay via Razorpay (online gateway) as an alternative</li>
+          </ul>
+
+          <p style="color: #999; font-size: 14px; margin-top: 30px;">
+            If you believe this is an error, please reply to this email with more details.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            IEEE RAS x IEEE CS Hackathon
+          </p>
+        </div>
+      </div>
+    `
+  });
+}
+
 function getAlertRecipients() {
   const configured = String(env.PAYMENT_ALERT_EMAILS || "")
     .split(",")

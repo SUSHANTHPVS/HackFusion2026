@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BadgeIndianRupee, CheckCircle2, Clock3, Download, Loader2, XCircle } from "lucide-react";
+import { BadgeIndianRupee, CheckCircle2, Clock3, Download, Loader2, XCircle, CheckCircle } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { api } from "../services/api";
@@ -289,6 +289,29 @@ export function PaymentStatusPage() {
       </div>
 
       {payment?.status === "success" ? <WhatsAppAccessCard payment={payment} team={team} /> : null}
+
+      {/* Payment Approval Acknowledgement Banner */}
+      {payment?.status === "success" && payment?.paymentApprovedAt && (
+        <section className="rounded-2xl border-2 border-emerald-300 bg-linear-to-r from-emerald-50 to-teal-50 p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0">
+              <CheckCircle size={24} className="text-emerald-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-emerald-900">🎉 Payment Approved!</h3>
+              <p className="mt-2 text-sm text-emerald-800">
+                Your payment has been verified and approved by our admin team. Your team registration is now confirmed!
+              </p>
+              <p className="mt-3 text-sm font-semibold text-emerald-700">
+                ✅ You can now join the exclusive hackathon WhatsApp group and connect with other participants.
+              </p>
+              <p className="mt-2 text-xs text-emerald-600">
+                Approved on: {new Date(payment.paymentApprovedAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       <div className="glass-card rounded-2xl p-6">
         <h2 className="text-xl font-bold text-slate-900">Payment History</h2>
