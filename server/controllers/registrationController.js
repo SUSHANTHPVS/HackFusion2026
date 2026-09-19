@@ -139,10 +139,16 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
   const participationType = req.body.participationType;
 
-  // Validate all required fields exist before processing
+  // Validate all required fields exist and are not empty
   const requiredFields = ['teamName', 'teamLeaderName', 'collegeName', 'leaderGender', 'rollNo', 'year', 'branch', 'section', 'themeTrack', 'teammates'];
   for (const field of requiredFields) {
-    if (!req.body[field]) {
+    const value = req.body[field];
+    // For string fields, check if empty or only whitespace
+    if (typeof value === 'string' && !value.trim()) {
+      throw new AppError(`Missing required field: ${field}`, 400);
+    }
+    // For other types (like array for teammates), check if falsy
+    if (!value && typeof value !== 'string') {
       throw new AppError(`Missing required field: ${field}`, 400);
     }
   }

@@ -377,14 +377,15 @@ export function HackathonRegistrationPage() {
       (item) => item.name && item.email && item.rollNo && item.mobile && item.year && item.branch && item.section
     );
 
-    if (!teamName.trim() || !teamLeaderName.trim() || !collegeName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim()) {
+    if (!teamName.trim() || !teamLeaderName.trim() || !collegeName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim() || !themeTrack.trim()) {
       setFieldErrors((prev) => ({
         ...prev,
         teamName: !teamName.trim() ? "Team name is required." : prev.teamName,
         teamLeaderName: !teamLeaderName.trim() ? "Team leader name is required." : prev.teamLeaderName,
+        collegeName: !collegeName.trim() ? "College name is required." : prev.collegeName,
         rollNo: !rollNo.trim() ? "Leader roll number is required." : prev.rollNo
       }));
-      setPaymentMessage("Team, college name, and participant details are required before payment.");
+      setPaymentMessage("All required fields (team name, college name, leader details, branch, section, and theme track) must be filled before payment.");
       return;
     }
 
@@ -573,13 +574,16 @@ export function HackathonRegistrationPage() {
       </div>
 
       <form className="mt-6 grid gap-4" onSubmit={onCreateOrder}>
-        <input
-          value={collegeName}
-          onChange={(event) => setCollegeName(event.target.value)}
-          className={getInputClass(Boolean(fieldErrors.collegeName))}
-          placeholder="Name of Your College"
-          required
-        />
+        <label className="grid gap-1 text-sm font-semibold text-slate-700">
+          College Name
+          <input
+            value={collegeName}
+            onChange={(event) => setCollegeName(event.target.value)}
+            className={getInputClass(Boolean(fieldErrors.collegeName))}
+            placeholder="Name of Your College"
+            required
+          />
+        </label>
         {fieldErrors.collegeName ? <p className="text-sm text-rose-600">{fieldErrors.collegeName}</p> : null}
 
         <input
