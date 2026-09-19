@@ -95,9 +95,6 @@ const fileFilter = (req, file, cb) => {
     cb(new Error(`Only image files are allowed. Got: ${file.mimetype}`), false);
   }
 };
-    cb(new Error("Only image files are allowed for payment proofs"), false);
-  }
-};
 
 export const upload = multer({
   storage: paymentProofStorage,
