@@ -6,6 +6,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
@@ -96,6 +97,41 @@ app.use(
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
+// ============================================================================
+// STATIC FILE SERVING FOR UPLOADS (payment proofs, etc.)
+// ============================================================================
+
+// Determine upload directory path (support both Render disk and local)
+let uploadsDir;
+
+if (process.env.RENDER_UPLOADS_DIR) {
+  // Render-specific upload directory (if custom mount path used)
+  uploadsDir = process.env.RENDER_UPLOADS_DIR;
+  console.log(`[Server] Using custom RENDER_UPLOADS_DIR: ${uploadsDir}`);
+} else if (process.env.UPLOADS_DIR) {
+  // Custom upload directory (if environment variable set)
+  uploadsDir = process.env.UPLOADS_DIR;
+  console.log(`[Server] Using UPLOADS_DIR environment variable: ${uploadsDir}`);
+} else {
+  // Default local path (for development)
+  uploadsDir = path.join(__dirname, "../uploads");
+  console.log(`[Server] Using default uploads path: ${uploadsDir}`);
+}
+
+// Verify uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  console.warn(`[Server] ⚠️ Uploads directory does not exist: ${uploadsDir}`);
+  console.warn(`[Server] ⚠️ Creating directory...`);
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log(`[Server] ✓ Created uploads directory`);
+  } catch (err) {
+    console.error(`[Server] ✗ Failed to create uploads directory:`, err.message);
+  }
+} else {
+  console.log(`[Server] ✓ Uploads directory exists`);
+}
+
 // Middleware to add CORS headers for static files
 app.use((req, res, next) => {
   if (req.path.startsWith("/uploads")) {
@@ -108,15 +144,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve uploaded files (payment proofs, etc.)
-const uploadsDir = path.join(__dirname, "../uploads");
+// Serve uploaded files with CORS headers
 app.use("/uploads", express.static(uploadsDir, {
-  setHeaders: (res, path) => {
+  maxAge: "1d",  // Cache files for 1 day
+  setHeaders: (res, filePath) => {
     // Set CORS headers for all static files
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Cache-Control", "public, max-age=86400");  // 1 day cache
   }
 }));
 

@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
@@ -379,11 +381,34 @@ export const submitManualPaymentProof = asyncHandler(async (req, res) => {
   // Store file path (in production, this would be uploaded to S3 or similar)
   const fileUrl = `/uploads/payment-proofs/${req.file.filename}`;
   
-  console.log(`[submitManualPaymentProof] File uploaded:`);
-  console.log(`  - Original name: ${req.file.originalname}`);
-  console.log(`  - Stored as: ${req.file.filename}`);
-  console.log(`  - File URL: ${fileUrl}`);
-  console.log(`  - File size: ${req.file.size} bytes`);
+  console.log(`[submitManualPaymentProof] ============================================`);
+  console.log(`[submitManualPaymentProof] File Upload Details:`);
+  console.log(`[submitManualPaymentProof] ============================================`);
+  console.log(`[submitManualPaymentProof] Original filename: ${req.file.originalname}`);
+  console.log(`[submitManualPaymentProof] Stored filename: ${req.file.filename}`);
+  console.log(`[submitManualPaymentProof] File path: ${req.file.path}`);
+  console.log(`[submitManualPaymentProof] File size: ${req.file.size} bytes`);
+  console.log(`[submitManualPaymentProof] MIME type: ${req.file.mimetype}`);
+  console.log(`[submitManualPaymentProof] Public URL: ${fileUrl}`);
+  
+  // CRITICAL: Verify file was actually saved to disk
+  if (!fs.existsSync(req.file.path)) {
+    console.error(`[submitManualPaymentProof] ✗ CRITICAL ERROR: File NOT saved to disk!`);
+    console.error(`[submitManualPaymentProof] ✗ Expected path: ${req.file.path}`);
+    console.error(`[submitManualPaymentProof] ✗ This means the upload directory may not be writable`);
+    throw new AppError("File upload failed - unable to save to disk. Please contact support.", 500);
+  }
+  
+  // Verify file has content
+  const fileStats = fs.statSync(req.file.path);
+  if (fileStats.size === 0) {
+    console.error(`[submitManualPaymentProof] ✗ File is empty (0 bytes)!`);
+    throw new AppError("Uploaded file is empty. Please upload a valid image.", 400);
+  }
+  
+  console.log(`[submitManualPaymentProof] ✓ File verified on disk`);
+  console.log(`[submitManualPaymentProof] ✓ File size: ${fileStats.size} bytes`);
+  console.log(`[submitManualPaymentProof] ============================================`);
   
   payment.paymentProofFile = fileUrl;
   payment.paymentProofSubmittedAt = new Date();
@@ -409,6 +434,8 @@ export const submitManualPaymentProof = asyncHandler(async (req, res) => {
     message: "Manual payment proof submitted for admin verification",
     payload: {
       proofFile: fileUrl,
+      filePath: req.file.path,
+      fileSize: req.file.size,
       submittedAt: payment.paymentProofSubmittedAt,
       utrNumber: payment.utrNumber,
       transactionId: payment.transactionId

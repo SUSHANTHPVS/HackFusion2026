@@ -17,14 +17,17 @@ const paymentAuditSchema = new mongoose.Schema(
         "WEBHOOK_FAILED",
         "WEBHOOK_REFUND",
         "WEBHOOK_DISPUTE",
-        "RECOVERY_ORDER_CREATED"
+        "RECOVERY_ORDER_CREATED",
+        "MANUAL_PROOF_SUBMITTED",
+        "MANUAL_PROOF_VERIFIED",
+        "MANUAL_PROOF_REJECTED"
       ],
       required: true,
       index: true
     },
     source: {
       type: String,
-      enum: ["client", "webhook", "admin", "system"],
+      enum: ["client", "webhook", "admin", "system", "user"],
       required: true,
       index: true
     },
