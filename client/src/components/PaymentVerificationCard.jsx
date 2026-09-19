@@ -8,6 +8,8 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
   const [adminNotes, setAdminNotes] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const [resolvedImageUrl, setResolvedImageUrl] = useState(null);
 
   const verifyMutation = useMutation({
     mutationFn: ({ paymentId, verificationStatus }) =>
@@ -87,21 +89,50 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
       <div className="mb-4">
         <button
           type="button"
-          onClick={() => setShowPreview(!showPreview)}
+          onClick={() => {
+            setShowPreview(!showPreview);
+            if (!resolvedImageUrl && !showPreview) {
+              const url = resolveFileUrl(payment.paymentProofFile);
+              setResolvedImageUrl(url);
+              console.log("[PaymentProof] Resolved URL:", url);
+            }
+          }}
           className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           {showPreview ? "Hide Payment Proof" : "View Payment Proof"}
         </button>
         {showPreview && payment.paymentProofFile && (
-          <div className="mt-3 rounded-lg border border-slate-300 overflow-hidden">
-            <img
-              src={resolveFileUrl(payment.paymentProofFile)}
-              alt="Payment proof"
-              className="w-full h-auto max-h-96"
-              onError={() => (
-                <p className="p-4 text-center text-sm text-slate-600">Unable to load image</p>
-              )}
-            />
+          <div className="mt-3 rounded-lg border border-slate-300 overflow-hidden bg-slate-50 p-2">
+            {imageLoadError ? (
+              <div className="flex flex-col items-center gap-2 p-6">
+                <AlertCircle size={32} className="text-rose-600" />
+                <p className="text-center text-sm font-semibold text-rose-900">Unable to load image</p>
+                <p className="text-center text-xs text-rose-700">
+                  File: <code className="break-all">{payment.paymentProofFile}</code>
+                </p>
+                <p className="text-center text-xs text-slate-600 mt-2">
+                  URL: <code className="break-all text-[10px]">{resolvedImageUrl}</code>
+                </p>
+              </div>
+            ) : (
+              <img
+                src={resolvedImageUrl || resolveFileUrl(payment.paymentProofFile)}
+                alt="Payment proof"
+                className="w-full h-auto max-h-96 object-contain"
+                onLoad={() => {
+                  setImageLoadError(false);
+                  console.log("[PaymentProof] Image loaded successfully");
+                }}
+                onError={(e) => {
+                  setImageLoadError(true);
+                  console.error("[PaymentProof] Image load error:", {
+                    src: e.target.src,
+                    status: e.target.status,
+                    complete: e.target.complete
+                  });
+                }}
+              />
+            )}
           </div>
         )}
       </div>
