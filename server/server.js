@@ -25,7 +25,8 @@ app.set("trust proxy", env.TRUST_PROXY);
 
 app.use(
   helmet({
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    crossOriginResourcePolicy: { policy: "cross-origin" }
   })
 );
 app.use(compression());
@@ -95,9 +96,29 @@ app.use(
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
+// Middleware to add CORS headers for static files
+app.use((req, res, next) => {
+  if (req.path.startsWith("/uploads")) {
+    // Allow images to be loaded from any origin
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  }
+  next();
+});
+
 // Serve uploaded files (payment proofs, etc.)
 const uploadsDir = path.join(__dirname, "../uploads");
-app.use("/uploads", express.static(uploadsDir));
+app.use("/uploads", express.static(uploadsDir, {
+  setHeaders: (res, path) => {
+    // Set CORS headers for all static files
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  }
+}));
 
 app.use("/api/auth", authRoutes);
 app.use("/api", paymentRoutes);

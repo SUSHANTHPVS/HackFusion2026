@@ -118,6 +118,7 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
               <img
                 src={resolvedImageUrl || resolveFileUrl(payment.paymentProofFile)}
                 alt="Payment proof"
+                crossOrigin="anonymous"
                 className="w-full h-auto max-h-96 object-contain"
                 onLoad={() => {
                   setImageLoadError(false);
