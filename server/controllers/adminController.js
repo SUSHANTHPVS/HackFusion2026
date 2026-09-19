@@ -273,6 +273,61 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * DELETE /admin/teams/:teamId
+ * Remove a team and all associated records (payments, scores)
+ * Admin only
+ */
+export const deleteTeam = asyncHandler(async (req, res) => {
+  const { teamId } = req.params;
+
+  // Validate team ID
+  if (!teamId) {
+    throw new AppError("Team ID is required", 400);
+  }
+
+  // Find the team
+  const team = await Team.findById(teamId);
+  if (!team) {
+    throw new AppError("Team not found", 404);
+  }
+
+  const deletedCount = {
+    team: 0,
+    payments: 0,
+    scores: 0,
+    paymentAudits: 0
+  };
+
+  // Delete associated payments
+  const paymentDeleteResult = await Payment.deleteMany({ teamId });
+  deletedCount.payments = paymentDeleteResult.deletedCount || 0;
+
+  // Delete associated payment audits
+  const auditDeleteResult = await PaymentAudit.deleteMany({ teamId });
+  deletedCount.paymentAudits = auditDeleteResult.deletedCount || 0;
+
+  // Delete associated scores
+  const scoreDeleteResult = await Score.deleteMany({ teamId });
+  deletedCount.scores = scoreDeleteResult.deletedCount || 0;
+
+  // Delete the team itself
+  await Team.deleteOne({ _id: teamId });
+  deletedCount.team = 1;
+
+  console.log(`[deleteTeam] Removed team "${team.name}" (${teamId}) and associated records:`, deletedCount);
+
+  res.json({
+    message: `Team "${team.name}" and all associated records have been removed.`,
+    team: {
+      _id: team._id,
+      name: team.name,
+      leaderName: team.leaderName
+    },
+    deletedRecords: deletedCount
+  });
+});
+
 export const listJudges = asyncHandler(async (_req, res) => {
   const judges = await User.find({ role: "judge" })
     .sort({ createdAt: -1 })

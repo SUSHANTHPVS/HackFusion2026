@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import {
   dashboardStats,
+  deleteTeam,
   generateWinnerCertificate,
   getAdminSettings,
   getAdminSettingsHistory,
@@ -47,6 +48,7 @@ const verifyManualPaymentSchema = z.object({
 router.get("/stats", protect, authorize("admin"), dashboardStats);
 router.get("/timeline", protect, authorize("admin"), registrationsTimeline);
 router.get("/registrations/search", protect, authorize("admin"), searchRegistrations);
+router.delete("/teams/:teamId", protect, authorize("admin"), deleteTeam);
 router.get("/payments/verification-status", protect, authorize("admin"), getPaymentVerificationStatus);
 router.get("/diagnosis/teams-with-payments", protect, authorize("admin"), diagnosisTeamsWithPayments);
 router.patch("/payments/:paymentId/verify", protect, authorize("admin"), validate(verifyManualPaymentSchema), verifyManualPayment);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, Trash2 } from "lucide-react";
 import { api } from "../services/api";
 
 function getErrorMessage(error, fallback = "Unable to load teams") {
@@ -44,9 +44,11 @@ function TeamCard({ item }) {
 export function AdminTeamsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const loadTeams = async ({ refreshing = false } = {}) => {
     if (refreshing) {
@@ -76,6 +78,22 @@ export function AdminTeamsPage() {
   useEffect(() => {
     loadTeams();
   }, []);
+
+  const handleDeleteTeam = async () => {
+    if (!deleteConfirm) return;
+
+    setIsDeleting(true);
+    try {
+      await api.delete(`/admin/teams/${deleteConfirm.teamId}`);
+      // Refresh the list after deletion
+      setDeleteConfirm(null);
+      await loadTeams({ refreshing: true });
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to delete team"));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <section className="space-y-5">
@@ -141,6 +159,7 @@ export function AdminTeamsPage() {
                   <th className="px-3 py-2">Track</th>
                   <th className="px-3 py-2">Payment</th>
                   <th className="px-3 py-2">Presence</th>
+                  <th className="px-3 py-2">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -153,6 +172,16 @@ export function AdminTeamsPage() {
                     <td className="px-3 py-2 text-slate-700">{item.themeTrack || "N/A"}</td>
                     <td className="px-3 py-2 capitalize text-slate-700">{item.paymentStatus}</td>
                     <td className="px-3 py-2 text-slate-700">{item.checkedIn ? "Present" : "Pending"}</td>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirm(item)}
+                        className="inline-flex items-center gap-1 rounded-lg bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-200"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -161,6 +190,46 @@ export function AdminTeamsPage() {
           </>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="rounded-lg bg-white p-6 shadow-lg max-w-sm mx-4">
+            <h2 className="text-lg font-bold text-slate-900">Confirm Team Deletion</h2>
+            <p className="mt-2 text-sm text-slate-700">
+              Are you sure you want to delete the team <strong>"{deleteConfirm.teamName}"</strong>? This will also remove all associated payments, scores, and records. This action cannot be undone.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
+                className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteTeam}
+                disabled={isDeleting}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} />
+                    Delete Team
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
