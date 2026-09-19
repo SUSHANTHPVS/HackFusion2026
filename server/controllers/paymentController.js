@@ -145,7 +145,12 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
     await user.save();
   }
 
-  await sendRegistrationEmail({ to: user.email, name: user.name, teamName: team.name });
+  // Send registration confirmation email (non-blocking - fire and forget)
+  sendRegistrationEmail({ to: user.email, name: user.name, teamName: team.name })
+    .catch((emailError) => {
+      console.error("[markPaymentSuccess] Failed to send registration confirmation email:", emailError.message);
+      // Don't throw error - email failure should not fail payment verification
+    });
 
   await logPaymentAudit({
     paymentRef: payment._id,
@@ -391,15 +396,15 @@ export const submitManualPaymentProof = asyncHandler(async (req, res) => {
     throw new AppError("Team ID is required", 400);
   }
 
-  // Find the pending payment for this user and team
+  // Find the payment for this user and team (can be pending_verification or failed/rejected)
   const payment = await Payment.findOne({
     userId: req.user._id,
     teamId,
-    status: "pending_verification"
+    status: { $in: ["pending_verification", "failed"] }
   });
 
   if (!payment) {
-    throw new AppError("No pending payment found for this team", 404);
+    throw new AppError("No pending payment found for this team. Please create a team and order first.", 404);
   }
 
   // Store file path (in production, this would be uploaded to S3 or similar)
@@ -407,7 +412,8 @@ export const submitManualPaymentProof = asyncHandler(async (req, res) => {
   
   payment.paymentProofFile = fileUrl;
   payment.paymentProofSubmittedAt = new Date();
-  payment.status = "pending_verification";  // Keep status for admin review
+  payment.status = "pending_verification";  // Set to pending for admin review
+  payment.rejectionReason = null;  // Clear any previous rejection reason
   
   // Store bank transfer tracking information (UTR is mandatory, Transaction ID is optional)
   payment.utrNumber = utrNumber.trim();

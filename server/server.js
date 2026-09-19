@@ -5,6 +5,8 @@ import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
@@ -16,6 +18,7 @@ import participantRoutes from "./routes/participantRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import registrationRoutes from "./routes/registrationRoutes.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.set("trust proxy", env.TRUST_PROXY);
@@ -93,7 +96,8 @@ app.use(
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 // Serve uploaded files (payment proofs, etc.)
-app.use("/uploads", express.static("uploads"));
+const uploadsDir = path.join(__dirname, "../uploads");
+app.use("/uploads", express.static(uploadsDir));
 
 app.use("/api/auth", authRoutes);
 app.use("/api", paymentRoutes);

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Upload, AlertCircle, CheckCircle, Loader } from "lucide-react";
 import { api } from "../services/api";
 
 export function PaymentProofUploadForm({ teamId, paymentAmount, onSuccess, onError, isResubmission = false }) {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [utrNumber, setUtrNumber] = useState("");
@@ -75,6 +77,11 @@ export function PaymentProofUploadForm({ teamId, paymentAmount, onSuccess, onErr
       if (onSuccess) {
         onSuccess(response.data);
       }
+
+      // Redirect to payment status page after brief delay to show success message
+      setTimeout(() => {
+        navigate("/participant/payment-status", { replace: true });
+      }, 1500);
     } catch (error) {
       setUploadStatus("error");
       setUploadMessage(

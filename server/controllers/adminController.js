@@ -8,7 +8,7 @@ import { EventSettingsAudit } from "../models/EventSettingsAudit.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
-import { sendPaymentApprovalEmail, sendPaymentRejectionEmail } from "../services/emailService.js";
+import { sendPaymentApprovalEmail, sendPaymentRejectionEmail, sendRegistrationEmail } from "../services/emailService.js";
 import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -627,30 +627,44 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
     }
   });
 
-  // Send notification email to participant
-  try {
-    if (verificationStatus === "approved") {
-      // Payment approved - send confirmation with WhatsApp link
-      const whatsappLink = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4"; // From constants
-      await sendPaymentApprovalEmail({
-        to: payment.userId.email,
-        name: payment.userId.name,
-        teamName: payment.teamId.name,
-        amount: payment.amount,
-        whatsappLink
-      });
-    } else {
-      // Payment rejected - send rejection notice
-      await sendPaymentRejectionEmail({
-        to: payment.userId.email,
-        name: payment.userId.name,
-        teamName: payment.teamId.name,
-        reason: adminNotes || "Payment proof did not meet verification criteria"
-      });
-    }
-  } catch (emailError) {
-    // Log email error but don't fail the payment verification
-    console.error("Failed to send payment verification email:", emailError.message);
+  // Send notification email to participant (non-blocking - fire and forget)
+  // Don't await this, just let it happen in the background
+  if (verificationStatus === "approved") {
+    // Payment approved - send both approval confirmation and registration email
+    const whatsappLink = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4"; // From constants
+    
+    // Send payment approval email with WhatsApp link
+    sendPaymentApprovalEmail({
+      to: payment.userId.email,
+      name: payment.userId.name,
+      teamName: payment.teamId.name,
+      amount: payment.amount,
+      whatsappLink
+    }).catch((emailError) => {
+      // Log email error but don't fail the payment verification
+      console.error("Failed to send payment approval email:", emailError.message);
+    });
+    
+    // Also send registration confirmation email
+    sendRegistrationEmail({
+      to: payment.userId.email,
+      name: payment.userId.name,
+      teamName: payment.teamId.name
+    }).catch((emailError) => {
+      // Log email error but don't fail the payment verification
+      console.error("Failed to send registration confirmation email:", emailError.message);
+    });
+  } else {
+    // Payment rejected - send rejection notice
+    sendPaymentRejectionEmail({
+      to: payment.userId.email,
+      name: payment.userId.name,
+      teamName: payment.teamId.name,
+      reason: adminNotes || "Payment proof did not meet verification criteria"
+    }).catch((emailError) => {
+      // Log email error but don't fail the payment verification
+      console.error("Failed to send payment rejection email:", emailError.message);
+    });
   }
 
   res.status(200).json({

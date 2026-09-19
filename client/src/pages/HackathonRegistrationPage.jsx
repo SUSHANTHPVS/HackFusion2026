@@ -77,7 +77,6 @@ function getPaymentAlert(message) {
 
   return {
     tone: "info",
-    title: "Registration status",
     hint: message
   };
 }
@@ -252,8 +251,6 @@ export function HackathonRegistrationPage() {
       if (data.paymentStatus === "success") {
         setPaymentMessage("Registration already completed for your account.");
         navigate("/participant/my-team", { replace: true });
-      } else {
-        setPaymentMessage("Team registered. Proceed to Razorpay payment.");
       }
     },
     onError: (error) => {

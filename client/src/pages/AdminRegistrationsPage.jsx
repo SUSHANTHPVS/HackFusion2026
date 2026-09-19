@@ -587,6 +587,13 @@ export function AdminRegistrationsPage() {
 
   useEffect(() => {
     loadRegistrations();
+
+    // Set up automatic refetch every 30 seconds to catch newly approved payments
+    const interval = setInterval(() => {
+      loadRegistrations({ refreshing: true });
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
