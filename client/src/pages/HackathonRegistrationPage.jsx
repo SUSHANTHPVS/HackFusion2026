@@ -83,6 +83,12 @@ function getPaymentAlert(message) {
 }
 
 function createTeamAndOrder(payload) {
+  console.group("🚀 MUTATION FUNCTION - createTeamAndOrder");
+  console.log("Received payload:", payload);
+  console.log("Payload.collegeName:", payload.collegeName);
+  console.log("Payload keys:", Object.keys(payload));
+  console.groupEnd();
+  
   return api.post("/registration/team", payload).then((res) => res.data);
 }
 
@@ -513,6 +519,15 @@ export function HackathonRegistrationPage() {
       bankDetails: formData.bankDetails
     };
     
+    // Detailed debugging for collegeName
+    console.group("🔍 COLLEGE NAME DEBUGGING");
+    console.log("Raw collegeName state:", collegeName);
+    console.log("After trim():", collegeName.trim());
+    console.log("collegeName in payload:", payload.collegeName);
+    console.log("Full payload keys:", Object.keys(payload));
+    console.log("Full payload:", payload);
+    console.groupEnd();
+    
     console.log("📤 Sending registration payload:", payload);
     console.log("📝 College Name in payload:", payload.collegeName, "- Length:", payload.collegeName.length);
     
@@ -605,8 +620,13 @@ export function HackathonRegistrationPage() {
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
           College Name
           <input
+            type="text"
+            name="collegeName"
             value={collegeName}
-            onChange={(event) => setCollegeName(event.target.value)}
+            onChange={(event) => {
+              console.log("🔄 College Name onChange triggered:", event.target.value);
+              setCollegeName(event.target.value);
+            }}
             className={getInputClass(Boolean(fieldErrors.collegeName))}
             placeholder="Name of Your College"
             required
