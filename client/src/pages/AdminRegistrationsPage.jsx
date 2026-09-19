@@ -601,9 +601,19 @@ export function AdminRegistrationsPage() {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Listen for payment approval events from Payment Verification page
+    // This enables REAL-TIME sync when admin approves payment on another page
+    const handlePaymentApproved = (event) => {
+      console.log("[Registrations] Payment approved event received:", event.detail);
+      console.log("[Registrations] Refreshing registrations immediately...");
+      loadRegistrations({ refreshing: true });
+    };
+    window.addEventListener("paymentApproved", handlePaymentApproved);
+
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("paymentApproved", handlePaymentApproved);
     };
   }, []);
 

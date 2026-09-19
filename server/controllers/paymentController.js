@@ -379,6 +379,12 @@ export const submitManualPaymentProof = asyncHandler(async (req, res) => {
   // Store file path (in production, this would be uploaded to S3 or similar)
   const fileUrl = `/uploads/payment-proofs/${req.file.filename}`;
   
+  console.log(`[submitManualPaymentProof] File uploaded:`);
+  console.log(`  - Original name: ${req.file.originalname}`);
+  console.log(`  - Stored as: ${req.file.filename}`);
+  console.log(`  - File URL: ${fileUrl}`);
+  console.log(`  - File size: ${req.file.size} bytes`);
+  
   payment.paymentProofFile = fileUrl;
   payment.paymentProofSubmittedAt = new Date();
   payment.status = "pending_verification";  // Set to pending for admin review

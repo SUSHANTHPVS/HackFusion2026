@@ -118,6 +118,18 @@ export function AdminPaymentVerificationPage() {
   // Initial load
   useEffect(() => {
     loadPayments();
+
+    // Refresh when page becomes visible (user switches back to this tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        loadPayments();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   // Reload when filters change

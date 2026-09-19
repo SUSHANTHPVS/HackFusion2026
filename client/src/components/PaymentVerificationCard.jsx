@@ -22,6 +22,19 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
     onSuccess: (data, variables) => {
       if (variables.verificationStatus === "approved") {
         setSuccessMessage(data.notification?.message || "Payment approved successfully!");
+        
+        // Broadcast payment approval to other pages (e.g., Registrations & Presence)
+        // This triggers real-time sync without requiring manual refresh
+        const event = new CustomEvent("paymentApproved", {
+          detail: {
+            paymentId: payment._id,
+            teamId: payment.teamId,
+            timestamp: new Date().toISOString()
+          }
+        });
+        window.dispatchEvent(event);
+        console.log("[PaymentVerification] Broadcasted payment approval event");
+        
         setTimeout(() => {
           setSuccessMessage("");
           onVerified?.();
