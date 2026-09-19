@@ -571,7 +571,7 @@ export function HackathonRegistrationPage() {
   return (
     <section className="glass-card mx-auto max-w-2xl rounded-2xl p-6">
       <h1 className="text-3xl font-bold">Hackathon Registration & Payment</h1>
-      <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete Razorpay payment.</p>
+      <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete payment.</p>
 
       <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-cyan-300 bg-cyan-100 px-3 py-1.5 text-sm font-semibold text-cyan-900 shadow-sm">
         <span className="rounded-full bg-cyan-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">Eligible Years</span>
