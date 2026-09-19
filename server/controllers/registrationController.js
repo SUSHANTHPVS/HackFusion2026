@@ -153,6 +153,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const participantDetails = {
     teamName: req.body.teamName.trim(),
     teamLeaderName: req.body.teamLeaderName.trim(),
+    collegeName: req.body.collegeName.trim(),
     leaderGender: req.body.leaderGender,
     rollNo: req.body.rollNo.trim().toUpperCase(),
     year: req.body.year.trim(),
@@ -232,6 +233,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
 
     existingTeam.name = participantDetails.teamName;
     existingTeam.leaderName = participantDetails.teamLeaderName;
+    existingTeam.collegeName = participantDetails.collegeName;
     existingTeam.leaderGender = participantDetails.leaderGender;
     existingTeam.rollNo = participantDetails.rollNo;
     existingTeam.year = participantDetails.year;
@@ -250,23 +252,28 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
 
   const receipt = buildReceipt("IEEE", req.user._id);
 
+  // Check payment method from env config
+  const paymentMethod = env.PAYMENT_METHOD || "razorpay";
+
   let razorpayOrder;
-  try {
-    razorpayOrder = await createOrder({
-      amount: paymentAmountPaise,
-      receipt,
-      notes: {
-        userId: String(req.user._id),
-        participationType,
-        teamName: participantDetails.teamName
-      }
-    });
-  } catch (error) {
-    console.error("Razorpay order creation error:", error.message);
-    throw new AppError(
-      "Unable to create payment order. Please verify Razorpay credentials or contact organizer.",
-      502
-    );
+  if (paymentMethod === "razorpay") {
+    try {
+      razorpayOrder = await createOrder({
+        amount: paymentAmountPaise,
+        receipt,
+        notes: {
+          userId: String(req.user._id),
+          participationType,
+          teamName: participantDetails.teamName
+        }
+      });
+    } catch (error) {
+      console.error("Razorpay order creation error:", error.message);
+      throw new AppError(
+        "Unable to create payment order. Please verify Razorpay credentials or contact organizer.",
+        502
+      );
+    }
   }
 
   const session = await Team.startSession();
@@ -285,6 +292,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
               name: participantDetails.teamName,
               leader: req.user._id,
               leaderName: participantDetails.teamLeaderName,
+              collegeName: participantDetails.collegeName,
               leaderGender: participantDetails.leaderGender,
               rollNo: participantDetails.rollNo,
               year: participantDetails.year,
@@ -293,7 +301,8 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
               members: [req.user._id],
               participationType,
               teammates: normalizedTeammates,
-              themeTrack: req.body.themeTrack
+              themeTrack: req.body.themeTrack,
+              bankDetails: req.body.bankDetails || undefined
             }
           ],
           { session }
@@ -301,6 +310,7 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
       } else {
         team.name = participantDetails.teamName;
         team.leaderName = participantDetails.teamLeaderName;
+        team.collegeName = participantDetails.collegeName;
         team.leaderGender = participantDetails.leaderGender;
         team.rollNo = participantDetails.rollNo;
         team.year = participantDetails.year;
@@ -309,6 +319,9 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
         team.themeTrack = req.body.themeTrack;
         team.participationType = participationType;
         team.teammates = normalizedTeammates;
+        if (req.body.bankDetails) {
+          team.bankDetails = req.body.bankDetails;
+        }
         await team.save({ session });
       }
 
@@ -344,23 +357,42 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
           {
             userId: req.user._id,
             teamId: team._id,
-            orderId: razorpayOrder.id,
+            orderId: paymentMethod === "razorpay" ? razorpayOrder.id : `MANUAL-${Date.now()}`,
             amount: paymentAmount,
             participationType,
-            status: "created"
+            status: paymentMethod === "razorpay" ? "created" : "pending_verification",
+            paymentMethod: paymentMethod === "razorpay" ? "online" : "manual_bank_transfer",
+            bankDetails: req.body.bankDetails || undefined
           }
         ],
         { session }
       );
 
-      responsePayload = {
-        message: "Team created. Proceed to payment.",
-        team,
-        keyId: env.RAZORPAY_KEY_ID,
-        order: razorpayOrder,
-        paymentStatus: "created",
-        feeInr: paymentAmount
-      };
+      // Build response based on payment method
+      if (paymentMethod === "razorpay") {
+        responsePayload = {
+          message: "Team created. Proceed to payment.",
+          team,
+          keyId: env.RAZORPAY_KEY_ID,
+          order: razorpayOrder,
+          paymentStatus: "created",
+          feeInr: paymentAmount
+        };
+      } else {
+        // Manual payment mode
+        responsePayload = {
+          message: "Team created. Please submit payment proof.",
+          team,
+          paymentStatus: "pending_verification",
+          feeInr: paymentAmount,
+          bankDetails: {
+            accountHolder: env.COLLEGE_ACCOUNT_HOLDER,
+            accountNumber: env.COLLEGE_ACCOUNT_NUMBER,
+            ifscCode: env.COLLEGE_IFSC_CODE,
+            bankName: env.COLLEGE_BANK_NAME
+          }
+        };
+      }
     });
   } finally {
     session.endSession();

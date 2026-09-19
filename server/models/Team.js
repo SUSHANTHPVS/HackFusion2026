@@ -22,6 +22,7 @@ const teamSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true, unique: true },
     leader: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true, index: true },
     leaderName: { type: String, required: true, trim: true },
+    collegeName: { type: String, required: true, trim: true },
     leaderGender: { type: String, enum: ["male", "female"], required: true },
     rollNo: { type: String, required: true, trim: true, uppercase: true, index: true },
     year: { type: String, required: true, trim: true },
@@ -45,7 +46,15 @@ const teamSchema = new mongoose.Schema(
       ],
       required: true
     },
-    status: { type: String, enum: ["registered", "checked-in", "submitted"], default: "registered", index: true }
+    status: { type: String, enum: ["registered", "checked-in", "submitted"], default: "registered", index: true },
+    // Bank details for team payments and refunds
+    bankDetails: {
+      accountHolder: { type: String, trim: true },
+      accountNumber: { type: String, trim: true },
+      ifscCode: { type: String, trim: true, uppercase: true },
+      bankName: { type: String, trim: true },
+      accountType: { type: String, enum: ["savings", "current"], default: "savings" }
+    }
   },
   { timestamps: true }
 );

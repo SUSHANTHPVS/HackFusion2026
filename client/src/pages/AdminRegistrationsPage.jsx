@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Loader2, Search, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../services/api";
+import { BankDetailsDisplay } from "../components/BankDetailsDisplay";
 
 function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
@@ -319,6 +320,11 @@ function ParticipantDetailModal({ item, isMarking, onTogglePresence, onBulkToggl
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Bank Details for Refund Processing */}
+          {(item.bankDetails || item.teamBankDetails) && (
+            <BankDetailsDisplay bankDetails={item.bankDetails || item.teamBankDetails} showFullDetails={true} />
           )}
         </div>
 

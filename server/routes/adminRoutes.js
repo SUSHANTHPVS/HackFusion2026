@@ -16,7 +16,8 @@ import {
   paymentAuditTrail,
   registrationsTimeline,
   getPaymentVerificationStatus,
-  diagnosisTeamsWithPayments
+  diagnosisTeamsWithPayments,
+  verifyManualPayment
 } from "../controllers/adminController.js";
 import { authorize, protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
@@ -39,11 +40,17 @@ const updateSettingsSchema = z.object({
   registrationClosed: z.boolean().optional()
 });
 
+const verifyManualPaymentSchema = z.object({
+  verificationStatus: z.enum(["approved", "rejected"]),
+  adminNotes: z.string().optional()
+});
+
 router.get("/stats", protect, authorize("admin"), dashboardStats);
 router.get("/timeline", protect, authorize("admin"), registrationsTimeline);
 router.get("/registrations/search", protect, authorize("admin"), searchRegistrations);
 router.get("/payments/verification-status", protect, authorize("admin"), getPaymentVerificationStatus);
 router.get("/diagnosis/teams-with-payments", protect, authorize("admin"), diagnosisTeamsWithPayments);
+router.patch("/payments/:paymentId/verify", protect, authorize("admin"), validate(verifyManualPaymentSchema), verifyManualPayment);
 router.get("/judges", protect, authorize("admin"), listJudges);
 router.post("/judges", protect, authorize("admin"), validate(upsertJudgeSchema), upsertJudge);
 router.get("/settings", protect, authorize("admin"), getAdminSettings);

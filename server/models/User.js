@@ -16,7 +16,15 @@ const userSchema = new mongoose.Schema(
     ieeeMember: { type: Boolean, default: false },
     ieeeMemberId: { type: String, trim: true },
     checkedIn: { type: Boolean, default: false },
-    qrCode: { type: String }
+    qrCode: { type: String },
+    // Bank details for payment
+    bankDetails: {
+      accountHolder: { type: String, trim: true },
+      accountNumber: { type: String, trim: true },
+      ifscCode: { type: String, trim: true, uppercase: true },
+      bankName: { type: String, trim: true },
+      accountType: { type: String, enum: ["savings", "current"], default: "savings" }
+    }
   },
   { timestamps: true }
 );

@@ -2,6 +2,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
+import { BankDetailsForm } from "../components/BankDetailsForm";
+import { CollegePaymentDetailsCard } from "../components/CollegePaymentDetailsCard";
+import { PaymentProofUploadForm } from "../components/PaymentProofUploadForm";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 import { BRANCH_OPTIONS, GENDER_OPTIONS, YEAR_OPTIONS, getSectionOptionsForBranch } from "../utils/constants";
@@ -110,6 +113,7 @@ function getInputClass(hasError) {
 function createEmptyFieldErrors(teammateCount = 2) {
   return {
     teamName: "",
+    collegeName: "",
     teamLeaderName: "",
     rollNo: "",
     teammates: Array.from({ length: teammateCount }, () => ({ name: "", email: "", rollNo: "", mobile: "", ieeeMemberId: "" }))
@@ -162,11 +166,12 @@ export function HackathonRegistrationPage() {
   const [paymentMode, setPaymentMode] = useState("all_methods");
   const [teamName, setTeamName] = useState("");
   const [teamLeaderName, setTeamLeaderName] = useState(user?.name || "");
+  const [collegeName, setCollegeName] = useState("");
   const [rollNo, setRollNo] = useState("");
   const [leaderGender, setLeaderGender] = useState(GENDER_OPTIONS[0].value);
   const [year, setYear] = useState(YEAR_OPTIONS[0]);
-  const [branch, setBranch] = useState(BRANCH_OPTIONS[0]);
-  const [section, setSection] = useState(getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0]);
+  const [branch, setBranch] = useState("");
+  const [section, setSection] = useState("");
   const [themeTrack, setThemeTrack] = useState(tracks[0]);
   const [teammates, setTeammates] = useState([
     {
@@ -176,8 +181,8 @@ export function HackathonRegistrationPage() {
       rollNo: "",
       mobile: "",
       year: YEAR_OPTIONS[0],
-      branch: BRANCH_OPTIONS[0],
-      section: getSectionOptionsForBranch(BRANCH_OPTIONS[0])[0],
+      branch: "",
+      section: "",
       ieeeMember: false,
       ieeeMemberId: ""
     },
@@ -188,8 +193,8 @@ export function HackathonRegistrationPage() {
       rollNo: "",
       mobile: "",
       year: YEAR_OPTIONS[0],
-      branch: "ECE",
-      section: getSectionOptionsForBranch("ECE")[0],
+      branch: "",
+      section: "",
       ieeeMember: false,
       ieeeMemberId: ""
     }
@@ -200,6 +205,16 @@ export function HackathonRegistrationPage() {
   const [fieldErrors, setFieldErrors] = useState(() => createEmptyFieldErrors(2));
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [successfulTeam, setSuccessfulTeam] = useState(null);
+  const [formData, setFormData] = useState({
+    bankDetails: {
+      accountHolder: "",
+      accountNumber: "",
+      ifscCode: "",
+      bankName: "",
+      accountType: "savings"
+    }
+  });
+  const [bankDetailsErrors, setBankDetailsErrors] = useState("");
 
   const isUnauthorizedError = (error) => {
     if (error?.response?.status !== 401) {
@@ -287,16 +302,9 @@ export function HackathonRegistrationPage() {
   const paymentAlert = useMemo(() => getPaymentAlert(paymentMessage), [paymentMessage]);
   const selectedFee = TEAM_REGISTRATION_FEE;
   const totalMembers = 1 + teammates.length;
-  const leaderSectionOptions = useMemo(() => getSectionOptionsForBranch(branch), [branch]);
 
   const resetFieldErrors = (teammateCount = teammates.length) => {
     setFieldErrors(createEmptyFieldErrors(teammateCount));
-  };
-
-  const onBranchChange = (nextBranch) => {
-    setBranch(nextBranch);
-    const options = getSectionOptionsForBranch(nextBranch);
-    setSection((current) => (options.includes(current) ? current : options[0]));
   };
 
   const updateTeammate = (index, field, value) => {
@@ -313,15 +321,6 @@ export function HackathonRegistrationPage() {
       prev.map((item, idx) => {
         if (idx !== index) {
           return item;
-        }
-
-        if (field === "branch") {
-          const sectionOptions = getSectionOptionsForBranch(value);
-          return {
-            ...item,
-            branch: value,
-            section: sectionOptions.includes(item.section) ? item.section : sectionOptions[0]
-          };
         }
 
         if (field === "ieeeMember" && !value) {
@@ -389,14 +388,14 @@ export function HackathonRegistrationPage() {
       (item) => item.name && item.email && item.rollNo && item.mobile && item.year && item.branch && item.section
     );
 
-    if (!teamName.trim() || !teamLeaderName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim()) {
+    if (!teamName.trim() || !teamLeaderName.trim() || !collegeName.trim() || !rollNo.trim() || !year.trim() || !branch.trim() || !section.trim()) {
       setFieldErrors((prev) => ({
         ...prev,
         teamName: !teamName.trim() ? "Team name is required." : prev.teamName,
         teamLeaderName: !teamLeaderName.trim() ? "Team leader name is required." : prev.teamLeaderName,
         rollNo: !rollNo.trim() ? "Leader roll number is required." : prev.rollNo
       }));
-      setPaymentMessage("Team and participant details are required before payment.");
+      setPaymentMessage("Team, college name, and participant details are required before payment.");
       return;
     }
 
@@ -490,13 +489,15 @@ export function HackathonRegistrationPage() {
       participationType,
       teamName: teamName.trim(),
       teamLeaderName: teamLeaderName.trim(),
+      collegeName: collegeName.trim(),
       leaderGender,
       rollNo: rollNo.trim(),
       year: year.trim(),
       branch: branch.trim(),
       section: section.trim(),
       themeTrack,
-      teammates: filledTeammates
+      teammates: filledTeammates,
+      bankDetails: formData.bankDetails
     });
   };
 
@@ -585,6 +586,15 @@ export function HackathonRegistrationPage() {
 
       <form className="mt-6 grid gap-4" onSubmit={onCreateOrder}>
         <input
+          value={collegeName}
+          onChange={(event) => setCollegeName(event.target.value)}
+          className={getInputClass(Boolean(fieldErrors.collegeName))}
+          placeholder="Name of Your College"
+          required
+        />
+        {fieldErrors.collegeName ? <p className="text-sm text-rose-600">{fieldErrors.collegeName}</p> : null}
+
+        <input
           value={teamName}
           onChange={(event) => {
             setTeamName(event.target.value);
@@ -660,36 +670,20 @@ export function HackathonRegistrationPage() {
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            Branch
-            <select
-              value={branch}
-              onChange={(event) => onBranchChange(event.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-              required
-            >
-              {BRANCH_OPTIONS.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            Section
-            <select
-              value={section}
-              onChange={(event) => setSection(event.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-              required
-            >
-              {leaderSectionOptions.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
+          <input
+            value={branch}
+            onChange={(event) => setBranch(event.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2"
+            placeholder="Branch (e.g., CSE, ECE, ME)"
+            required
+          />
+          <input
+            value={section}
+            onChange={(event) => setSection(event.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-2"
+            placeholder="Section"
+            required
+          />
         </div>
 
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
@@ -810,34 +804,18 @@ export function HackathonRegistrationPage() {
                         ))}
                       </select>
                     </label>
-                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
-                      Branch
-                      <select
-                        value={item.branch}
-                        onChange={(event) => updateTeammate(index, "branch", event.target.value)}
-                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-                      >
-                        {BRANCH_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="grid gap-1 text-sm font-semibold text-slate-700">
-                      Section
-                      <select
-                        value={item.section}
-                        onChange={(event) => updateTeammate(index, "section", event.target.value)}
-                        className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-                      >
-                        {getSectionOptionsForBranch(item.branch).map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <input
+                      value={item.branch}
+                      onChange={(event) => updateTeammate(index, "branch", event.target.value)}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                      placeholder="Branch (e.g., CSE, ECE, ME)"
+                    />
+                    <input
+                      value={item.section}
+                      onChange={(event) => updateTeammate(index, "section", event.target.value)}
+                      className="rounded-lg border border-slate-300 px-3 py-2"
+                      placeholder="Section"
+                    />
                   </div>
                   <label className="flex items-center gap-2 text-sm text-slate-700">
                     <input
@@ -877,6 +855,12 @@ export function HackathonRegistrationPage() {
             <p className="mt-3 text-xs text-slate-600">Current team size: {totalMembers}/4</p>
           </div>
 
+        <BankDetailsForm 
+          formData={formData} 
+          onChange={setFormData}
+          errors={{ bankDetails: bankDetailsErrors }}
+        />
+
         <button
           type="submit"
           disabled={createOrderMutation.isPending}
@@ -894,6 +878,24 @@ export function HackathonRegistrationPage() {
         >
           Pay Now via Razorpay (INR {selectedFee})
         </button>
+      )}
+
+      {orderData?.bankDetails && (
+        <>
+          <CollegePaymentDetailsCard bankDetails={orderData.bankDetails} />
+          {successfulTeam && (
+            <PaymentProofUploadForm
+              teamId={successfulTeam._id}
+              paymentAmount={selectedFee}
+              onSuccess={() => {
+                setPaymentMessage("Payment proof submitted successfully! Waiting for admin verification...");
+              }}
+              onError={(error) => {
+                setPaymentMessage(error?.response?.data?.message || "Failed to upload payment proof");
+              }}
+            />
+          )}
+        </>
       )}
 
       {requiresLogin && (

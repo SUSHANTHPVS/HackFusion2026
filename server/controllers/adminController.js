@@ -261,7 +261,8 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
             currency: { $first: "$currency" },
             orderId: { $first: "$orderId" },
             paymentId: { $first: "$paymentId" },
-            updatedAt: { $first: "$updatedAt" }
+            updatedAt: { $first: "$updatedAt" },
+            bankDetails: { $first: "$bankDetails" }
           }
         }
       ])
@@ -309,6 +310,9 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       orderId: payment?.orderId || "",
       paymentId: payment?.paymentId || "",
       paymentUpdatedAt: payment?.updatedAt || null,
+      // Bank details for refund processing
+      bankDetails: payment?.bankDetails || team.bankDetails || null,
+      teamBankDetails: team.bankDetails || null,
       createdAt: team.createdAt,
       updatedAt: team.updatedAt
     };
@@ -581,3 +585,72 @@ export const diagnosisTeamsWithPayments = asyncHandler(async (req, res) => {
     teams: teamsData
   });
 });
+
+/**
+ * PATCH /admin/payments/:paymentId/verify
+ * Verify and approve/reject manual payment
+ */
+export const verifyManualPayment = asyncHandler(async (req, res) => {
+  const { paymentId } = req.params;
+  const { verificationStatus, adminNotes } = req.body;
+
+  if (!["approved", "rejected"].includes(verificationStatus)) {
+    throw new AppError("Verification status must be 'approved' or 'rejected'", 400);
+  }
+
+  const payment = await Payment.findById(paymentId);
+  if (!payment) {
+    throw new AppError("Payment not found", 404);
+  }
+
+  if (payment.status !== "pending_verification") {
+    throw new AppError("Only pending payments can be verified", 400);
+  }
+
+  // Update payment
+  payment.status = verificationStatus === "approved" ? "success" : "failed";
+  payment.paymentApprovedBy = req.user._id;
+  payment.paymentApprovedAt = new Date();
+  if (adminNotes) {
+    payment.rejectionReason = adminNotes;
+  }
+
+  await payment.save();
+
+  // Log audit
+  await logPaymentAudit({
+    paymentRef: payment._id,
+    orderId: payment.orderId,
+    userId: payment.userId,
+    teamId: payment.teamId,
+    eventType: `MANUAL_PAYMENT_${verificationStatus.toUpperCase()}`,
+    source: "admin",
+    status: verificationStatus === "approved" ? "success" : "failed",
+    message: `Admin ${verificationStatus} manual payment verification`,
+    payload: {
+      verificationStatus,
+      adminNotes,
+      approvedBy: req.user._id
+    }
+  });
+
+  // Get team for response
+  const team = await Team.findById(payment.teamId).select("name");
+  
+  // If approved, team is now eligible (payment.status === "success" indicates confirmation)
+  // Registration system will check payment.status === "success" for capacity and registration
+
+  res.status(200).json({
+    message: `Payment ${verificationStatus} successfully`,
+    payment: {
+      _id: payment._id,
+      status: payment.status,
+      paymentApprovedAt: payment.paymentApprovedAt
+    },
+    team: {
+      _id: team._id,
+      name: team.name
+    }
+  });
+});
+

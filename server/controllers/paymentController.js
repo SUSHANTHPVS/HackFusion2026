@@ -376,3 +376,71 @@ export const handleRazorpayWebhook = asyncHandler(async (req, res) => {
 
   return res.status(200).json({ received: true });
 });
+
+/**
+ * POST /payments/submit-proof
+ * Submit payment proof (receipt/screenshot) for manual bank transfer payment
+ */
+export const submitManualPaymentProof = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    throw new AppError("Payment proof file is required", 400);
+  }
+
+  const { teamId, utrNumber, transactionId } = req.body;
+  if (!teamId) {
+    throw new AppError("Team ID is required", 400);
+  }
+
+  // Find the pending payment for this user and team
+  const payment = await Payment.findOne({
+    userId: req.user._id,
+    teamId,
+    status: "pending_verification"
+  });
+
+  if (!payment) {
+    throw new AppError("No pending payment found for this team", 404);
+  }
+
+  // Store file path (in production, this would be uploaded to S3 or similar)
+  const fileUrl = `/uploads/payment-proofs/${req.file.filename}`;
+  
+  payment.paymentProofFile = fileUrl;
+  payment.paymentProofSubmittedAt = new Date();
+  payment.status = "pending_verification";  // Keep status for admin review
+  
+  // Store bank transfer tracking information (UTR is mandatory, Transaction ID is optional)
+  payment.utrNumber = utrNumber.trim();
+  if (transactionId) {
+    payment.transactionId = transactionId.trim();
+  }
+  
+  await payment.save();
+
+  await logPaymentAudit({
+    paymentRef: payment._id,
+    orderId: payment.orderId,
+    userId: req.user._id,
+    teamId,
+    eventType: "MANUAL_PROOF_SUBMITTED",
+    source: "user",
+    status: "info",
+    message: "Manual payment proof submitted for admin verification",
+    payload: {
+      proofFile: fileUrl,
+      submittedAt: payment.paymentProofSubmittedAt,
+      utrNumber: payment.utrNumber,
+      transactionId: payment.transactionId
+    }
+  });
+
+  res.status(200).json({
+    message: "Payment proof submitted successfully. Please wait for admin verification.",
+    payment: {
+      _id: payment._id,
+      status: payment.status,
+      paymentProofSubmittedAt: payment.paymentProofSubmittedAt
+    }
+  });
+});
+

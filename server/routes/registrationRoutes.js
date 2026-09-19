@@ -25,6 +25,24 @@ function isValidSectionForBranch(branch, section) {
   return Number.isInteger(sectionNo) && sectionNo >= 1 && sectionNo <= max;
 }
 
+const bankDetailsSchema = z.object({
+  accountHolder: z.string().min(3).max(100).optional().or(z.literal("")),
+  accountNumber: z.string().regex(/^[0-9]{9,18}$/, "Account number must be 9-18 digits.").optional().or(z.literal("")),
+  ifscCode: z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format.").optional().or(z.literal("")),
+  bankName: z.string().min(2).max(100).optional().or(z.literal("")),
+  accountType: z.enum(["savings", "current"]).optional()
+}).refine(
+  (data) => {
+    // At least account number or IFSC should be provided if adding bank details
+    const hasDetails = data.accountNumber || data.ifscCode || data.accountHolder;
+    return !hasDetails || (data.accountNumber && data.ifscCode);
+  },
+  {
+    message: "Both account number and IFSC code are required for bank details",
+    path: ["accountNumber"]
+  }
+);
+
 const schema = z
   .object({
     participationType: z.literal("team"),
@@ -71,7 +89,8 @@ const schema = z
           })
       )
       .min(2)
-        .max(3)
+        .max(3),
+    bankDetails: bankDetailsSchema.optional()
   })
   .superRefine((data, ctx) => {
     const teammateCount = data.teammates?.length || 0;
