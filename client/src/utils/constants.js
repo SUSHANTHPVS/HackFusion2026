@@ -15,6 +15,20 @@ function normalizeApiBaseUrl(value) {
 }
 
 export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+
+// Get the server base URL by removing /api from API_BASE_URL
+export const SERVER_BASE_URL = API_BASE_URL.replace(/\/api$/, "");
+
+// Helper function to resolve file URLs
+export function resolveFileUrl(filePath) {
+  if (!filePath) return "";
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath;
+  }
+  // Prepend server base URL to relative paths
+  return `${SERVER_BASE_URL}${filePath}`;
+}
+
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 export const ORGANIZER_LOGOS = [

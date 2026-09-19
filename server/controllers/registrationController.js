@@ -1,6 +1,5 @@
 import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
-import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { getEventSettings } from "../services/eventSettingsService.js";
 import { countSuccessfulRegisteredParticipants, countSuccessfulRegisteredTeams } from "../services/registrationCapacityService.js";
@@ -297,29 +296,8 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
 
   const receipt = buildReceipt("IEEE", req.user._id);
 
-  // Check payment method from env config
-  const paymentMethod = env.PAYMENT_METHOD || "razorpay";
-
-  let razorpayOrder;
-  if (paymentMethod === "razorpay") {
-    try {
-      razorpayOrder = await createOrder({
-        amount: paymentAmountPaise,
-        receipt,
-        notes: {
-          userId: String(req.user._id),
-          participationType,
-          teamName: participantDetails.teamName
-        }
-      });
-    } catch (error) {
-      console.error("Razorpay order creation error:", error.message);
-      throw new AppError(
-        "Unable to create payment order. Please verify Razorpay credentials or contact organizer.",
-        502
-      );
-    }
-  }
+  // Using manual payment only
+  const paymentMethod = "manual";
 
   const session = await Team.startSession();
 
@@ -402,42 +380,30 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
           {
             userId: req.user._id,
             teamId: team._id,
-            orderId: paymentMethod === "razorpay" ? razorpayOrder.id : `MANUAL-${Date.now()}`,
+            orderId: `MANUAL-${Date.now()}`,
             amount: paymentAmount,
             participationType,
-            status: paymentMethod === "razorpay" ? "created" : "pending_verification",
-            paymentMethod: paymentMethod === "razorpay" ? "online" : "manual_bank_transfer",
+            status: "pending_verification",
+            paymentMethod: "manual_bank_transfer",
             bankDetails: req.body.bankDetails || undefined
           }
         ],
         { session }
       );
 
-      // Build response based on payment method
-      if (paymentMethod === "razorpay") {
-        responsePayload = {
-          message: "Team created. Proceed to payment.",
-          team,
-          keyId: env.RAZORPAY_KEY_ID,
-          order: razorpayOrder,
-          paymentStatus: "created",
-          feeInr: paymentAmount
-        };
-      } else {
-        // Manual payment mode
-        responsePayload = {
-          message: "Team created. Please submit payment proof.",
-          team,
-          paymentStatus: "pending_verification",
-          feeInr: paymentAmount,
-          bankDetails: {
-            accountHolder: env.COLLEGE_ACCOUNT_HOLDER,
-            accountNumber: env.COLLEGE_ACCOUNT_NUMBER,
-            ifscCode: env.COLLEGE_IFSC_CODE,
-            bankName: env.COLLEGE_BANK_NAME
-          }
-        };
-      }
+      // Build response for manual payment
+      responsePayload = {
+        message: "Team created. Please submit payment proof.",
+        team,
+        paymentStatus: "pending_verification",
+        feeInr: paymentAmount,
+        bankDetails: {
+          accountHolder: env.COLLEGE_ACCOUNT_HOLDER,
+          accountNumber: env.COLLEGE_ACCOUNT_NUMBER,
+          ifscCode: env.COLLEGE_IFSC_CODE,
+          bankName: env.COLLEGE_BANK_NAME
+        }
+      };
     });
   } finally {
     session.endSession();

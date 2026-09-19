@@ -198,7 +198,7 @@ export function AdminPaymentsPage() {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Admin Monitoring</p>
         <h1 className="mt-3 text-3xl font-extrabold text-slate-900 md:text-4xl">Webhook Deliveries</h1>
         <p className="mt-3 text-slate-700">
-          Recent Razorpay webhook events with delivery outcomes and linked payment identifiers.
+          Historical payment webhook events with delivery outcomes and linked payment identifiers.
         </p>
       </div>
 
@@ -316,8 +316,8 @@ export function AdminPaymentsPage() {
       <div className="glass-card rounded-2xl p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Payment Recovery Queue</h2>
-            <p className="mt-1 text-sm text-slate-600">Created/failed payments that can be retried via new Razorpay orders.</p>
+            <h2 className="text-xl font-bold text-slate-900">Failed Payments</h2>
+            <p className="mt-1 text-sm text-slate-600">Failed payments awaiting resubmission or admin review.</p>
           </div>
           <button
             type="button"
@@ -325,7 +325,7 @@ export function AdminPaymentsPage() {
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             <RefreshCw size={16} />
-            Refresh Queue
+            Refresh
           </button>
         </div>
 

@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
 import {
-  createRecoveryOrder,
   dashboardStats,
   generateWinnerCertificate,
   getAdminSettings,
@@ -60,7 +59,6 @@ router.post("/settings/reset", protect, authorize("admin"), resetAdminSettings);
 router.get("/payments/recovery-queue", protect, authorize("admin"), listPaymentRecoveryQueue);
 router.get("/payments/webhooks", protect, authorize("admin"), recentWebhookEvents);
 router.get("/payments/:orderId/audit", protect, authorize("admin"), paymentAuditTrail);
-router.post("/payments/:paymentId/recovery-order", protect, authorize("admin"), createRecoveryOrder);
 router.post("/certificates/winner", protect, authorize("admin"), validate(winnerSchema), generateWinnerCertificate);
 
 export default router;

@@ -9,7 +9,6 @@ import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { sendPaymentApprovalEmail, sendPaymentRejectionEmail, sendRegistrationEmail } from "../services/emailService.js";
-import { createOrder } from "../services/razorpayService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
@@ -127,64 +126,6 @@ export const recentWebhookEvents = asyncHandler(async (req, res) => {
       eventType: eventType || null
     },
     logs
-  });
-});
-
-export const createRecoveryOrder = asyncHandler(async (req, res) => {
-  const payment = await Payment.findById(req.params.paymentId);
-  if (!payment) {
-    return res.status(404).json({ message: "Payment record not found" });
-  }
-
-  if (payment.status === "success") {
-    return res.status(409).json({ message: "Payment already successful, recovery not needed" });
-  }
-
-  let participationType = payment.participationType;
-  if (!participationType) {
-    const team = await Team.findById(payment.teamId).select("participationType teammates");
-    participationType = team?.participationType || ((team?.teammates?.length || 0) > 0 ? "team" : "individual");
-  }
-
-  const receipt = buildReceipt("REC", payment.userId);
-  const razorpayOrder = await createOrder({
-    amount: payment.amount * 100,
-    receipt,
-    notes: {
-      recoveryOrderFor: String(payment._id),
-      userId: String(payment.userId),
-      participationType
-    }
-  });
-
-  const newPayment = await Payment.create({
-    userId: payment.userId,
-    teamId: payment.teamId,
-    orderId: razorpayOrder.id,
-    amount: payment.amount,
-    participationType,
-    currency: payment.currency || "INR",
-    status: "created"
-  });
-
-  await logPaymentAudit({
-    paymentRef: newPayment._id,
-    orderId: newPayment.orderId,
-    userId: newPayment.userId,
-    teamId: newPayment.teamId,
-    eventType: "RECOVERY_ORDER_CREATED",
-    source: "admin",
-    status: "success",
-    message: "Admin created recovery order for failed/pending payment",
-    payload: { previousOrderId: payment.orderId }
-  });
-
-  res.status(201).json({
-    message: "Recovery order created",
-    previousOrderId: payment.orderId,
-    payment: newPayment,
-    keyId: env.RAZORPAY_KEY_ID,
-    order: razorpayOrder
   });
 });
 

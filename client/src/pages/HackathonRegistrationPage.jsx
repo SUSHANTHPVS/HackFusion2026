@@ -21,21 +21,6 @@ const tracks = [
 ];
 const TEAM_REGISTRATION_FEE = 200;
 
-function loadRazorpayScript() {
-  return new Promise((resolve) => {
-    if (window.Razorpay) {
-      resolve(true);
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-}
-
 function getPaymentAlert(message) {
   const normalized = String(message || "").toLowerCase();
 
@@ -51,27 +36,11 @@ function getPaymentAlert(message) {
     };
   }
 
-  if (normalized.includes("unable to create payment order") || normalized.includes("razorpay credentials")) {
+  if (normalized.includes("payment failed")) {
     return {
       tone: "danger",
-      title: "Razorpay order setup failed",
-      hint: "Check server/.env for RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET, then restart the backend."
-    };
-  }
-
-  if (normalized.includes("payment failed") || normalized.includes("verification failed")) {
-    return {
-      tone: "danger",
-      title: "Payment did not complete",
-      hint: "Try the payment again. If this keeps happening, verify the order details in the backend logs."
-    };
-  }
-
-  if (normalized.includes("payment verified")) {
-    return {
-      tone: "success",
-      title: "Payment verified",
-      hint: "The payment signature matched and the registration should now be complete."
+      title: "Payment submission failed",
+      hint: "Please check your payment proof and try again. Contact the organizers if the issue persists."
     };
   }
 
@@ -91,15 +60,6 @@ function createTeamAndOrder(payload) {
   return api.post("/registration/team", payload).then((res) => res.data);
 }
 
-function verifyPayment(paymentData) {
-  const payload = {
-    razorpay_order_id: paymentData?.razorpay_order_id,
-    razorpay_payment_id: paymentData?.razorpay_payment_id,
-    razorpay_signature: paymentData?.razorpay_signature
-  };
-
-  return api.post("/verify-payment", payload).then((res) => res.data);
-}
 
 function getInputClass(hasError) {
   return `rounded-lg border px-3 py-2 ${hasError ? "border-rose-500 focus:border-rose-500" : "border-slate-300"}`;
@@ -222,24 +182,6 @@ export function HackathonRegistrationPage() {
     return message.includes("unauthorized") || message.includes("invalid token");
   };
 
-  const verifyMutation = useMutation({
-    mutationFn: verifyPayment,
-    onSuccess: (data) => {
-      setPaymentMessage("Payment verified! Registration successful.");
-      setOrderData(null);
-      setPaymentVerified(true);
-      setSuccessfulTeam({
-        name: teamName.trim(),
-        participationType,
-        teammates
-      });
-      navigate("/participant/my-team", { replace: true });
-    },
-    onError: (error) => {
-      setPaymentMessage(error?.response?.data?.message || "Payment verification failed.");
-    }
-  });
-
   const createOrderMutation = useMutation({
     mutationFn: createTeamAndOrder,
     onSuccess: (data) => {
@@ -336,11 +278,6 @@ export function HackathonRegistrationPage() {
     }
   }, [isAuthenticated]);
 
-  const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || orderData?.keyId || "";
-  const canPay = useMemo(
-    () => Boolean(orderData?.order && razorpayKeyId && orderData?.paymentStatus === "created"),
-    [orderData, razorpayKeyId]
-  );
   const paymentAlert = useMemo(() => getPaymentAlert(paymentMessage), [paymentMessage]);
   const selectedFee = TEAM_REGISTRATION_FEE;
   const totalMembers = 1 + teammates.length;
@@ -570,44 +507,6 @@ export function HackathonRegistrationPage() {
     console.log("📝 College Name in payload:", payload.collegeName, "- Length:", payload.collegeName.length);
     
     createOrderMutation.mutate(payload);
-  };
-
-  const onPayNow = async () => {
-    if (!orderData?.order || !razorpayKeyId) return;
-
-    const loaded = await loadRazorpayScript();
-    if (!loaded) {
-      setPaymentMessage("Failed to load Razorpay. Please try again.");
-      return;
-    }
-
-    const options = {
-      key: razorpayKeyId,
-      order_id: orderData.order.id,
-      amount: orderData.order.amount,
-      currency: orderData.order.currency,
-      handler: (response) => {
-        verifyMutation.mutate(response);
-      },
-      modal: {
-        ondismiss: () => {
-          setPaymentMessage("Payment window closed. You can reopen it when ready.");
-        }
-      },
-      prefill: {
-        name: user?.name || "",
-        email: user?.email || ""
-      },
-      theme: {
-        color: "#06b6d4"
-      }
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.on("payment.failed", (response) => {
-      setPaymentMessage(response?.error?.description || "Payment failed. Please try again.");
-    });
-    rzp.open();
   };
 
   if (!isAuthenticated) {
@@ -942,16 +841,6 @@ export function HackathonRegistrationPage() {
           {createOrderMutation.isPending ? "Creating Order..." : `Create Registration Order (INR ${selectedFee})`}
         </button>
       </form>
-
-      {canPay && (
-        <button
-          type="button"
-          onClick={onPayNow}
-          className="mt-4 rounded-lg bg-cyan-600 px-4 py-2 font-semibold text-white"
-        >
-          Pay Now via Razorpay (INR {selectedFee})
-        </button>
-      )}
 
       {orderData?.bankDetails && (
         <>

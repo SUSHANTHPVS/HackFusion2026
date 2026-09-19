@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircle, XCircle, Loader, AlertCircle, Mail } from "lucide-react";
 import { api } from "../services/api";
+import { resolveFileUrl } from "../utils/constants";
 
 export function PaymentVerificationCard({ payment, teamName, onVerified, onRejected }) {
   const [adminNotes, setAdminNotes] = useState("");
@@ -94,7 +95,7 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
         {showPreview && payment.paymentProofFile && (
           <div className="mt-3 rounded-lg border border-slate-300 overflow-hidden">
             <img
-              src={payment.paymentProofFile}
+              src={resolveFileUrl(payment.paymentProofFile)}
               alt="Payment proof"
               className="w-full h-auto max-h-96"
               onError={() => (

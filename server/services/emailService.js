@@ -117,7 +117,6 @@ export async function sendPaymentRejectionEmail({ to, name, teamName, reason }) 
             <li>Review the rejection reason above</li>
             <li>Submit a new payment proof if needed</li>
             <li>Contact our support team for assistance</li>
-            <li>Pay via Razorpay (online gateway) as an alternative</li>
           </ul>
 
           <p style="color: #999; font-size: 14px; margin-top: 30px;">
