@@ -9,6 +9,7 @@ import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { sendPaymentApprovalEmail, sendPaymentRejectionEmail, sendRegistrationEmail } from "../services/emailService.js";
+import { sendBulkWhatsAppMessages, verifyWhatsAppCredentials } from "../services/whatsappBusinessService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { AppError } from "../utils/AppError.js";
@@ -634,7 +635,7 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
   // Don't await this, just let it happen in the background
   if (verificationStatus === "approved") {
     // Payment approved - send both approval confirmation and registration email
-    const whatsappLink = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4"; // From constants
+    const whatsappLink = env.WHATSAPP_GROUP_LINK || "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc";
     
     // Send payment approval email with WhatsApp link
     sendPaymentApprovalEmail({
@@ -691,4 +692,149 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
     }
   });
 });
+
+/**
+ * Get WhatsApp group link for admin to share
+ */
+export const getWhatsAppGroupLink = asyncHandler(async (_req, res) => {
+  const whatsappLink = env.WHATSAPP_GROUP_LINK || "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc";
+
+  if (!whatsappLink) {
+    throw new AppError("WhatsApp group link not configured", 404);
+  }
+
+  res.status(200).json({
+    groupLink: whatsappLink,
+    message: "Share this link with participants via your WhatsApp",
+    shareMessage: `🎉 Join the IEEE Hackathon 2026 WhatsApp Group!\n\n${whatsappLink}\n\n📱 Get updates, announcements, and connect with other participants. See you at the hackathon! 🚀`
+  });
+});
+
+/**
+ * Get list of participants who have paid (for WhatsApp message targeting)
+ */
+export const getParticipantsForWhatsApp = asyncHandler(async (req, res) => {
+  // Get all teams with approved payments
+  const approvedPayments = await Payment.find({ status: "success" })
+    .populate("teamId", "name leaderName participationType teammates")
+    .populate("userId", "name email mobile");
+
+  const participants = [];
+
+  for (const payment of approvedPayments) {
+    if (!payment.teamId || !payment.userId) continue;
+
+    // Add team leader
+    if (payment.userId.mobile) {
+      participants.push({
+        name: payment.userId.name,
+        mobile: payment.userId.mobile,
+        email: payment.userId.email,
+        teamName: payment.teamId.name,
+        participationType: payment.teamId.participationType,
+        isTeamLeader: true
+      });
+    }
+
+    // Add teammates if team
+    if (payment.teamId.participationType === "team" && payment.teamId.teammates) {
+      for (const teammate of payment.teamId.teammates) {
+        if (teammate.mobile) {
+          participants.push({
+            name: teammate.name,
+            mobile: teammate.mobile,
+            email: teammate.email || "",
+            teamName: payment.teamId.name,
+            participationType: "team",
+            isTeamLeader: false
+          });
+        }
+      }
+    }
+  }
+
+  res.status(200).json({
+    total: participants.length,
+    message: "List of participants to send WhatsApp messages to",
+    participants: participants.sort((a, b) => a.name.localeCompare(b.name))
+  });
+});
+
+/**
+ * Send WhatsApp message to single or multiple participants
+ * Requires WhatsApp Business API to be configured
+ */
+export const sendWhatsAppToParticipants = asyncHandler(async (req, res) => {
+  if (!env.ENABLE_WHATSAPP_BUSINESS_API) {
+    throw new AppError("WhatsApp Business API is not enabled. Configure it in admin settings.", 400);
+  }
+
+  const { recipientMobiles, message } = req.body;
+
+  if (!recipientMobiles || !Array.isArray(recipientMobiles) || recipientMobiles.length === 0) {
+    throw new AppError("recipientMobiles array is required with at least one phone number", 400);
+  }
+
+  if (!message || typeof message !== "string" || message.trim().length === 0) {
+    throw new AppError("message is required and cannot be empty", 400);
+  }
+
+  if (recipientMobiles.length > 100) {
+    throw new AppError("Maximum 100 recipients per request. Use multiple requests for bulk sending.", 400);
+  }
+
+  try {
+    // Verify credentials first
+    const credentialCheck = await verifyWhatsAppCredentials();
+    if (!credentialCheck.valid) {
+      throw new AppError(`WhatsApp credential verification failed: ${credentialCheck.error}`, 400);
+    }
+
+    // Send messages to all recipients
+    const results = await sendBulkWhatsAppMessages(recipientMobiles, message);
+
+    res.status(200).json({
+      message: "WhatsApp messages sent",
+      totalRequests: results.totalRequests,
+      successful: results.successful,
+      failed: results.failed,
+      summary: results.summary,
+      results: results.results,
+      credentialsVerified: true,
+      phoneNumberId: credentialCheck.phoneNumberId
+    });
+  } catch (error) {
+    console.error("Error sending WhatsApp messages:", error);
+    throw new AppError(error.message || "Failed to send WhatsApp messages", 500);
+  }
+});
+
+/**
+ * Check WhatsApp Business API credentials
+ */
+export const checkWhatsAppBusinessCredentials = asyncHandler(async (_req, res) => {
+  if (!env.WHATSAPP_BUSINESS_API_TOKEN || !env.WHATSAPP_PHONE_NUMBER_ID) {
+    return res.status(200).json({
+      configured: false,
+      message: "WhatsApp Business API credentials not configured"
+    });
+  }
+
+  try {
+    const result = await verifyWhatsAppCredentials();
+    
+    res.status(200).json({
+      configured: true,
+      valid: result.valid,
+      ...result
+    });
+  } catch (error) {
+    res.status(200).json({
+      configured: true,
+      valid: false,
+      error: error.message
+    });
+  }
+});
+
 

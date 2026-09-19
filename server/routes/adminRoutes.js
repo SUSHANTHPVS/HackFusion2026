@@ -17,7 +17,11 @@ import {
   registrationsTimeline,
   getPaymentVerificationStatus,
   diagnosisTeamsWithPayments,
-  verifyManualPayment
+  verifyManualPayment,
+  getWhatsAppGroupLink,
+  getParticipantsForWhatsApp,
+  sendWhatsAppToParticipants,
+  checkWhatsAppBusinessCredentials
 } from "../controllers/adminController.js";
 import { authorize, protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
@@ -62,5 +66,10 @@ router.get("/payments/recovery-queue", protect, authorize("admin"), listPaymentR
 router.get("/payments/webhooks", protect, authorize("admin"), recentWebhookEvents);
 router.get("/payments/:orderId/audit", protect, authorize("admin"), paymentAuditTrail);
 router.post("/certificates/winner", protect, authorize("admin"), validate(winnerSchema), generateWinnerCertificate);
+router.get("/whatsapp/group-link", protect, authorize("admin"), getWhatsAppGroupLink);
+// WhatsApp Business API routes
+router.get("/whatsapp/participants", protect, authorize("admin"), getParticipantsForWhatsApp);
+router.post("/whatsapp/send", protect, authorize("admin"), sendWhatsAppToParticipants);
+router.get("/whatsapp/check-credentials", protect, authorize("admin"), checkWhatsAppBusinessCredentials);
 
 export default router;

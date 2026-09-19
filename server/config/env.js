@@ -36,7 +36,13 @@ const schema = z.object({
   SMTP_USER: z.string().min(1),
   SMTP_PASS: z.string().min(1),
   SMTP_FROM: z.string().min(1),
-  PAYMENT_ALERT_EMAILS: z.string().optional()
+  PAYMENT_ALERT_EMAILS: z.string().optional(),
+  WHATSAPP_GROUP_LINK: z.string().url().optional(),
+  // WhatsApp Business API Configuration
+  WHATSAPP_BUSINESS_API_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().min(1).optional(),
+  WHATSAPP_BUSINESS_ACCOUNT_ID: z.string().min(1).optional(),
+  ENABLE_WHATSAPP_BUSINESS_API: z.coerce.boolean().default(false)
 });
 
 export const env = schema.parse(process.env);
