@@ -5,25 +5,6 @@ import { protect, authorize } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
 const router = Router();
-const BRANCH_SECTION_LIMITS = {
-  CSE: 20,
-  "CSE-DS": 5,
-  "CSE-CS": 5,
-  AIML: 15,
-  IT: 3,
-  ECE: 8,
-  EEE: 8
-};
-
-function isValidSectionForBranch(branch, section) {
-  const max = BRANCH_SECTION_LIMITS[branch];
-  if (!max) {
-    return false;
-  }
-
-  const sectionNo = Number(section);
-  return Number.isInteger(sectionNo) && sectionNo >= 1 && sectionNo <= max;
-}
 
 const bankDetailsSchema = z.object({
   accountHolder: z.string().min(3).max(100).optional().or(z.literal("")),
@@ -48,11 +29,12 @@ const schema = z
     participationType: z.literal("team"),
     teamName: z.string().min(2),
     teamLeaderName: z.string().min(2),
+    collegeName: z.string().min(1, "College name is required."),
     leaderGender: z.enum(["male", "female"]),
     rollNo: z.string().min(2),
     year: z.enum(["2nd year","3rd year", "4th year"]),
-    branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"]),
-    section: z.string().regex(/^\d+$/, "Section must be a number."),
+    branch: z.string().min(1, "Branch is required."),
+    section: z.string().min(1, "Section is required."),
     themeTrack: z.enum([
       "Multi-Robot Task Negotiation Engine",
       "Semantic SLAM Recovery & Map Reconstruction",
@@ -73,8 +55,8 @@ const schema = z
             rollNo: z.string().min(2),
             mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits."),
             year: z.enum(["2nd year","3rd year", "4th year"]),
-            branch: z.enum(["CSE", "CSE-DS", "CSE-CS", "AIML", "IT", "ECE", "EEE"]),
-            section: z.string().regex(/^\d+$/, "Section must be a number."),
+            branch: z.string().min(1, "Branch is required."),
+            section: z.string().min(1, "Section is required."),
             ieeeMember: z.boolean().optional(),
             ieeeMemberId: z
               .string()
@@ -103,28 +85,12 @@ const schema = z
       });
     }
 
-    if (!isValidSectionForBranch(data.branch, data.section)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Section must be between 1 and ${BRANCH_SECTION_LIMITS[data.branch]} for ${data.branch}.`,
-        path: ["section"]
-      });
-    }
-
     const leaderRollNo = data.rollNo.trim().toUpperCase();
     const leaderName = data.teamLeaderName.trim().toLowerCase();
     const teammateRollNos = new Set();
     const teammateNames = new Set();
 
     (data.teammates || []).forEach((member, index) => {
-      if (!isValidSectionForBranch(member.branch, member.section)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Section must be between 1 and ${BRANCH_SECTION_LIMITS[member.branch]} for ${member.branch}.`,
-          path: ["teammates", index, "section"]
-        });
-      }
-
       const rollNo = member.rollNo.trim().toUpperCase();
       const name = member.name.trim().toLowerCase();
 
