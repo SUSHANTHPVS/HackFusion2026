@@ -139,18 +139,43 @@ export const createTeamAndOrder = asyncHandler(async (req, res) => {
   const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 125);
   const participationType = req.body.participationType;
 
+  // Debug: Log the entire request body
+  console.log("🔍 FULL Request received at /registration/team:");
+  console.log(JSON.stringify(req.body, null, 2));
+
   // Validate all required fields exist and are not empty
-  const requiredFields = ['teamName', 'teamLeaderName', 'collegeName', 'leaderGender', 'rollNo', 'year', 'branch', 'section', 'themeTrack', 'teammates'];
+  const requiredFields = ['teamName', 'teamLeaderName', 'collegeName', 'leaderGender', 'rollNo', 'year', 'branch', 'section', 'themeTrack'];
+  const missingFields = [];
+  
   for (const field of requiredFields) {
     const value = req.body[field];
-    // For string fields, check if empty or only whitespace
-    if (typeof value === 'string' && !value.trim()) {
-      throw new AppError(`Missing required field: ${field}`, 400);
+    
+    // Convert to string if not already, then trim and check if empty
+    const stringValue = String(value || '').trim();
+    if (!stringValue) {
+      missingFields.push({
+        field,
+        value,
+        stringValue,
+        type: typeof value
+      });
+      console.error(`❌ Field "${field}" is empty or missing:`, { value, stringValue, type: typeof value });
     }
-    // For other types (like array for teammates), check if falsy
-    if (!value && typeof value !== 'string') {
-      throw new AppError(`Missing required field: ${field}`, 400);
-    }
+  }
+
+  if (missingFields.length > 0) {
+    console.error("❌ Missing fields summary:", missingFields);
+    throw new AppError(`Missing required fields: ${missingFields.map(f => f.field).join(', ')}`, 400);
+  }
+
+  // Separately validate teammates array
+  if (!req.body.teammates || !Array.isArray(req.body.teammates) || req.body.teammates.length === 0) {
+    console.error("❌ Teammates validation failed:", { 
+      hasTeammates: !!req.body.teammates, 
+      isArray: Array.isArray(req.body.teammates),
+      length: req.body.teammates?.length
+    });
+    throw new AppError(`Missing required field: teammates`, 400);
   }
 
   const normalizedTeammates = (req.body.teammates || []).map((item) => {

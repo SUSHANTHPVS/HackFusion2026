@@ -257,6 +257,15 @@ export function HackathonRegistrationPage() {
 
       setRequiresLogin(false);
       const serverMessage = error?.response?.data?.message || "Could not create registration order.";
+      
+      console.error("❌ Registration Error:", {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        message: serverMessage,
+        fullResponse: error?.response?.data,
+        allErrorData: error
+      });
+      
       const duplicateError = extractDuplicateFieldError(serverMessage, teammates);
 
       if (duplicateError?.path === "rollNo") {
@@ -359,6 +368,20 @@ export function HackathonRegistrationPage() {
     setPaymentVerified(false);
     setSuccessfulTeam(null);
     resetFieldErrors(teammates.length);
+
+    console.log("🔍 Form state at submission:", {
+      teamName,
+      teamLeaderName,
+      collegeName,
+      rollNo,
+      year,
+      branch,
+      section,
+      themeTrack,
+      leaderGender,
+      teamsLength: teammates.length,
+      formDataBankDetails: formData.bankDetails
+    });
 
     const normalizedTeammates = teammates.map((item) => ({
       name: item.name.trim(),
@@ -475,11 +498,11 @@ export function HackathonRegistrationPage() {
       return;
     }
 
-    createOrderMutation.mutate({
+    const payload = {
       participationType,
       teamName: teamName.trim(),
       teamLeaderName: teamLeaderName.trim(),
-      collegeName: collegeName.trim(),
+      collegeName: collegeName.trim() || "",
       leaderGender,
       rollNo: rollNo.trim(),
       year: year.trim(),
@@ -488,7 +511,12 @@ export function HackathonRegistrationPage() {
       themeTrack,
       teammates: filledTeammates,
       bankDetails: formData.bankDetails
-    });
+    };
+    
+    console.log("📤 Sending registration payload:", payload);
+    console.log("📝 College Name in payload:", payload.collegeName, "- Length:", payload.collegeName.length);
+    
+    createOrderMutation.mutate(payload);
   };
 
   const onPayNow = async () => {
