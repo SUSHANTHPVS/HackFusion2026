@@ -80,7 +80,7 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
     }
   });
 
-  if (!payment || !payment.paymentProofFile) {
+  if (!payment) {
     return null;
   }
 
@@ -134,57 +134,64 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
       </div>
 
       {/* Payment Proof */}
-      <div className="mb-4">
-        <button
-          type="button"
-          onClick={() => {
-            setShowPreview(!showPreview);
-            if (!resolvedImageUrl && !showPreview) {
-              const url = resolveFileUrl(payment.paymentProofFile);
-              setResolvedImageUrl(url);
-              console.log("[PaymentProof] Resolved URL:", url);
-            }
-          }}
-          className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          {showPreview ? "Hide Payment Proof" : "View Payment Proof"}
-        </button>
-        {showPreview && payment.paymentProofFile && (
-          <div className="mt-3 rounded-lg border border-slate-300 overflow-hidden bg-slate-50 p-2">
-            {imageLoadError ? (
-              <div className="flex flex-col items-center gap-2 p-6">
-                <AlertCircle size={32} className="text-rose-600" />
-                <p className="text-center text-sm font-semibold text-rose-900">Unable to load image</p>
-                <p className="text-center text-xs text-rose-700">
-                  File: <code className="break-all">{payment.paymentProofFile}</code>
-                </p>
-                <p className="text-center text-xs text-slate-600 mt-2">
-                  URL: <code className="break-all text-[10px]">{resolvedImageUrl}</code>
-                </p>
-              </div>
-            ) : (
-              <img
-                src={resolvedImageUrl || resolveFileUrl(payment.paymentProofFile)}
-                alt="Payment proof"
-                crossOrigin="anonymous"
-                className="w-full h-auto max-h-96 object-contain"
-                onLoad={() => {
-                  setImageLoadError(false);
-                  console.log("[PaymentProof] Image loaded successfully");
-                }}
-                onError={(e) => {
-                  setImageLoadError(true);
-                  console.error("[PaymentProof] Image load error:", {
-                    src: e.target.src,
-                    status: e.target.status,
-                    complete: e.target.complete
-                  });
-                }}
-              />
-            )}
-          </div>
-        )}
-      </div>
+      {payment.paymentProofFile ? (
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              setShowPreview(!showPreview);
+              if (!resolvedImageUrl && !showPreview) {
+                const url = resolveFileUrl(payment.paymentProofFile);
+                setResolvedImageUrl(url);
+                console.log("[PaymentProof] Resolved URL:", url);
+              }
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            {showPreview ? "Hide Payment Proof" : "View Payment Proof"}
+          </button>
+          {showPreview && payment.paymentProofFile && (
+            <div className="mt-3 rounded-lg border border-slate-300 overflow-hidden bg-slate-50 p-2">
+              {imageLoadError ? (
+                <div className="flex flex-col items-center gap-2 p-6">
+                  <AlertCircle size={32} className="text-rose-600" />
+                  <p className="text-center text-sm font-semibold text-rose-900">Unable to load image</p>
+                  <p className="text-center text-xs text-rose-700">
+                    File: <code className="break-all">{payment.paymentProofFile}</code>
+                  </p>
+                  <p className="text-center text-xs text-slate-600 mt-2">
+                    URL: <code className="break-all text-[10px]">{resolvedImageUrl}</code>
+                  </p>
+                </div>
+              ) : (
+                <img
+                  src={resolvedImageUrl || resolveFileUrl(payment.paymentProofFile)}
+                  alt="Payment proof"
+                  crossOrigin="anonymous"
+                  className="w-full h-auto max-h-96 object-contain"
+                  onLoad={() => {
+                    setImageLoadError(false);
+                    console.log("[PaymentProof] Image loaded successfully");
+                  }}
+                  onError={(e) => {
+                    setImageLoadError(true);
+                    console.error("[PaymentProof] Image load error:", {
+                      src: e.target.src,
+                      status: e.target.status,
+                      complete: e.target.complete
+                    });
+                  }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="mb-4 rounded-lg border-2 border-amber-300 bg-amber-50 p-3">
+          <p className="text-xs font-semibold text-amber-900">ℹ️ Payment Proof</p>
+          <p className="mt-1 text-xs text-amber-800">No payment proof file submitted yet</p>
+        </div>
+      )}
 
       {/* Admin Notes */}
       {isPending && (
