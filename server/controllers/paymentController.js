@@ -4,7 +4,7 @@ import { Payment } from "../models/Payment.js";
 import { Team } from "../models/Team.js";
 import { User } from "../models/User.js";
 import { countSuccessfulRegisteredParticipants, countTeamParticipantSlots } from "../services/registrationCapacityService.js";
-import { sendPaymentDisputeAlertEmail, sendPaymentAddedAlertEmail, sendRegistrationEmail } from "../services/emailService.js";
+import { sendPaymentDisputeAlertEmail, sendPaymentProofAlertEmail, sendRegistrationEmail } from "../services/emailService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { env } from "../config/env.js";
 import { generateQrDataUrl } from "../services/qrService.js";
@@ -120,24 +120,6 @@ async function markPaymentSuccess({ orderId, paymentId, signature, source = "sys
   sendRegistrationEmail({ to: user.email, name: user.name, teamName: team.name })
     .catch((emailError) => {
       console.error("[markPaymentSuccess] Failed to send registration confirmation email:", emailError.message);
-      // Don't throw error - email failure should not fail payment verification
-    });
-
-  // Send admin alert email (non-blocking - fire and forget)
-  sendPaymentAddedAlertEmail({
-    paymentType: "razorpay",
-    orderId,
-    paymentId,
-    amount: payment.amount,
-    currency: "INR",
-    participantName: user.name,
-    participantEmail: user.email,
-    teamName: team.name,
-    status: "success",
-    timestamp: new Date()
-  })
-    .catch((emailError) => {
-      console.error("[markPaymentSuccess] Failed to send admin payment alert email:", emailError.message);
       // Don't throw error - email failure should not fail payment verification
     });
 
@@ -462,15 +444,13 @@ export const submitManualPaymentProof = asyncHandler(async (req, res) => {
 
   // Send admin alert email for manual payment proof (non-blocking - fire and forget)
   const team = await Team.findById(teamId).lean();
-  sendPaymentAddedAlertEmail({
-    paymentType: "manual_proof",
+  sendPaymentProofAlertEmail({
     orderId: payment.orderId,
     amount: payment.amount,
     currency: "INR",
     participantName: req.user.name,
     participantEmail: req.user.email,
     teamName: team?.name || "Unknown Team",
-    status: "pending_verification",
     proofFile: fileUrl,
     utrNumber: payment.utrNumber,
     transactionId: payment.transactionId,
