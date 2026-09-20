@@ -252,6 +252,23 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
         </>
       )}
 
+      {/* Delete Button for All Payments (with warning for approved) */}
+      {!showDeleteConfirm && (
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={deleteMutation.isPending}
+          className={`mt-4 w-full flex items-center justify-center gap-2 rounded-lg border-2 px-3 py-2 font-semibold transition-colors ${
+            isApproved
+              ? "border-red-400 bg-red-50 text-red-700 hover:bg-red-100"
+              : "border-orange-300 bg-orange-50 text-orange-700 hover:bg-orange-100"
+          } disabled:cursor-not-allowed disabled:opacity-50`}
+        >
+          <Trash2 size={16} />
+          {isApproved ? "Remove Approved Transaction" : "Remove Transaction"}
+        </button>
+      )}
+
       {/* Display rejection reason if rejected */}
       {isRejected && payment.rejectionReason && (
         <div className="rounded-lg bg-rose-100 p-3">
@@ -262,13 +279,28 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
 
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
-        <div className="mb-4 rounded-lg border-2 border-orange-300 bg-orange-50 p-4">
+        <div className={`mb-4 rounded-lg border-2 p-4 ${
+          isApproved 
+            ? "border-red-300 bg-red-50" 
+            : "border-orange-300 bg-orange-50"
+        }`}>
           <div className="mb-3 flex items-start gap-3">
-            <AlertCircle size={20} className="shrink-0 text-orange-600 mt-0.5" />
+            <AlertCircle size={20} className={`shrink-0 mt-0.5 ${
+              isApproved ? "text-red-600" : "text-orange-600"
+            }`} />
             <div>
-              <p className="font-semibold text-orange-900">⚠️ Confirm Delete</p>
-              <p className="mt-1 text-sm text-orange-800">
-                Are you sure you want to delete this payment transaction? This action cannot be undone and will be logged in the audit trail.
+              <p className={`font-semibold ${
+                isApproved ? "text-red-900" : "text-orange-900"
+              }`}>
+                {isApproved ? "⚠️ WARNING: Delete Approved Transaction" : "⚠️ Confirm Delete"}
+              </p>
+              <p className={`mt-1 text-sm ${
+                isApproved ? "text-red-800" : "text-orange-800"
+              }`}>
+                {isApproved 
+                  ? "You are about to delete an APPROVED payment transaction. This represents money that has already been verified and accepted. This action cannot be undone and will be logged in the audit trail with full details."
+                  : "Are you sure you want to delete this payment transaction? This action cannot be undone and will be logged in the audit trail."
+                }
               </p>
             </div>
           </div>
@@ -276,8 +308,10 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
           <textarea
             value={deleteReason}
             onChange={(e) => setDeleteReason(e.target.value)}
-            placeholder="Reason for deletion (optional)"
-            className="mb-3 w-full rounded-lg border border-orange-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-500"
+            placeholder={isApproved ? "Reason for deletion is REQUIRED for approved payments" : "Reason for deletion (optional)"}
+            className={`mb-3 w-full rounded-lg border px-3 py-2 text-sm text-slate-900 placeholder-slate-500 ${
+              isApproved ? "border-red-300" : "border-orange-300"
+            }`}
             rows={2}
           />
           
@@ -296,8 +330,12 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
             <button
               type="button"
               onClick={() => deleteMutation.mutate({ paymentId: payment._id, reason: deleteReason })}
-              disabled={deleteMutation.isPending}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-3 py-2 font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={deleteMutation.isPending || (isApproved && !deleteReason.trim())}
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                isApproved 
+                  ? "bg-red-600 hover:bg-red-700" 
+                  : "bg-orange-600 hover:bg-orange-700"
+              }`}
             >
               {deleteMutation.isPending ? (
                 <>
@@ -307,7 +345,7 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
               ) : (
                 <>
                   <Trash2 size={16} />
-                  Confirm Delete
+                  {isApproved ? "Delete Approved" : "Confirm Delete"}
                 </>
               )}
             </button>
