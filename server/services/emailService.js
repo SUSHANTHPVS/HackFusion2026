@@ -184,3 +184,138 @@ export async function sendPaymentDisputeAlertEmail({
     `
   });
 }
+
+/**
+ * Send admin alert when a new payment is added/verified
+ * Used for both Razorpay and manual payment verification
+ */
+export async function sendPaymentAddedAlertEmail({
+  paymentType = "razorpay", // "razorpay" or "manual_proof"
+  orderId,
+  paymentId,
+  amount,
+  currency = "INR",
+  participantName,
+  participantEmail,
+  teamName,
+  status = "success",
+  proofFile,
+  utrNumber,
+  transactionId,
+  timestamp
+}) {
+  const recipients = getAlertRecipients();
+  const amountFormatted = typeof amount === "number" ? `₹${amount.toFixed(2)}` : `₹${amount}`;
+  const timeFormatted = timestamp ? new Date(timestamp).toLocaleString("en-IN") : new Date().toLocaleString("en-IN");
+  
+  let paymentTypeLabel = paymentType === "razorpay" ? "Razorpay Payment" : "Manual Bank Transfer";
+  let paymentMethodDetails = "";
+  
+  if (paymentType === "manual_proof") {
+    paymentMethodDetails = `
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0;">
+        <h4 style="margin-top: 0; color: #333;">Bank Transfer Details:</h4>
+        <p style="margin: 5px 0;"><strong>UTR Number:</strong> ${utrNumber || "N/A"}</p>
+        ${transactionId ? `<p style="margin: 5px 0;"><strong>Transaction ID:</strong> ${transactionId}</p>` : ""}
+        ${proofFile ? `<p style="margin: 5px 0;"><strong>Proof File:</strong> <a href="${proofFile}" style="color: #667eea; text-decoration: none;">${proofFile}</a></p>` : ""}
+      </div>
+    `;
+  }
+
+  await transporter.sendMail({
+    from: env.SMTP_FROM,
+    to: recipients.join(","),
+    subject: `🔔 Payment Alert: ${paymentTypeLabel} Received - ₹${amount}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 8px; text-align: center; color: white;">
+          <h1 style="margin: 0; font-size: 24px;">💳 Payment Added to System</h1>
+          <p style="margin: 10px 0 0 0; font-size: 14px;">Admin Notification - Action Required for Manual Proofs</p>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
+          <div style="background: white; border-left: 4px solid #667eea; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #667eea;">Payment Information</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Payment Type:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666;">${paymentTypeLabel}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Amount:</td>
+                <td style="padding: 10px 0; text-align: right; color: #28a745; font-weight: bold; font-size: 16px;">${amountFormatted}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Status:</td>
+                <td style="padding: 10px 0; text-align: right;">
+                  <span style="display: inline-block; background: ${status === "success" ? "#28a745" : "#ffc107"}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                    ${status.toUpperCase()}
+                  </span>
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Timestamp:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666;">${timeFormatted}</td>
+              </tr>
+              ${orderId ? `
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Order ID:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666; font-family: monospace; font-size: 12px;">${orderId}</td>
+              </tr>
+              ` : ""}
+              ${paymentId ? `
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Payment ID:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666; font-family: monospace; font-size: 12px;">${paymentId}</td>
+              </tr>
+              ` : ""}
+            </table>
+          </div>
+
+          <div style="background: white; border-left: 4px solid #667eea; padding: 20px; border-radius: 4px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #667eea;">Participant Information</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Participant Name:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666;">${participantName || "N/A"}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Email:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666;">${participantEmail || "N/A"}</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">Team:</td>
+                <td style="padding: 10px 0; text-align: right; color: #666;">${teamName || "N/A"}</td>
+              </tr>
+            </table>
+          </div>
+
+          ${paymentMethodDetails}
+
+          ${paymentType === "manual_proof" ? `
+          <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+              <strong>⚠️ Action Required:</strong> This manual payment proof has been submitted by the participant and requires verification. Please review the payment proof and either approve or reject it in the admin panel.
+            </p>
+          </div>
+          ` : `
+          <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0; color: #155724; font-size: 14px;">
+              <strong>✅ Auto-Verified:</strong> This Razorpay payment has been automatically verified and approved. The participant's registration is now confirmed.
+            </p>
+          </div>
+          `}
+
+          <p style="color: #666; font-size: 14px; margin-top: 20px; text-align: center;">
+            <a href="${env.CLIENT_ORIGIN || "http://localhost:5173"}/admin/payments" style="color: #667eea; text-decoration: none; font-weight: bold;">View in Admin Panel →</a>
+          </p>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+        <p style="color: #999; font-size: 12px; text-align: center;">
+          IEEE RAS x IEEE CS Hackathon | Payment Verification System
+        </p>
+      </div>
+    `
+  });
+}
