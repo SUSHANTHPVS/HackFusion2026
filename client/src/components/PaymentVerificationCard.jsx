@@ -236,6 +236,19 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
               )}
             </button>
           </div>
+
+          {/* Delete Button for Pending Payments */}
+          {!showDeleteConfirm && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={deleteMutation.isPending}
+              className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg border-2 border-orange-300 bg-orange-50 px-3 py-2 font-semibold text-orange-700 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Trash2 size={16} />
+              Remove Transaction
+            </button>
+          )}
         </>
       )}
 
@@ -300,19 +313,6 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
             </button>
           </div>
         </div>
-      )}
-
-      {/* Delete Button (Always Visible) */}
-      {!showDeleteConfirm && !isApproved && (
-        <button
-          type="button"
-          onClick={() => setShowDeleteConfirm(true)}
-          disabled={deleteMutation.isPending}
-          className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg border-2 border-orange-300 bg-orange-50 px-3 py-2 font-semibold text-orange-700 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Trash2 size={16} />
-          Remove Transaction
-        </button>
       )}
 
       {verifyMutation.isError && (
