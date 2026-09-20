@@ -694,6 +694,74 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
 });
 
 /**
+ * DELETE /admin/payments/:paymentId
+ * Remove/delete a transaction (payment record)
+ * Only admins can delete payments
+ */
+export const deletePayment = asyncHandler(async (req, res) => {
+  const { paymentId } = req.params;
+  const { reason } = req.body || {};
+
+  // Find the payment
+  const payment = await Payment.findById(paymentId)
+    .populate("userId", "name email")
+    .populate("teamId", "name");
+  
+  if (!payment) {
+    throw new AppError("Payment not found", 404);
+  }
+
+  // Store payment info before deletion for audit purposes
+  const deletedPaymentInfo = {
+    _id: payment._id,
+    orderId: payment.orderId,
+    userId: payment.userId._id,
+    teamId: payment.teamId._id,
+    amount: payment.amount,
+    status: payment.status,
+    paymentMethod: payment.paymentMethod
+  };
+
+  // Log audit trail before deletion
+  await logPaymentAudit({
+    paymentRef: payment._id,
+    orderId: payment.orderId,
+    userId: payment.userId._id,
+    teamId: payment.teamId._id,
+    eventType: "PAYMENT_DELETED",
+    source: "admin",
+    status: "deleted",
+    message: `Admin deleted payment transaction`,
+    payload: {
+      deletedBy: req.user._id,
+      deletionReason: reason || "No reason provided",
+      paymentDetails: deletedPaymentInfo
+    }
+  });
+
+  // Delete the payment
+  await Payment.findByIdAndDelete(paymentId);
+
+  res.status(200).json({
+    message: "Payment transaction deleted successfully",
+    deletedPayment: {
+      _id: payment._id,
+      orderId: payment.orderId,
+      amount: payment.amount,
+      status: payment.status,
+      teamName: payment.teamId.name,
+      participantName: payment.userId.name
+    },
+    notification: {
+      type: "success",
+      title: "Payment Deleted ✅",
+      message: `Payment transaction for ${payment.teamId.name} (₹${payment.amount}) has been removed from the system`,
+      reason: reason || null
+    }
+  });
+});
+
+/**
  * Get WhatsApp group link for admin to share
  */
 export const getWhatsAppGroupLink = asyncHandler(async (_req, res) => {

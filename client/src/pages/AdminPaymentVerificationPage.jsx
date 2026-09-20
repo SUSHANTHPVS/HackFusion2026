@@ -8,7 +8,7 @@ function getErrorMessage(error, fallback = "Unable to load pending payments") {
   return error?.response?.data?.message || fallback;
 }
 
-function PaymentCard({ payment, teamName, userName, onVerified, onRejected }) {
+function PaymentCard({ payment, teamName, userName, onVerified, onRejected, onDeleted }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const statusBadge = {
@@ -69,6 +69,7 @@ function PaymentCard({ payment, teamName, userName, onVerified, onRejected }) {
             teamName={teamName}
             onVerified={onVerified}
             onRejected={onRejected}
+            onDeleted={onDeleted}
           />
         </div>
       )}
@@ -294,6 +295,7 @@ export function AdminPaymentVerificationPage() {
               userName={payment.userId?.name || "N/A"}
               onVerified={handleVerificationComplete}
               onRejected={handleVerificationComplete}
+              onDeleted={handleVerificationComplete}
             />
           ))}
         </div>

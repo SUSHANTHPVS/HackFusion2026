@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle, XCircle, Loader, AlertCircle, Mail } from "lucide-react";
+import { CheckCircle, XCircle, Loader, AlertCircle, Mail, Trash2 } from "lucide-react";
 import { api } from "../services/api";
 import { resolveFileUrl } from "../utils/constants";
 
-export function PaymentVerificationCard({ payment, teamName, onVerified, onRejected }) {
+export function PaymentVerificationCard({ payment, teamName, onVerified, onRejected, onDeleted }) {
   const [adminNotes, setAdminNotes] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [imageLoadError, setImageLoadError] = useState(false);
   const [resolvedImageUrl, setResolvedImageUrl] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
 
   const verifyMutation = useMutation({
     mutationFn: ({ paymentId, verificationStatus }) =>
@@ -42,6 +44,39 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
       } else {
         onRejected?.();
       }
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: ({ paymentId, reason }) =>
+      api
+        .delete(`/admin/payments/${paymentId}`, {
+          data: { reason }
+        })
+        .then((res) => res.data),
+    onSuccess: (data) => {
+      setShowDeleteConfirm(false);
+      setDeleteReason("");
+      setSuccessMessage(data.notification?.message || "Payment deleted successfully!");
+      
+      // Broadcast payment deletion event
+      const event = new CustomEvent("paymentDeleted", {
+        detail: {
+          paymentId: payment._id,
+          teamId: payment.teamId,
+          timestamp: new Date().toISOString()
+        }
+      });
+      window.dispatchEvent(event);
+      console.log("[PaymentDeletion] Broadcasted payment deletion event");
+      
+      setTimeout(() => {
+        setSuccessMessage("");
+        onDeleted?.();
+      }, 3000);
+    },
+    onError: (error) => {
+      console.error("[PaymentDeletion] Error deleting payment:", error);
     }
   });
 
@@ -212,11 +247,88 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
         </div>
       )}
 
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="mb-4 rounded-lg border-2 border-orange-300 bg-orange-50 p-4">
+          <div className="mb-3 flex items-start gap-3">
+            <AlertCircle size={20} className="shrink-0 text-orange-600 mt-0.5" />
+            <div>
+              <p className="font-semibold text-orange-900">⚠️ Confirm Delete</p>
+              <p className="mt-1 text-sm text-orange-800">
+                Are you sure you want to delete this payment transaction? This action cannot be undone and will be logged in the audit trail.
+              </p>
+            </div>
+          </div>
+          
+          <textarea
+            value={deleteReason}
+            onChange={(e) => setDeleteReason(e.target.value)}
+            placeholder="Reason for deletion (optional)"
+            className="mb-3 w-full rounded-lg border border-orange-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-500"
+            rows={2}
+          />
+          
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setDeleteReason("");
+              }}
+              disabled={deleteMutation.isPending}
+              className="flex-1 rounded-lg border-2 border-slate-300 bg-white px-3 py-2 font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => deleteMutation.mutate({ paymentId: payment._id, reason: deleteReason })}
+              disabled={deleteMutation.isPending}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-3 py-2 font-semibold text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader size={16} className="animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 size={16} />
+                  Confirm Delete
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Button (Always Visible) */}
+      {!showDeleteConfirm && !isApproved && (
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={deleteMutation.isPending}
+          className="mt-4 w-full flex items-center justify-center gap-2 rounded-lg border-2 border-orange-300 bg-orange-50 px-3 py-2 font-semibold text-orange-700 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Trash2 size={16} />
+          Remove Transaction
+        </button>
+      )}
+
       {verifyMutation.isError && (
         <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3">
           <p className="text-xs font-semibold text-rose-900">Error:</p>
           <p className="text-xs text-rose-800">
             {verifyMutation.error?.response?.data?.message || "Failed to verify payment"}
+          </p>
+        </div>
+      )}
+
+      {deleteMutation.isError && (
+        <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3">
+          <p className="text-xs font-semibold text-rose-900">Error:</p>
+          <p className="text-xs text-rose-800">
+            {deleteMutation.error?.response?.data?.message || "Failed to delete payment"}
           </p>
         </div>
       )}

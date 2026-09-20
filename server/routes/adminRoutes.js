@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   dashboardStats,
   deleteTeam,
+  deletePayment,
   generateWinnerCertificate,
   getAdminSettings,
   getAdminSettingsHistory,
@@ -59,6 +60,7 @@ router.delete("/teams/:teamId", protect, authorize("admin"), deleteTeam);
 router.get("/payments/verification-status", protect, authorize("admin"), getPaymentVerificationStatus);
 router.get("/diagnosis/teams-with-payments", protect, authorize("admin"), diagnosisTeamsWithPayments);
 router.patch("/payments/:paymentId/verify", protect, authorize("admin"), validate(verifyManualPaymentSchema), verifyManualPayment);
+router.delete("/payments/:paymentId", protect, authorize("admin"), deletePayment);
 router.get("/judges", protect, authorize("admin"), listJudges);
 router.post("/judges", protect, authorize("admin"), validate(upsertJudgeSchema), upsertJudge);
 router.get("/settings", protect, authorize("admin"), getAdminSettings);
