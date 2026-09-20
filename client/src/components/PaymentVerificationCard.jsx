@@ -239,21 +239,24 @@ export function PaymentVerificationCard({ payment, teamName, onVerified, onRejec
 
           {/* Delete Button for Pending Payments */}
           {!showDeleteConfirm && (
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={deleteMutation.isPending}
-              className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg border-2 border-orange-300 bg-orange-50 px-3 py-2 font-semibold text-orange-700 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Trash2 size={16} />
-              Remove Transaction
-            </button>
+            <>
+              <div className="my-3 border-t-2 border-slate-200"></div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleteMutation.isPending}
+                className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-orange-400 bg-orange-100 px-4 py-3 font-bold text-orange-800 hover:bg-orange-200 active:bg-orange-300 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                <Trash2 size={18} />
+                🗑️ Remove Transaction
+              </button>
+            </>
           )}
         </>
       )}
 
-      {/* Delete Button for All Payments (with warning for approved) */}
-      {!showDeleteConfirm && (
+      {/* Delete Button for Non-Pending Payments (with warning for approved) */}
+      {!isPending && !showDeleteConfirm && (
         <button
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
