@@ -15,10 +15,9 @@ const sectionVariants = {
 };
 
 const dayOneSchedule = [
-  { time: "08:00 AM - 08:30 AM", activity: "Participant Registration & Check-in" },
+  { time: "08:00 AM - 08:30 AM", activity: "Participants Check-in,ID Card Distribution" },
   { time: "08:30 AM - 10:00 AM", activity: "Inaugural Ceremony & Welcome Address" },
-  { time: "10:00 AM - 10:10 AM", activity: "Hackathon Route Plan Explanation" },
-  { time: "10:10 AM - 10:20 AM", activity: "Venue Shift,ID Card Distribution & Team Formation" },
+  { time: "10:00 AM - 10:30 AM", activity: "Hackathon Route Plan Explanation" },
   { time: "10:30 AM", activity: "Hackathon Officially Begins", highlight: true },
   { time: "10:30 AM - 01:00 PM", activity: "Development Session I" },
   { time: "01:00 PM - 02:00 PM", activity: "Lunch Break" },
@@ -42,7 +41,7 @@ const dayTwoSchedule = [
 ];
 
 const importantNotes = [
-  "Teams must begin development only after the official hackathon starts at 10:00 AM.",
+  "Teams must begin development only after the official hackathon starts at 10:30 AM.",
   "Participants may continue development remotely after 5:00 PM on Day 1.",
   "All teams must report back to the venue by 9:00 AM on Day 2 for evaluation.",
   "Final submissions must be completed before the judging session begins.",
@@ -100,19 +99,6 @@ export function SchedulePage() {
       <section className="glass-card rounded-3xl p-5 shadow-lg md:p-6">
         <h2 className="mb-4 text-xl font-bold text-slate-900">Featured Moments</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/70 shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-            <div className="overflow-hidden">
-              <img
-                src="/logos/dasari.jpg"
-                alt="Dasari Auditorium "
-                className="h-52 w-full object-cover object-center transition-transform duration-300 hover:scale-105"
-                loading="lazy"
-              />
-            </div>
-            <div className="bg-white/80 p-3">
-              <p className="text-sm font-semibold text-slate-800">Dasari Auditorium</p>
-            </div>
-          </div>
           <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/70 shadow-md transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
             <div className="overflow-hidden">
               <img
