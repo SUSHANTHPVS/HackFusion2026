@@ -171,18 +171,9 @@ export function HomePage() {
                   <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
-                  {isRegistrationClosed ? (
-                    <span className="hero-primary-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white opacity-80">
-                      Registrations Closed
-                    </span>
-                  ) : (
-                    <Link
-                      to="/hackathon-register"
-                      className="hero-primary-cta inline-flex min-h-[48px] w-full items-center justify-center rounded-xl px-6 py-3 text-center font-bold text-white transition-all duration-300"
-                    >
-                      Register Now
-                    </Link>
-                  )}
+                  <span className="text-center font-semibold text-slate-700">
+                    Registrations are closed
+                  </span>
                 </div>
 
                 <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
