@@ -5,7 +5,7 @@ export function buildWinnerCertificate({ winnerName, teamName }) {
   const chunks = [];
   doc.on("data", (chunk) => chunks.push(chunk));
 
-  doc.fontSize(28).text("IEEE RAS x IEEE CS Hackathon", { align: "center" });
+  doc.fontSize(28).text("IEEE RAS Hackathon", { align: "center" });
   doc.moveDown();
   doc.fontSize(22).text("Winner Certificate", { align: "center" });
   doc.moveDown(2);

@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 :root {
-  --ieee-blue: #00629b;
   --navy: #0a192f;
   --accent: #00c2ff;
   --surface: #f4f9ff;

@@ -36,7 +36,7 @@ function downloadReceipt({ payment, profile, team }) {
   const amountInr = Number(payment.amount).toFixed(2);
   const paymentDate = payment.createdAt ? new Date(payment.createdAt).toLocaleString() : "N/A";
   const safeOrderId = String(payment.orderId || "payment").replace(/[^a-zA-Z0-9_-]/g, "");
-  const websiteName = "IEEE Hackathon Website";
+  const websiteName = "HackFusion 2026 Hackathon Website";
   const websiteUrl = window.location.origin;
   const generatedAt = new Date().toLocaleString();
 
@@ -71,7 +71,7 @@ function downloadReceipt({ payment, profile, team }) {
   doc.setTextColor(...colors.white);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
-  doc.text("IEEE Hackathon Payment Receipt", margin + 20, margin + 36);
+  doc.text("IEEE RAS Hackathon Payment Receipt", margin + 20, margin + 36);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);

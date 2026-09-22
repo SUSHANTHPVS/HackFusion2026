@@ -1,4 +1,4 @@
-export const EVENT_NAME = "IEEE RAS x IEEE CS Hackathon";
+export const EVENT_NAME = "IEEE RAS Hackathon";
 export const EVENT_DATE = "2026-09-25T08:00:00+05:30";
 export const THEME_REVEAL_DATE = "2026-09-25T06:00:00+05:30";
 export const REGISTRATION_CAPACITY = 100;
@@ -41,11 +41,6 @@ export const ORGANIZER_LOGOS = [
     name: "IEEE RAS",
     shortName: "RAS",
     src: "/logos/ieee-ras-logo.png"
-  },
-  {
-    name: "IEEE CS",
-    shortName: "CS",
-    src: "/logos/ieee-cs-logo.jpg"
   }
 ];
 
@@ -95,117 +90,93 @@ export const MANAGEMENT_TEAM = [
   {
     name: "K Chedhitha",
     role: "Chair",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/chedhitha-chowdary-kothapalli-830465296/",
     github: "https://github.com/chedhitha"
   },
   {
     name: "M Gayathri",
     role: "Vice Chair",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/gayathri-madduri-2406a6334/",
     github: "https://github.com/Gayathrimadduri"
   },
   {
     name: "M Bhavishya",
     role: "Secretary",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/madichetty-bhavishya-501b87342",
     github: "https://github.com/Bhavishya-2005"
   },
   {
     name: "N Deepthi",
     role: "Member",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/nagabhushigari-deepthi-0a0382343/",
     github: "https://github.com/NagabhushigariDeepthi"
   },
   {
     name: "Syed Shainaj",
     role: "Member",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/syed-shainaj-244383343/",
     github: "https://github.com/SyedShainaj"
   },
   {
     name: "G Niharika",
     role: "Member",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/gaddapara-niharika-reddy-b357b0313",
     github: "https://github.com/niharika-1411"
   },
   {
     name: "A Vamsieswar",
     role: "Web Master",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/in/vamsieswar-aari-b54a65342?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    
+    linkedin: "https://www.linkedin.com/in/vamsieswar-aari-b54a65342?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
     name: "A Dimpull",
     role: "Treasurer",
-    chapter: "IEEE RAS",
-    linkedin: "https://www.linkedin.com/in/dimpull-chowdary-2b8120325?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    
+    linkedin: "https://www.linkedin.com/in/dimpull-chowdary-2b8120325?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
     name: "Mallikarjun",
-    role: "Web Master",
-    chapter: "IEEE RAS",
-    
+    role: "Web Master"
   },
   {
     name: "Sushanth P V",
     role: "Registration Lead",
-    chapter: "IEEE RAS",
     linkedin: "https://www.linkedin.com/in/sushanth-p-v-67290a31b/",
     github: "https://github.com/SUSHANTHPVS"
   },
   {
     name: "K Nava Chaitanya",
-    role: "Chair",
-    chapter: "IEEE CS",
-    
+    role: "Chair"
   },
   {
     name: "V Babitha",
     role: "Vice Chair",
-    chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/in/babitha-v-a4b5893ab?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    
+    linkedin: "https://www.linkedin.com/in/babitha-v-a4b5893ab?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
     name: "B Himaya Sree",
     role: "Secretary",
-    chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/bandaru-himaya-sree-b014a22a6?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     github: "https://github.com/Himayasree"
   },
   {
     name: "K Venkata Teja",
     role: "Web Master",
-    chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/in/venkata-teja-kurra-16792b342?utm_source=share_via&utm_content=profile&utm_medium=member_android",
-    
+    linkedin: "https://www.linkedin.com/in/venkata-teja-kurra-16792b342?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
     name: "B Satish",
     role: "Treasurer",
-    chapter: "IEEE CS",
-    linkedin: "https://www.linkedin.com/in/sathish-batthula/",
-    
+    linkedin: "https://www.linkedin.com/in/sathish-batthula/"
   },
   {
     name: "K Keerthi",
     role: "Member",
-    chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/kalla-keerthi?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     github: "https://github.com/kallakeerthiyadav"
   },
   {
     name: "Y Sai Priyanka",
     role: "Member",
-    chapter: "IEEE CS",
     linkedin: "https://www.linkedin.com/in/sai-priyanka-2710032b6/",
     github: "https://github.com/saipriyanka1306"
   }

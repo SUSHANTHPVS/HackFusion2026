@@ -53,7 +53,7 @@ export function IntroGate({ onComplete }) {
       <div className="intro-gate__glow intro-gate__glow--right" />
 
       <div className="intro-gate__card">
-        <p className="intro-gate__eyebrow">IEEE RAS x IEEE CS</p>
+        <p className="intro-gate__eyebrow">IEEE RAS</p>
         <h1 className="intro-gate__title">2-Day Hackathon</h1>
         <p className="intro-gate__subtitle">Build. Innovate. Impact.</p>
 

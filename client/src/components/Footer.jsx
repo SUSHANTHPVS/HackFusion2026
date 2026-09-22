@@ -13,7 +13,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-2">
           <BrandLogoGroup showNames className="flex-wrap" />
-          <p>IEEE RAS x IEEE CS Hackathon Management Platform</p>
+          <p>IEEE RAS Hackathon Management Platform</p>
         </div>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {legalLinks.map((link) => (

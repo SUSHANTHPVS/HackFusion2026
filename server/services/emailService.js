@@ -73,7 +73,7 @@ export async function sendPaymentApprovalEmail({ to, name, teamName, amount, wha
 
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
           <p style="color: #999; font-size: 12px; text-align: center;">
-            IEEE RAS x IEEE CS Hackathon
+            IEEE RAS Hackathon
           </p>
         </div>
       </div>
@@ -125,7 +125,7 @@ export async function sendPaymentRejectionEmail({ to, name, teamName, reason }) 
 
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
           <p style="color: #999; font-size: 12px; text-align: center;">
-            IEEE RAS x IEEE CS Hackathon
+            IEEE RAS Hackathon
           </p>
         </div>
       </div>
@@ -274,7 +274,7 @@ export async function sendPaymentProofAlertEmail({
 
         <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
         <p style="color: #999; font-size: 12px; text-align: center;">
-          IEEE RAS x IEEE CS Hackathon | Payment Verification System
+          IEEE RAS Hackathon | Payment Verification System
         </p>
       </div>
     `

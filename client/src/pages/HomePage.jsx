@@ -131,7 +131,7 @@ export function HomePage() {
         <div className="relative z-10">
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-stretch">
             <div className="max-w-3xl">
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">IEEE RAS x IEEE CS</p>
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-cyan-700">IEEE RAS</p>
               <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-2">
                 <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl md:text-6xl">2-Day Hackathon</h1>
                 <Link to="/schedule" className="pb-2 text-sm font-bold text-cyan-700 underline decoration-cyan-300 decoration-2 underline-offset-4 transition hover:text-cyan-800">
@@ -251,7 +251,7 @@ export function HomePage() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">Organized By</p>
             <h2 className="mt-2 text-2xl font-extrabold text-slate-900 md:text-3xl">College and IEEE Society Chapters</h2>
             <p className="mt-2 text-sm text-slate-600 md:text-base">
-              Officially hosted by our college with IEEE RAS and IEEE CS student chapter collaboration.
+              Officially hosted by our college with IEEE RAS student chapter collaboration.
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 # IEEE Hackathon Management System
 
-Production-style full-stack platform for IEEE RAS x IEEE CS hackathons.
+Production-style full-stack platform for IEEE RAS hackathons.
 
 ## Stack
 - Frontend: React 19, Vite, Tailwind CSS, Framer Motion, React Router, TanStack Query, React Hook Form, Zod, Axios

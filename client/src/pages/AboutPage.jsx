@@ -54,8 +54,7 @@ export function AboutPage() {
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">About HackFusion</p>
         <h1 className="mt-3 text-4xl font-extrabold text-slate-900 md:text-5xl">HackFusion</h1>
         <p className="mt-4 text-slate-700">
-          <strong>HackFusion</strong> is a 24-hour innovation hackathon organized by the IEEE Robotics & Automation
-          Society (RAS) and IEEE Computer Society (CS), bringing together passionate student innovators, developers,
+          <strong>HackFusion</strong> is a 24-hour innovation hackathon organized by IEEE Robotics & Automation Society (RAS), bringing together passionate student innovators, developers,
           designers, and problem-solvers to build technology that creates real-world impact.
         </p>
       </motion.header>
