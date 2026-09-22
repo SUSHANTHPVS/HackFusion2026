@@ -171,7 +171,7 @@ export function HomePage() {
                   <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
-                  <span className="text-center font-semibold text-slate-700">
+                  <span className="rounded-lg bg-red-100 px-3 py-2 text-center font-bold text-red-700">
                     Registrations are closed
                   </span>
                 </div>
