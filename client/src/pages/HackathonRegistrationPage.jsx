@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { WhatsAppAccessCard } from "../components/WhatsAppAccessCard";
 import { BankDetailsForm } from "../components/BankDetailsForm";
-import { CollegePaymentDetailsCard } from "../components/CollegePaymentDetailsCard";
+import { QRPaymentCard } from "../components/QRPaymentCard";
 import { PaymentProofUploadForm } from "../components/PaymentProofUploadForm";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
@@ -844,7 +844,7 @@ export function HackathonRegistrationPage() {
 
       {orderData?.bankDetails && (
         <>
-          <CollegePaymentDetailsCard bankDetails={orderData.bankDetails} />
+          <QRPaymentCard />
           {successfulTeam && (
             <PaymentProofUploadForm
               teamId={successfulTeam._id}
@@ -864,7 +864,7 @@ export function HackathonRegistrationPage() {
       {existingPayment?.status === "failed" && existingTeam && (
         <>
           {orderData?.bankDetails ? null : (
-            <CollegePaymentDetailsCard bankDetails={existingPayment.bankDetails || orderData?.bankDetails} />
+            <QRPaymentCard />
           )}
           <div className="mt-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
             <p className="text-sm font-bold uppercase tracking-wide text-amber-800">⚠️ Resubmit Payment Proof</p>
