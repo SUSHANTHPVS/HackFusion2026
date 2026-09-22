@@ -7,6 +7,7 @@ import { EventSettings } from "../models/EventSettings.js";
 import { EventSettingsAudit } from "../models/EventSettingsAudit.js";
 import { buildWinnerCertificate } from "../services/certificateService.js";
 import { getEventSettings, resetEventSettingsToDefaults, updateEventSettings } from "../services/eventSettingsService.js";
+import { countSuccessfulRegisteredParticipants } from "../services/registrationCapacityService.js";
 import { logPaymentAudit } from "../services/paymentAuditService.js";
 import { sendPaymentApprovalEmail, sendPaymentRejectionEmail, sendRegistrationEmail } from "../services/emailService.js";
 import { sendBulkWhatsAppMessages, verifyWhatsAppCredentials } from "../services/whatsappBusinessService.js";
@@ -617,6 +618,19 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
 
   await payment.save();
 
+  // Check if registrations should be auto-closed (if approved payment brings us to capacity)
+  let autoClosedRegistrations = false;
+  if (verificationStatus === "approved") {
+    const registrationCapacity = Number(env.REGISTRATION_CAPACITY || 160);
+    const totalRegistrations = await countSuccessfulRegisteredParticipants();
+    
+    if (totalRegistrations >= registrationCapacity) {
+      console.log(`✅ Registration capacity (${registrationCapacity}) reached with ${totalRegistrations} participants. Auto-closing registrations.`);
+      await updateEventSettings({ registrationClosed: true });
+      autoClosedRegistrations = true;
+    }
+  }
+
   // Log audit
   await logPaymentAudit({
     paymentRef: payment._id,
@@ -630,7 +644,8 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
     payload: {
       verificationStatus,
       adminNotes,
-      approvedBy: req.user._id
+      approvedBy: req.user._id,
+      autoClosedRegistrations
     }
   });
 
@@ -675,7 +690,7 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json({
-    message: `Payment ${verificationStatus} successfully`,
+    message: `Payment ${verificationStatus} successfully${autoClosedRegistrations ? ' - Registrations auto-closed due to capacity reached' : ''}`,
     payment: {
       _id: payment._id,
       status: payment.status,
@@ -684,6 +699,9 @@ export const verifyManualPayment = asyncHandler(async (req, res) => {
     team: {
       _id: payment.teamId._id,
       name: payment.teamId.name
+    },
+    registrationStatus: {
+      autoClosedRegistrations
     },
     notification: {
       type: verificationStatus === "approved" ? "success" : "failed",
