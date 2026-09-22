@@ -1,7 +1,7 @@
 export const EVENT_NAME = "IEEE RAS Hackathon";
 export const EVENT_DATE = "2026-09-25T08:00:00+05:30";
 export const THEME_REVEAL_DATE = "2026-09-25T06:00:00+05:30";
-export const REGISTRATION_CAPACITY = 100;
+export const REGISTRATION_CAPACITY = 120;
 export const WHATSAPP_GROUP_LINK = "https://chat.whatsapp.com/FrJNyMIjzkB3mNs6Dgg9qc?s=sw&p=a&mlu=4";
 
 function normalizeApiBaseUrl(value) {
