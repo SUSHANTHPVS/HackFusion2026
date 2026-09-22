@@ -142,7 +142,11 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
   let allowedTeamIds = null;
   if (paymentStatusFilter) {
     const verifiedPayments = await Payment.aggregate([
+      // First, filter for the requested status
+      { $match: { status: paymentStatusFilter } },
+      // Then sort by createdAt descending to get most recent successful/pending/failed payment
       { $sort: { createdAt: -1 } },
+      // Group by teamId and take the first (most recent) one with matching status
       {
         $group: {
           _id: "$teamId",
@@ -153,11 +157,10 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
           orderId: { $first: "$orderId" }
         }
       },
-      // Include payments that match the status AND are verified by either method:
+      // Include payments that are verified by either method:
       // 1. Razorpay: has both paymentId and signature
       // 2. Manual: has paymentApprovedAt (admin approval timestamp)
       { $match: { 
-        status: paymentStatusFilter,
         $or: [
           { paymentId: { $exists: true, $ne: null }, signature: { $exists: true, $ne: null } },
           { paymentApprovedAt: { $exists: true, $ne: null } }

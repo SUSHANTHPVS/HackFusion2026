@@ -470,7 +470,7 @@ export function AdminRegistrationsPage() {
     XLSX.writeFile(workbook, "registrations-presence-participant-wise.xlsx");
   };
 
-  const loadRegistrations = async ({ refreshing = false } = {}) => {
+  const loadRegistrations = async ({ refreshing = false, skipCache = false } = {}) => {
     if (refreshing) {
       setIsRefreshing(true);
     } else {
@@ -480,11 +480,22 @@ export function AdminRegistrationsPage() {
     setError("");
 
     try {
+      const params = {
+        q: query,
+        limit: 300,
+        paymentStatus: "success"
+      };
+
+      // Add cache-busting timestamp if needed
+      if (skipCache) {
+        params._t = Date.now(); // Force bypass any caching
+      }
+
       const response = await api.get("/admin/registrations/search", {
-        params: {
-          q: query,
-          limit: 300,
-          paymentStatus: "success"
+        params,
+        headers: {
+          "Cache-Control": "no-cache, no-store, max-age=0",
+          "Pragma": "no-cache"
         }
       });
 
@@ -662,6 +673,14 @@ export function AdminRegistrationsPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download size={16} /> Download Excel (Participant-wise)
+            </button>
+            <button
+              type="button"
+              onClick={() => loadRegistrations({ refreshing: true, skipCache: true })}
+              className="inline-flex items-center gap-2 rounded-lg border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50"
+              title="Hard refresh: Clears cache and fetches latest data"
+            >
+              🔄 Hard Refresh
             </button>
             <button
               type="button"
