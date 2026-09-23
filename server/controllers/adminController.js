@@ -20,7 +20,7 @@ import { getPaymentProofsDir } from "../utils/uploadPaths.js";
 import { AppError } from "../utils/AppError.js";
 
 const require = createRequire(import.meta.url);
-const archiver = require("archiver");
+const { ZipArchive } = require("archiver");
 
 function buildReceipt(prefix, id) {
   const compactPrefix = String(prefix || "RP").replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "RP";
@@ -392,7 +392,7 @@ export const exportPaymentProofs = asyncHandler(async (_req, res) => {
 
   const csvEscape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
   const manifest = manifestRows.map((row) => row.map(csvEscape).join(",")).join("\n");
-  const archive = archiver("zip", { zlib: { level: 9 } });
+  const archive = new ZipArchive({ zlib: { level: 9 } });
 
   archive.on("error", (error) => {
     console.error("[exportPaymentProofs] Archive failed:", error.message);
