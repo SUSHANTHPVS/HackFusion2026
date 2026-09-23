@@ -218,7 +218,13 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
             orderId: { $first: "$orderId" },
             paymentId: { $first: "$paymentId" },
             updatedAt: { $first: "$updatedAt" },
-            bankDetails: { $first: "$bankDetails" }
+            bankDetails: { $first: "$bankDetails" },
+            paymentMethod: { $first: "$paymentMethod" },
+            paymentProofFile: { $first: "$paymentProofFile" },
+            paymentProofSubmittedAt: { $first: "$paymentProofSubmittedAt" },
+            paymentApprovedAt: { $first: "$paymentApprovedAt" },
+            utrNumber: { $first: "$utrNumber" },
+            transactionId: { $first: "$transactionId" }
           }
         }
       ])
@@ -267,6 +273,13 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       orderId: payment?.orderId || "",
       paymentId: payment?.paymentId || "",
       paymentUpdatedAt: payment?.updatedAt || null,
+      // Payment proof details
+      paymentMethod: payment?.paymentMethod || "online",
+      paymentProofFile: payment?.paymentProofFile || null,
+      paymentProofSubmittedAt: payment?.paymentProofSubmittedAt || null,
+      paymentApprovedAt: payment?.paymentApprovedAt || null,
+      utrNumber: payment?.utrNumber || "",
+      transactionId: payment?.transactionId || "",
       // Bank details for refund processing
       bankDetails: payment?.bankDetails || team.bankDetails || null,
       teamBankDetails: team.bankDetails || null,

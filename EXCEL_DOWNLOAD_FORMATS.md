@@ -23,14 +23,32 @@ Complete team registration data with all participant details and payment proof i
 | Branches | Branch/Department of all participants (comma-separated) |
 | Sections | Section/Division of all participants (comma-separated) |
 | College Name | Name of the college/institution |
-| Payment Proof | Payment proof file path or "Online Payment" |
+| Payment Method | Payment method used (ONLINE, MANUAL_BANK_TRANSFER, CHEQUE, etc.) |
+| Payment Proof | Actual payment proof screenshot file path (e.g., `uploads/payment-proofs/team-123.jpg`) or "Online Payment" |
+| Payment Status | Status of the payment (success, failed, pending_verification) |
+| Amount (₹) | Payment amount in Indian Rupees |
+| Order ID | Razorpay Order ID or internal reference |
+| UTR / Transaction ID | UTR number for bank transfers or transaction ID |
+
+### Payment Proof Information
+The **Payment Proof** column now includes:
+- **Online Payments:** Shows "Online Payment" (Razorpay processed)
+- **Manual Bank Transfers/Cheques:** Shows the actual file path to the uploaded screenshot
+  - Example: `uploads/payment-proofs/team-12345-proof.jpg`
+  - Example: `uploads/payment-proofs/team-67890-proof.png`
+
+To view the actual payment screenshot:
+1. Take the file path from the Excel column (e.g., `uploads/payment-proofs/team-123.jpg`)
+2. Construct the full URL: `https://your-domain.com/uploads/payment-proofs/team-123.jpg`
+3. OR access through the admin dashboard's payment verification page
 
 ### Best For
-- Complete registration records
+- Complete registration records with payment verification
+- Payment proof tracking and verification
 - Email communication campaigns
-- Payment verification
-- College-wise analysis
-- Theme-wise team distribution
+- Payment reconciliation and auditing
+- College-wise analysis with payment details
+- Theme-wise team distribution with payment status
 
 ---
 

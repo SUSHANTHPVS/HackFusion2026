@@ -73,6 +73,18 @@ function buildParticipantExportRows(rows) {
 function buildFormat1ExportRows(rows) {
   return rows.map((item, index) => {
     const members = getAllMembers(item);
+    
+    // Determine payment proof information
+    let paymentProofInfo = "Online Payment";
+    if (item.paymentMethod === "manual_bank_transfer" || item.paymentMethod === "bank_transfer" || item.paymentMethod === "cheque") {
+      if (item.paymentProofFile) {
+        // If there's a file path, include it and indicate it's a screenshot
+        paymentProofInfo = `Manual Payment Proof: ${item.paymentProofFile}`;
+      } else {
+        paymentProofInfo = `${item.paymentMethod.replace(/_/g, " ").toUpperCase()} (No Proof Submitted)`;
+      }
+    }
+    
     return {
       "S.No": index + 1,
       "Team Name": item.teamName || "N/A",
@@ -86,7 +98,12 @@ function buildFormat1ExportRows(rows) {
       Branches: buildCsvValue(members.map((m) => m.branch)),
       Sections: buildCsvValue(members.map((m) => m.section)),
       "College Name": item.collegeName || "N/A",
-      "Payment Proof": item.paymentProofFile || "Online Payment"
+      "Payment Method": (item.paymentMethod || "online").replace(/_/g, " ").toUpperCase(),
+      "Payment Proof": paymentProofInfo,
+      "Payment Status": item.paymentStatus || "N/A",
+      "Amount (₹)": item.paymentAmountInr || "N/A",
+      "Order ID": item.orderId || "N/A",
+      "UTR / Transaction ID": item.utrNumber || item.transactionId || "N/A"
     };
   });
 }
@@ -791,7 +808,7 @@ export function AdminRegistrationsPage() {
               onClick={downloadFormat1Excel}
               disabled={format1ExportRows.length === 0}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
-              title="Format 1: Team Name, Problem, Participants, Roll No, Email, Branch, Section, College, Payment Proof"
+              title="Format 1: Team, Problem, Participants, Details, Payment Method, Payment Proof (with file path), Payment Status, Amount, Order ID, Transaction ID"
             >
               <Download size={16} /> Format 1 (Complete)
             </button>
