@@ -235,6 +235,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
     return {
       teamId: team._id,
       teamName: team.name,
+      collegeName: team.collegeName || "N/A",
       participationType: team.participationType,
       themeTrack: team.themeTrack,
       teamLeaderName: team.leaderName,
