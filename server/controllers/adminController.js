@@ -1115,19 +1115,39 @@ export const sendWhatsAppGroupLinkManual = asyncHandler(async (req, res) => {
  * Get participants for email sending (similar to WhatsApp but shows all with email availability)
  */
 export const getParticipantsForEmail = asyncHandler(async (req, res) => {
-  // Get all teams with approved payments
-  const approvedPayments = await Payment.find({ status: "success" })
+  // Use only the latest approved payment per team to avoid duplicate payment attempts duplicating members.
+  const approvedPaymentRecords = await Payment.find({ status: "success" })
+    .sort({ createdAt: -1 })
     .populate("teamId", "name leaderName participationType teammates")
     .populate("userId", "name email mobile");
+  const latestPaymentByTeam = new Map();
+  for (const payment of approvedPaymentRecords) {
+    const teamKey = payment.teamId?._id?.toString() || payment._id.toString();
+    if (!latestPaymentByTeam.has(teamKey)) {
+      latestPaymentByTeam.set(teamKey, payment);
+    }
+  }
 
   const participants = [];
+  const participantEmails = new Set();
   const missingEmailCount = { leaders: 0, teammates: 0 };
 
-  for (const payment of approvedPayments) {
+  const addParticipant = (participant) => {
+    if (participant.hasEmail) {
+      const normalizedEmail = participant.email.trim().toLowerCase();
+      if (participantEmails.has(normalizedEmail)) {
+        return;
+      }
+      participantEmails.add(normalizedEmail);
+    }
+    participants.push(participant);
+  };
+
+  for (const payment of latestPaymentByTeam.values()) {
     if (!payment.teamId || !payment.userId) continue;
 
     // Add team leader (include even if email is missing)
-    participants.push({
+    addParticipant({
       name: payment.userId.name,
       email: payment.userId.email || "NOT PROVIDED",
       mobile: payment.userId.mobile || "",
@@ -1141,7 +1161,7 @@ export const getParticipantsForEmail = asyncHandler(async (req, res) => {
     // Add teammates if team
     if (payment.teamId.participationType === "team" && payment.teamId.teammates) {
       for (const teammate of payment.teamId.teammates) {
-        participants.push({
+        addParticipant({
           name: teammate.name,
           email: teammate.email || "NOT PROVIDED",
           mobile: teammate.mobile || "",
@@ -1176,7 +1196,11 @@ export const sendRegistrationEmails = asyncHandler(async (req, res) => {
   }
 
   // Filter out invalid emails
-  const validEmails = recipientEmails.filter(email => email && email !== "NOT PROVIDED" && email.includes("@"));
+  const validEmails = [...new Set(
+    recipientEmails
+      .filter(email => email && email !== "NOT PROVIDED" && email.includes("@"))
+      .map(email => email.trim().toLowerCase())
+  )];
   
   if (validEmails.length === 0) {
     throw new AppError("No valid email addresses provided", 400);
@@ -1195,15 +1219,23 @@ export const sendRegistrationEmails = asyncHandler(async (req, res) => {
   };
 
   // Find all approved payments to get participant details
-  const approvedPayments = await Payment.find({ status: "success" })
+  const approvedPaymentRecords = await Payment.find({ status: "success" })
+    .sort({ createdAt: -1 })
     .populate("teamId", "name leaderName")
     .populate("userId", "name email");
+  const latestPaymentByTeam = new Map();
+  for (const payment of approvedPaymentRecords) {
+    const teamKey = payment.teamId?._id?.toString() || payment._id.toString();
+    if (!latestPaymentByTeam.has(teamKey)) {
+      latestPaymentByTeam.set(teamKey, payment);
+    }
+  }
 
   // Create a map of email to participant details
   const emailToParticipant = {};
-  for (const payment of approvedPayments) {
+  for (const payment of latestPaymentByTeam.values()) {
     if (payment.userId?.email) {
-      emailToParticipant[payment.userId.email] = {
+      emailToParticipant[payment.userId.email.trim().toLowerCase()] = {
         name: payment.userId.name,
         teamName: payment.teamId?.name || "Individual"
       };
@@ -1212,7 +1244,7 @@ export const sendRegistrationEmails = asyncHandler(async (req, res) => {
     if (payment.teamId?.teammates) {
       for (const teammate of payment.teamId.teammates) {
         if (teammate.email) {
-          emailToParticipant[teammate.email] = {
+          emailToParticipant[teammate.email.trim().toLowerCase()] = {
             name: teammate.name,
             teamName: payment.teamId?.name || "Individual"
           };
