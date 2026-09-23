@@ -43,7 +43,7 @@ const dayTwoSchedule = [
 const importantNotes = [
   "Teams must begin development only after the official hackathon starts at 10:30 AM.",
   "Participants may continue development remotely after 5:00 PM on Day 1.",
-  "All teams must report back to the venue by 9:00 AM on Day 2 for evaluation.",
+  "Shortlisted teams must report back to the venue by 9:00 AM on Day 2 for evaluation.",
   "Final submissions must be completed before the judging session begins.",
   "Projects will be evaluated on Innovation, Technical Excellence, Impact, Feasibility, User Experience, and Presentation."
 ];
