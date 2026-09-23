@@ -8,7 +8,7 @@ function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
 }
 
-const EXPORT_HEADERS = ["TeamName", "Team Mates Names", "Roll Number", "Branch", "Section", "IEEE Member ID"];
+const EXPORT_HEADERS = ["TeamName", "College Name", "Theme Track", "Team Mates Names", "Roll Number", "Branch", "Section", "IEEE Member ID"];
 
 function getAllMembers(item) {
   return [
@@ -41,6 +41,8 @@ function buildExportRows(rows) {
 
     return {
       TeamName: item.teamName || "N/A",
+      "College Name": item.collegeName || "N/A",
+      "Theme Track": item.themeTrack || "N/A",
       "Team Mates Names": buildCsvValue(members.map((member) => member.name || "N/A")),
       "Roll Number": buildCsvValue(members.map((member) => member.rollNo || "N/A")),
       Branch: buildCsvValue(members.map((member) => member.branch || "N/A")),
@@ -56,6 +58,8 @@ function buildParticipantExportRows(rows) {
 
     return members.map((member) => ({
       TeamName: item.teamName || "N/A",
+      "College Name": item.collegeName || "N/A",
+      "Theme Track": item.themeTrack || "N/A",
       "Team Mates Names": member.name || "N/A",
       "Roll Number": member.rollNo || "N/A",
       Branch: member.branch || "N/A",
