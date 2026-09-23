@@ -18,6 +18,7 @@ import judgeRoutes from "./routes/judgeRoutes.js";
 import participantRoutes from "./routes/participantRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import registrationRoutes from "./routes/registrationRoutes.js";
+import { getUploadsDir } from "./utils/uploadPaths.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -102,21 +103,8 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 // ============================================================================
 
 // Determine upload directory path (support both Render disk and local)
-let uploadsDir;
-
-if (process.env.RENDER_UPLOADS_DIR) {
-  // Render-specific upload directory (if custom mount path used)
-  uploadsDir = process.env.RENDER_UPLOADS_DIR;
-  console.log(`[Server] Using custom RENDER_UPLOADS_DIR: ${uploadsDir}`);
-} else if (process.env.UPLOADS_DIR) {
-  // Custom upload directory (if environment variable set)
-  uploadsDir = process.env.UPLOADS_DIR;
-  console.log(`[Server] Using UPLOADS_DIR environment variable: ${uploadsDir}`);
-} else {
-  // Default local path (for development)
-  uploadsDir = path.join(__dirname, "../uploads");
-  console.log(`[Server] Using default uploads path: ${uploadsDir}`);
-}
+const uploadsDir = getUploadsDir();
+console.log(`[Server] Using uploads directory: ${uploadsDir}`);
 
 // Verify uploads directory exists
 if (!fs.existsSync(uploadsDir)) {

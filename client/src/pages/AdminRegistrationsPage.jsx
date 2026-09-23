@@ -3,6 +3,7 @@ import { Download, Loader2, Search, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { api } from "../services/api";
 import { BankDetailsDisplay } from "../components/BankDetailsDisplay";
+import { resolveFileUrl } from "../utils/constants";
 
 function getErrorMessage(error, fallback = "Unable to load registrations") {
   return error?.response?.data?.message || fallback;
@@ -78,8 +79,7 @@ function buildFormat1ExportRows(rows) {
     let paymentProofInfo = "Online Payment";
     if (item.paymentMethod === "manual_bank_transfer" || item.paymentMethod === "bank_transfer" || item.paymentMethod === "cheque") {
       if (item.paymentProofFile) {
-        // If there's a file path, include it and indicate it's a screenshot
-        paymentProofInfo = `Manual Payment Proof: ${item.paymentProofFile}`;
+        paymentProofInfo = resolveFileUrl(item.paymentProofUrl || item.paymentProofFile);
       } else {
         paymentProofInfo = `${item.paymentMethod.replace(/_/g, " ").toUpperCase()} (No Proof Submitted)`;
       }

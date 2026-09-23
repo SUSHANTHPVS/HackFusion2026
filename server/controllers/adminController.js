@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { Payment } from "../models/Payment.js";
 import { PaymentAudit } from "../models/PaymentAudit.js";
 import { Score } from "../models/Score.js";
@@ -13,6 +15,7 @@ import { sendPaymentApprovalEmail, sendPaymentRejectionEmail, sendRegistrationEm
 import { sendBulkWhatsAppMessages, verifyWhatsAppCredentials } from "../services/whatsappBusinessService.js";
 import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { getPaymentProofsDir } from "../utils/uploadPaths.js";
 import { AppError } from "../utils/AppError.js";
 
 function buildReceipt(prefix, id) {
@@ -276,6 +279,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       // Payment proof details
       paymentMethod: payment?.paymentMethod || "online",
       paymentProofFile: payment?.paymentProofFile || null,
+      paymentProofUrl: payment?.paymentProofFile ? `/api/admin/teams/${team._id}/payment-proof` : null,
       paymentProofSubmittedAt: payment?.paymentProofSubmittedAt || null,
       paymentApprovedAt: payment?.paymentApprovedAt || null,
       utrNumber: payment?.utrNumber || "",
@@ -297,6 +301,32 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
     },
     rows
   });
+});
+
+/**
+ * GET /admin/teams/:teamId/payment-proof
+ * Stream the proof saved on the configured local/Render persistent disk.
+ */
+export const getTeamPaymentProof = asyncHandler(async (req, res) => {
+  const payment = await Payment.findOne({
+    teamId: req.params.teamId,
+    paymentProofFile: { $exists: true, $ne: "" }
+  }).sort({ paymentProofSubmittedAt: -1, createdAt: -1 }).lean();
+
+  if (!payment?.paymentProofFile) {
+    throw new AppError("Payment proof not found for this team", 404);
+  }
+
+  const storedPath = payment.paymentProofFile.split(/[?#]/)[0];
+  const filename = path.basename(decodeURIComponent(storedPath));
+  const proofPath = path.join(getPaymentProofsDir(), filename);
+
+  if (!fs.existsSync(proofPath)) {
+    console.error(`[getTeamPaymentProof] Proof file missing on disk: ${proofPath}`);
+    throw new AppError("Payment proof file is no longer available on disk", 404);
+  }
+
+  return res.sendFile(proofPath);
 });
 
 /**

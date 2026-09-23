@@ -33,14 +33,14 @@ Complete team registration data with all participant details and payment proof i
 ### Payment Proof Information
 The **Payment Proof** column now includes:
 - **Online Payments:** Shows "Online Payment" (Razorpay processed)
-- **Manual Bank Transfers/Cheques:** Shows the actual file path to the uploaded screenshot
-  - Example: `uploads/payment-proofs/team-12345-proof.jpg`
-  - Example: `uploads/payment-proofs/team-67890-proof.png`
+- **Manual Bank Transfers/Cheques:** Shows a viewable URL for the uploaded screenshot saved for that team
+  - The backend looks up the team's payment record and streams the exact file from the configured Render disk.
+  - The file name is not guessed from the team name; it is read from the saved `paymentProofFile` record.
 
 To view the actual payment screenshot:
-1. Take the file path from the Excel column (e.g., `uploads/payment-proofs/team-123.jpg`)
-2. Construct the full URL: `https://your-domain.com/uploads/payment-proofs/team-123.jpg`
-3. OR access through the admin dashboard's payment verification page
+1. Open the URL in the Payment Proof column while signed in as an admin.
+2. The URL uses `/api/admin/teams/{teamId}/payment-proof` and reads from the Render persistent disk.
+3. OR access the same proof through the admin dashboard's payment verification page.
 
 ### Best For
 - Complete registration records with payment verification

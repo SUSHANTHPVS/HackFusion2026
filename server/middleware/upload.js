@@ -1,9 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { getPaymentProofsDir } from "../utils/uploadPaths.js";
 
 // ============================================================================
 // RENDER DEPLOYMENT GUIDE:
@@ -23,24 +21,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Determine upload directory
 // Priority: 1. RENDER_UPLOADS_DIR env var, 2. UPLOADS_DIR env var, 3. default path
-let uploadDir;
-
-if (process.env.RENDER_UPLOADS_DIR) {
-  uploadDir = path.join(process.env.RENDER_UPLOADS_DIR, "payment-proofs");
-  console.log(`[Upload] Using RENDER_UPLOADS_DIR: ${uploadDir}`);
-} else if (process.env.UPLOADS_DIR) {
-  uploadDir = path.join(process.env.UPLOADS_DIR, "payment-proofs");
-  console.log(`[Upload] Using UPLOADS_DIR: ${uploadDir}`);
-} else {
-  uploadDir = path.join(__dirname, "../../uploads/payment-proofs");
-  console.log(`[Upload] Using default path: ${uploadDir}`);
-}
+const uploadDir = getPaymentProofsDir();
+console.log(`[Upload] Using payment proof directory: ${uploadDir}`);
 
 console.log(`[Upload] ============================================`);
 console.log(`[Upload] Upload Directory Configuration`);
 console.log(`[Upload] ============================================`);
 console.log(`[Upload] Absolute path: ${uploadDir}`);
-console.log(`[Upload] __dirname: ${__dirname}`);
 console.log(`[Upload] NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`[Upload] RENDER_UPLOADS_DIR env: ${process.env.RENDER_UPLOADS_DIR || "not set"}`);
 console.log(`[Upload] UPLOADS_DIR env: ${process.env.UPLOADS_DIR || "not set"}`);
