@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import archiver from "archiver";
 import { Payment } from "../models/Payment.js";
 import { PaymentAudit } from "../models/PaymentAudit.js";
 import { Score } from "../models/Score.js";
@@ -327,6 +328,83 @@ export const getTeamPaymentProof = asyncHandler(async (req, res) => {
   }
 
   return res.sendFile(proofPath);
+});
+
+/**
+ * GET /admin/payments/proofs/export
+ * Download every payment proof currently saved on the local/Render disk.
+ */
+export const exportPaymentProofs = asyncHandler(async (_req, res) => {
+  const payments = await Payment.find({
+    status: "success",
+    paymentProofFile: { $exists: true, $ne: "" }
+  })
+    .sort({ paymentProofSubmittedAt: -1, createdAt: -1 })
+    .populate("teamId", "name")
+    .lean();
+
+  const files = [];
+  const manifestRows = [[
+    "Team Name",
+    "Team ID",
+    "Order ID",
+    "Payment Status",
+    "Payment Method",
+    "UTR / Transaction ID",
+    "Submitted At",
+    "File Name"
+  ]];
+
+  for (const payment of payments) {
+    const storedPath = payment.paymentProofFile.split(/[?#]/)[0];
+    const filename = path.basename(decodeURIComponent(storedPath));
+    const proofPath = path.join(getPaymentProofsDir(), filename);
+
+    if (!fs.existsSync(proofPath)) {
+      console.warn(`[exportPaymentProofs] Skipping missing proof: ${proofPath}`);
+      continue;
+    }
+
+    const teamName = payment.teamId?.name || "Unknown Team";
+    const teamId = payment.teamId?._id?.toString() || payment.teamId?.toString() || "unknown-team";
+    const safeTeamName = teamName.replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "") || "team";
+    const archiveName = `${safeTeamName}__${teamId}__${filename}`;
+
+    files.push({ proofPath, archiveName });
+    manifestRows.push([
+      teamName,
+      teamId,
+      payment.orderId || "",
+      payment.status || "",
+      payment.paymentMethod || "",
+      payment.utrNumber || payment.transactionId || "",
+      payment.paymentProofSubmittedAt?.toISOString?.() || "",
+      archiveName
+    ]);
+  }
+
+  if (files.length === 0) {
+    throw new AppError("No payment proof files are available on the Render disk", 404);
+  }
+
+  const csvEscape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const manifest = manifestRows.map((row) => row.map(csvEscape).join(",")).join("\n");
+  const archive = archiver("zip", { zlib: { level: 9 } });
+
+  archive.on("error", (error) => {
+    console.error("[exportPaymentProofs] Archive failed:", error.message);
+    if (!res.headersSent) {
+      res.status(500).end();
+    } else {
+      res.destroy(error);
+    }
+  });
+
+  res.attachment("payment-proofs-export.zip");
+  archive.pipe(res);
+  archive.append(manifest, { name: "payment-proofs-manifest.csv" });
+  files.forEach(({ proofPath, archiveName }) => archive.file(proofPath, { name: archiveName }));
+  await archive.finalize();
 });
 
 /**

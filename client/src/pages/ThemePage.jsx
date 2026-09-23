@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Download } from "lucide-react";
 import { CountdownTimer } from "../components/CountdownTimer";
 import { useCountdown } from "../hooks/useCountdown";
 import { THEME_REVEAL_DATE } from "../utils/constants";
@@ -106,6 +107,7 @@ export function ThemePage() {
   const [expandedTheme, setExpandedTheme] = useState(themes[0].title);
   const { days, hours, minutes, seconds } = useCountdown(THEME_REVEAL_DATE);
   const isCountdownComplete = days === 0 && hours === 0 && minutes === 0 && seconds === 0;
+  const showInlineDetails = false;
 
   const summaryIcons = {
     "Multi-Robot Task Negotiation Engine": "🤖",
@@ -128,7 +130,7 @@ export function ThemePage() {
     <section className="mx-auto max-w-6xl space-y-6">
       <CountdownTimer />
 
-      {!isCountdownComplete ? (
+      {!showInlineDetails ? (
         <>
           <motion.header
             className="glass-card rounded-3xl p-6 shadow-lg md:p-10"
@@ -139,10 +141,23 @@ export function ThemePage() {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-700">HackFusion 2026</p>
             <h1 className="mt-3 text-4xl font-extrabold text-slate-900 md:text-5xl">Challenge Domains Preview</h1>
             <p className="mt-4 text-slate-700">
-              All theme titles are now visible. Full theme details will unlock after the countdown ends.
+              {isCountdownComplete
+                ? "The official problem statements are available for download below."
+                : "All theme titles are visible now. The official problem statements will be available after the countdown ends."}
             </p>
+            {isCountdownComplete ? (
+              <a
+                href="/HackFusion_2026_Problem_Statements_Final_With_Additional_Features.pdf"
+                download
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800"
+              >
+                <Download size={17} /> Download Problem Statements (PDF)
+              </a>
+            ) : null}
             <p className="mt-3 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800">
-              Showing all {themes.length} theme titles now
+              {isCountdownComplete ? "Problem statements are available as a PDF" : `Showing all ${themes.length} theme titles now`}
             </p>
           </motion.header>
 
@@ -169,7 +184,9 @@ export function ThemePage() {
               >
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-700">Theme {index + 1}</p>
                 <h2 className="mt-2 text-xl font-bold text-slate-900">{theme.emoji} {theme.title}</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-700">Full details locked until countdown completes.</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">
+                  {isCountdownComplete ? "Download the PDF above to view this problem statement." : "Full details locked until countdown completes."}
+                </p>
               </motion.article>
             ))}
           </div>
@@ -199,6 +216,15 @@ export function ThemePage() {
             <p className="mt-4 text-slate-700">
               Explore the official challenge tracks, their core requirements, system flows, modules, technologies, and the common expectations for every HackFusion 2026 solution.
             </p>
+            <a
+              href="/HackFusion_2026_Problem_Statements_Final_With_Additional_Features.pdf"
+              download
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800"
+            >
+              <Download size={17} /> Download Problem Statements (PDF)
+            </a>
             <p className="mt-3 rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800">
               There Are No Restrictions For Modules And Features
             </p>

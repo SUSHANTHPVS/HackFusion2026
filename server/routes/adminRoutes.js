@@ -26,7 +26,8 @@ import {
   sendWhatsAppGroupLinkManual,
   getParticipantsForEmail,
   sendRegistrationEmails,
-  getTeamPaymentProof
+  getTeamPaymentProof,
+  exportPaymentProofs
 } from "../controllers/adminController.js";
 import { authorize, protect } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
@@ -58,6 +59,7 @@ router.get("/stats", protect, authorize("admin"), dashboardStats);
 router.get("/timeline", protect, authorize("admin"), registrationsTimeline);
 router.get("/registrations/search", protect, authorize("admin"), searchRegistrations);
 router.get("/teams/:teamId/payment-proof", protect, authorize("admin"), getTeamPaymentProof);
+router.get("/payments/proofs/export", protect, authorize("admin"), exportPaymentProofs);
 router.delete("/teams/:teamId", protect, authorize("admin"), deleteTeam);
 router.get("/payments/verification-status", protect, authorize("admin"), getPaymentVerificationStatus);
 router.get("/diagnosis/teams-with-payments", protect, authorize("admin"), diagnosisTeamsWithPayments);

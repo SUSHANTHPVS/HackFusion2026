@@ -528,6 +528,7 @@ export function AdminRegistrationsPage() {
   const [checkinLoadingId, setCheckinLoadingId] = useState("");
   const [isTeamBulkMarking, setIsTeamBulkMarking] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [isDownloadingProofs, setIsDownloadingProofs] = useState(false);
 
   const exportRows = useMemo(() => buildExportRows(rows), [rows]);
   const participantExportRows = useMemo(() => buildParticipantExportRows(rows), [rows]);
@@ -575,6 +576,29 @@ export function AdminRegistrationsPage() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Team Information");
     XLSX.writeFile(workbook, "hackfusion-team-information.xlsx");
+  };
+
+  const downloadPaymentProofs = async () => {
+    setError("");
+    setActionMessage("");
+    setIsDownloadingProofs(true);
+
+    try {
+      const response = await api.get("/admin/payments/proofs/export", { responseType: "blob" });
+      const downloadUrl = URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "payment-proofs-export.zip";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+      setActionMessage("Payment proofs downloaded as a ZIP archive.");
+    } catch (err) {
+      setError(getErrorMessage(err, "No payment proof files could be exported."));
+    } finally {
+      setIsDownloadingProofs(false);
+    }
   };
 
   const downloadFormat2Excel = () => {
@@ -811,6 +835,16 @@ export function AdminRegistrationsPage() {
               title="Format 1: Team, Problem, Participants, Details, Payment Method, Payment Proof (with file path), Payment Status, Amount, Order ID, Transaction ID"
             >
               <Download size={16} /> Format 1 (Complete)
+            </button>
+            <button
+              type="button"
+              onClick={downloadPaymentProofs}
+              disabled={isDownloadingProofs}
+              className="inline-flex items-center gap-2 rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Download payment proofs for approved payments only"
+            >
+              {isDownloadingProofs ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              {isDownloadingProofs ? "Preparing approved proofs..." : "Download Approved Proofs"}
             </button>
             <button
               type="button"

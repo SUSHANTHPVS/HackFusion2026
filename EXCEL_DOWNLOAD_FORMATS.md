@@ -50,6 +50,15 @@ To view the actual payment screenshot:
 - College-wise analysis with payment details
 - Theme-wise team distribution with payment status
 
+### Export All Payment Proofs for Submission
+To collect the actual uploaded proof images in one file:
+1. Open **Admin Dashboard → Registrations and Presence**.
+2. Click **Download Approved Proofs**.
+3. Save `payment-proofs-export.zip` and extract it.
+4. Use the included `payment-proofs-manifest.csv` to match each image to its team, order ID, payment status, and UTR/transaction ID.
+
+This export reads only payment proofs for payments with `success` status (approved) from the configured Render persistent disk. Pending, rejected, and failed payments are excluded. Missing files are skipped and logged by the server.
+
 ---
 
 ## Format 2: Simple Participant List (Purple Button)
