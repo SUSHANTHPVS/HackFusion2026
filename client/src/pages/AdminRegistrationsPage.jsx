@@ -69,6 +69,78 @@ function buildParticipantExportRows(rows) {
   });
 }
 
+// Format 1: Complete Team Information with Payment Proofs
+function buildFormat1ExportRows(rows) {
+  return rows.map((item, index) => {
+    const members = getAllMembers(item);
+    return {
+      "S.No": index + 1,
+      "Team Name": item.teamName || "N/A",
+      "Problem Statement (Theme)": item.themeTrack || "N/A",
+      "Participant Names": buildCsvValue(members.map((m) => m.name)),
+      "Roll Numbers": buildCsvValue(members.map((m) => m.rollNo)),
+      "Email IDs": buildCsvValue([
+        item.accountEmail || "N/A",
+        ...(item.teammates || []).map((m) => m.email || "N/A")
+      ]),
+      Branches: buildCsvValue(members.map((m) => m.branch)),
+      Sections: buildCsvValue(members.map((m) => m.section)),
+      "College Name": item.collegeName || "N/A",
+      "Payment Proof": item.paymentProofFile || "Online Payment"
+    };
+  });
+}
+
+// Format 2: Simple Participant List (Name, Roll Number, Branch, Section)
+function buildFormat2ExportRows(rows) {
+  return rows.flatMap((item) => {
+    const members = getAllMembers(item);
+    return members.map((member) => ({
+      Name: member.name || "N/A",
+      "Roll Number": member.rollNo || "N/A",
+      Branch: member.branch || "N/A",
+      Section: member.section || "N/A"
+    }));
+  });
+}
+
+// Format 3: Summary Statistics
+function buildFormat3ExportRows(rows) {
+  const totalTeams = rows.length;
+  const totalParticipants = rows.reduce((sum, item) => {
+    return sum + (1 + (item.teammates || []).length); // Leader + teammates
+  }, 0);
+
+  // Group by theme
+  const themeGroups = {};
+  rows.forEach((item) => {
+    const theme = item.themeTrack || "Unknown";
+    if (!themeGroups[theme]) {
+      themeGroups[theme] = { teams: 0, participants: 0 };
+    }
+    themeGroups[theme].teams += 1;
+    themeGroups[theme].participants += 1 + (item.teammates || []).length;
+  });
+
+  const summaryRows = [
+    { Metric: "Total Teams", Value: totalTeams, Details: "" },
+    { Metric: "Total Participants", Value: totalParticipants, Details: "" },
+    { Metric: "", Value: "", Details: "" } // Blank row
+  ];
+
+  // Add theme-wise breakdown
+  summaryRows.push({ Metric: "Theme-wise Breakdown", Value: "", Details: "" });
+  Object.entries(themeGroups).forEach(([theme, data]) => {
+    summaryRows.push({
+      Metric: theme,
+      Value: `${data.teams} team(s)`,
+      Details: `${data.participants} participants`
+    });
+  });
+
+  return summaryRows;
+}
+
 // Detailed participant information modal
 function getTeamMembersWithKeys(item) {
   return [
@@ -442,6 +514,9 @@ export function AdminRegistrationsPage() {
 
   const exportRows = useMemo(() => buildExportRows(rows), [rows]);
   const participantExportRows = useMemo(() => buildParticipantExportRows(rows), [rows]);
+  const format1ExportRows = useMemo(() => buildFormat1ExportRows(rows), [rows]);
+  const format2ExportRows = useMemo(() => buildFormat2ExportRows(rows), [rows]);
+  const format3ExportRows = useMemo(() => buildFormat3ExportRows(rows), [rows]);
   const selectedItem = useMemo(
     () => rows.find((row) => row.teamId === selectedTeamId) || null,
     [rows, selectedTeamId]
@@ -472,6 +547,39 @@ export function AdminRegistrationsPage() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
     XLSX.writeFile(workbook, "registrations-presence-participant-wise.xlsx");
+  };
+
+  const downloadFormat1Excel = () => {
+    if (format1ExportRows.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(format1ExportRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Team Information");
+    XLSX.writeFile(workbook, "hackfusion-team-information.xlsx");
+  };
+
+  const downloadFormat2Excel = () => {
+    if (format2ExportRows.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(format2ExportRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
+    XLSX.writeFile(workbook, "hackfusion-participants-list.xlsx");
+  };
+
+  const downloadFormat3Excel = () => {
+    if (format3ExportRows.length === 0) {
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(format3ExportRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Summary");
+    XLSX.writeFile(workbook, "hackfusion-summary-statistics.xlsx");
   };
 
   const loadRegistrations = async ({ refreshing = false, skipCache = false } = {}) => {
@@ -677,6 +785,33 @@ export function AdminRegistrationsPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download size={16} /> Download Excel (Participant-wise)
+            </button>
+            <button
+              type="button"
+              onClick={downloadFormat1Excel}
+              disabled={format1ExportRows.length === 0}
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Format 1: Team Name, Problem, Participants, Roll No, Email, Branch, Section, College, Payment Proof"
+            >
+              <Download size={16} /> Format 1 (Complete)
+            </button>
+            <button
+              type="button"
+              onClick={downloadFormat2Excel}
+              disabled={format2ExportRows.length === 0}
+              className="inline-flex items-center gap-2 rounded-lg border border-purple-300 px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Format 2: Name, Roll Number, Branch, Section only"
+            >
+              <Download size={16} /> Format 2 (Simple)
+            </button>
+            <button
+              type="button"
+              onClick={downloadFormat3Excel}
+              disabled={format3ExportRows.length === 0}
+              className="inline-flex items-center gap-2 rounded-lg border border-orange-300 px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Format 3: Summary statistics (Total teams, participants, theme-wise breakdown)"
+            >
+              <Download size={16} /> Format 3 (Summary)
             </button>
             <button
               type="button"
