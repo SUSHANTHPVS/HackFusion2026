@@ -175,7 +175,7 @@ export function HomePage() {
                     Registrations are closed
                   </span>
                   <p className="mt-2 text-center text-xs text-slate-600">
-                    The last slot will open tomorrow morning between 9:15 and 9:30 AM
+                    The last slot will open on 24-09-2026 in the morning between 9:15 and 9:30 AM
                   </p>
                 </div>
 
