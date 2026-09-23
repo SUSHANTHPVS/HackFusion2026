@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import archiver from "archiver";
+import { createRequire } from "module";
 import { Payment } from "../models/Payment.js";
 import { PaymentAudit } from "../models/PaymentAudit.js";
 import { Score } from "../models/Score.js";
@@ -18,6 +18,9 @@ import { env } from "../config/env.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getPaymentProofsDir } from "../utils/uploadPaths.js";
 import { AppError } from "../utils/AppError.js";
+
+const require = createRequire(import.meta.url);
+const archiver = require("archiver");
 
 function buildReceipt(prefix, id) {
   const compactPrefix = String(prefix || "RP").replace(/[^a-zA-Z0-9]/g, "").slice(0, 6) || "RP";
