@@ -184,6 +184,14 @@ export function HomePage() {
                       Registrations open: {registrationStatus.remaining} spots left
                     </span>
                   )}
+                  {!isCheckingRegistrationStatus && !isRegistrationClosed ? (
+                    <Link
+                      to={user?.role === "participant" ? "/hackathon-register" : "/register"}
+                      className="inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-slate-900 px-6 py-3 text-center font-bold text-white shadow-sm transition hover:bg-slate-700"
+                    >
+                      Register Now
+                    </Link>
+                  ) : null}
                 </div>
 
                 <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
