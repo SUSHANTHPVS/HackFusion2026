@@ -109,7 +109,7 @@ export function SchedulePage() {
               />
             </div>
             <div className="bg-white/80 p-3">
-              <p className="text-sm font-semibold text-slate-800">New Academic Block, 4016</p>
+              <p className="text-sm font-semibold text-slate-800">New Academic Block, 4002,4003</p>
             </div>
           </div>
         </div>
