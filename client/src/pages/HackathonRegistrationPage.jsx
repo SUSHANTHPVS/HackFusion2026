@@ -172,6 +172,25 @@ export function HackathonRegistrationPage() {
   const [existingTeam, setExistingTeam] = useState(null);
   const [existingPayment, setExistingPayment] = useState(null);
   const [isLoadingExisting, setIsLoadingExisting] = useState(true);
+  const [registrationStatus, setRegistrationStatus] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    api.get("/registration/status")
+      .then((response) => {
+        if (isMounted) {
+          setRegistrationStatus(response.data);
+        }
+      })
+      .catch(() => {
+        // The server still enforces capacity when an order is submitted.
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const isUnauthorizedError = (error) => {
     if (error?.response?.status !== 401) {
@@ -344,6 +363,12 @@ export function HackathonRegistrationPage() {
 
   const onCreateOrder = (event) => {
     event.preventDefault();
+
+    if (registrationStatus?.registrationClosed || registrationStatus?.remaining <= 0) {
+      setPaymentMessage("Registrations are closed");
+      return;
+    }
+
     setPaymentMessage("");
     setRequiresLogin(false);
     setPaymentVerified(false);
@@ -541,6 +566,16 @@ export function HackathonRegistrationPage() {
     <section className="glass-card mx-auto max-w-2xl rounded-2xl p-6">
       <h1 className="text-3xl font-bold">Hackathon Registration & Payment</h1>
       <p className="mt-2 text-slate-700">One login creates one registration profile. Fill details, create order, then complete payment.</p>
+
+      {registrationStatus?.registrationClosed || registrationStatus?.remaining <= 0 ? (
+        <div className="mt-4 rounded-lg border-2 border-red-300 bg-red-100 px-4 py-3 text-center font-bold text-red-700">
+          Registrations are closed
+        </div>
+      ) : registrationStatus ? (
+        <div className="mt-4 rounded-lg border border-emerald-300 bg-emerald-100 px-4 py-3 text-center font-bold text-emerald-700">
+          Registrations open: {registrationStatus.remaining} spots left
+        </div>
+      ) : null}
 
       <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-cyan-300 bg-cyan-100 px-3 py-1.5 text-sm font-semibold text-cyan-900 shadow-sm">
         <span className="rounded-full bg-cyan-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">Eligible Years</span>
@@ -835,7 +870,7 @@ export function HackathonRegistrationPage() {
 
         <button
           type="submit"
-          disabled={createOrderMutation.isPending}
+          disabled={createOrderMutation.isPending || registrationStatus?.registrationClosed || registrationStatus?.remaining <= 0}
           className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white"
         >
           {createOrderMutation.isPending ? "Creating Order..." : `Create Registration Order (INR ${selectedFee})`}

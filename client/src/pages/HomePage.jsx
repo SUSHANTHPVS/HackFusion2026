@@ -171,12 +171,19 @@ export function HomePage() {
                   <p className="w-full text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 sm:text-xs">
                     Before Registering For The HackFusion Explore Themes
                   </p>
-                  <span className="rounded-lg bg-red-100 px-3 py-2 text-center font-bold text-red-700">
-                    Registrations are closed
-                  </span>
-                  <p className="mt-2 text-center text-xs text-slate-600">
-                    The last slot will open on 24-09-2026 in the morning between 9:15 and 9:30 AM
-                  </p>
+                  {isCheckingRegistrationStatus ? (
+                    <span className="rounded-lg bg-slate-100 px-3 py-2 text-center font-bold text-slate-600">
+                      Checking registration status...
+                    </span>
+                  ) : isRegistrationClosed ? (
+                    <span className="rounded-lg border border-red-300 bg-red-100 px-3 py-2 text-center font-bold text-red-700">
+                      Registrations are closed
+                    </span>
+                  ) : (
+                    <span className="rounded-lg border border-emerald-300 bg-emerald-100 px-3 py-2 text-center font-bold text-emerald-700">
+                      Registrations open: {registrationStatus.remaining} spots left
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white/70 p-3 shadow-sm">
