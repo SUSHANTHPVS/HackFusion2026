@@ -28,7 +28,7 @@ export async function getEventSettings() {
   }
 
   return {
-    registrationClosed: Boolean(persisted.registrationClosed),
+    registrationClosed: Boolean(persisted.registrationClosed) || Boolean(env.REGISTRATION_CLOSED),
     individualFeeInr: Number(persisted.individualFeeInr),
     teamFeeInr: Number(persisted.teamFeeInr)
   };
