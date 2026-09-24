@@ -15,8 +15,8 @@ const sectionVariants = {
 };
 
 const dayOneSchedule = [
-  { time: "08:00 AM - 08:30 AM", activity: "Participants Check-in,ID Card Distribution" },
-  { time: "08:30 AM - 10:00 AM", activity: "Inaugural Ceremony & Welcome Address" },
+  { time: "09:00 AM - 09:30 AM", activity: "Participants Check-in,ID Card Distribution" },
+  { time: "09:30 AM - 10:00 AM", activity: "Inaugural Ceremony & Welcome Address" },
   { time: "10:00 AM - 10:30 AM", activity: "Hackathon Route Plan Explanation" },
   { time: "10:30 AM", activity: "Hackathon Officially Begins", highlight: true },
   { time: "10:30 AM - 01:00 PM", activity: "Development Session I" },
