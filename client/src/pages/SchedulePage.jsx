@@ -103,7 +103,7 @@ export function SchedulePage() {
             <div className="overflow-hidden">
               <img
                 src="/logos/4016.jpeg"
-                alt="New Academic Block,4016"
+                alt="New Academic Block,4002,4003"
                 className="h-52 w-full object-cover object-center transition-transform duration-300 hover:scale-105"
                 loading="lazy"
               />

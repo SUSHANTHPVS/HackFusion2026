@@ -140,7 +140,7 @@ export function HomePage() {
               </div>
               <p className="mt-4 text-lg font-semibold text-slate-700 sm:text-xl">Build. Innovate. Impact.</p>
               <p className="mt-2 inline-flex w-fit rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-800 shadow-sm sm:text-base">
-                Mohan Babu University, New Academic Block, Room No: 4016
+                Mohan Babu University, New Academic Block, Room No: 4002,4003
               </p>
               <div className="mt-4 flex flex-col gap-3 text-sm font-semibold sm:text-base">
                 <div className="inline-flex w-fit items-center gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 px-4 py-2.5 shadow-sm ring-1 ring-amber-100">
