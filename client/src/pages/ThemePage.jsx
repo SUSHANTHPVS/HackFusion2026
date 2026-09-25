@@ -148,9 +148,7 @@ export function ThemePage() {
             {isCountdownComplete ? (
               <a
                 href="/HackFusion_2026_Problem_Statements_Final_With_Additional_Features.pdf"
-                download
-                target="_blank"
-                rel="noreferrer"
+                download="HackFusion_2026_Problem_Statements_Final_With_Additional_Features.pdf"
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800"
               >
                 <Download size={17} /> Download Problem Statements (PDF)
@@ -218,9 +216,7 @@ export function ThemePage() {
             </p>
             <a
               href="/HackFusion_2026_Problem_Statements_Final_With_Additional_Features.pdf"
-              download
-              target="_blank"
-              rel="noreferrer"
+              download="HackFusion_2026_Problem_Statements_Final_With_Additional_Features.pdf"
               className="mt-5 inline-flex items-center gap-2 rounded-xl bg-cyan-700 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-cyan-800"
             >
               <Download size={17} /> Download Problem Statements (PDF)
