@@ -260,6 +260,7 @@ export const searchRegistrations = asyncHandler(async (req, res) => {
       ieeeMemberId: team.leader?.ieeeMemberId || "",
       teammates: (team.teammates || []).map((member) => ({
         name: member.name,
+        email: member.email || "",
         rollNo: member.rollNo,
         year: member.year,
         branch: member.branch,

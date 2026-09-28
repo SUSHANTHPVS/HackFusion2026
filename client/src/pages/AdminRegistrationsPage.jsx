@@ -16,6 +16,7 @@ function getAllMembers(item) {
     {
       role: "Team Leader",
       name: item.teamLeaderName || item.leaderName || "N/A",
+      email: item.accountEmail || "",
       rollNo: item.rollNo || "N/A",
       branch: item.branch || "N/A",
       section: item.section || "N/A",
@@ -24,6 +25,7 @@ function getAllMembers(item) {
     ...(item.teammates || []).map((member, index) => ({
       role: `Teammate ${index + 1}`,
       name: member.name || "N/A",
+      email: member.email || "",
       rollNo: member.rollNo || "N/A",
       branch: member.branch || "N/A",
       section: member.section || "N/A",
@@ -68,6 +70,15 @@ function buildParticipantExportRows(rows) {
       "IEEE Member ID": member.ieeeMemberId || "N/A"
     }));
   });
+}
+
+function buildNameEmailExportRows(rows) {
+  return rows.flatMap((item) =>
+    getAllMembers(item).map((member) => ({
+      Name: member.name,
+      "Email ID": member.email
+    }))
+  );
 }
 
 // Format 1: Complete Team Information with Payment Proofs
@@ -567,6 +578,29 @@ export function AdminRegistrationsPage() {
     XLSX.writeFile(workbook, "registrations-presence-participant-wise.xlsx");
   };
 
+  const downloadParticipantNamesAndEmails = async () => {
+    setError("");
+
+    try {
+      const response = await api.get("/admin/registrations/search", {
+        params: { limit: 300, paymentStatus: "success" }
+      });
+      const participantRows = buildNameEmailExportRows(response.data?.rows || []);
+
+      if (participantRows.length === 0) {
+        setError("No paid participants are available to export.");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(participantRows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Participants");
+      XLSX.writeFile(workbook, "participant-names-and-emails.xlsx");
+    } catch (err) {
+      setError(getErrorMessage(err, "Unable to export participant names and emails."));
+    }
+  };
+
   const downloadFormat1Excel = () => {
     if (format1ExportRows.length === 0) {
       return;
@@ -826,6 +860,14 @@ export function AdminRegistrationsPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download size={16} /> Download Excel (Participant-wise)
+            </button>
+            <button
+              type="button"
+              onClick={downloadParticipantNamesAndEmails}
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Download size={16} /> Download Names &amp; Emails
             </button>
             <button
               type="button"
